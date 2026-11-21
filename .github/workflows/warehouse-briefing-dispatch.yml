@@ -1,0 +1,126 @@
+name: Warehouse & Task Briefing (Manual Dispatch)
+
+on:
+  workflow_dispatch:
+    inputs:
+      reporting_domain:
+        description: Reporting domain to inspect
+        type: choice
+        required: true
+        default: all
+        options:
+          - all
+          - executive_reporting
+          - finance_reporting
+          - ops_reporting
+          - org_reporting
+      priority_filter:
+        description: Filter open tasks by priority
+        type: choice
+        required: true
+        default: all
+        options:
+          - all
+          - priority:P0-critical
+          - priority:P1-high
+          - priority:P2-normal
+          - priority:P3-low
+      include_sqlx_inventory:
+        description: Include live SQLX model inventory in Job Summary
+        type: boolean
+        default: true
+      briefing_note:
+        description: Optional shift briefing or executive note
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  generate-briefing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Render Rich GitHub Job Summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const { owner, repo } = context.repo;
+            const domain = context.payload.inputs.reporting_domain;
+            const priorityFilter = context.payload.inputs.priority_filter;
+            const includeInventory = String(context.payload.inputs.include_sqlx_inventory) === 'true';
+            const note = (context.payload.inputs.briefing_note || '').trim();
+
+            const { data: issuesRaw } = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: 'open',
+              per_page: 100
+            });
+
+            const openIssues = issuesRaw.filter(i => !i.pull_request);
+            const openPrs = issuesRaw.filter(i => Boolean(i.pull_request));
+
+            const filteredIssues = openIssues.filter(issue => {
+              const names = issue.labels.map(l => l.name);
+              const domainMatch = domain === 'all' || names.includes(`area:${domain.replace('_', '-')}`);
+              const prioMatch = priorityFilter === 'all' || names.includes(priorityFilter);
+              return domainMatch && prioMatch;
+            });
+
+            const lines = [
+              `# MonoRail Transit — Warehouse & Task Lifecycle Briefing`,
+              ``,
+              `**Domain:** \`${domain}\` · **Priority Filter:** \`${priorityFilter}\` · **Triggered by:** @${context.actor}`,
+              note ? `\n> **Briefing Note:** ${note}` : '',
+              ``,
+              `## Active Work Summary`,
+              ``,
+              `| Metric | Count |`,
+              `| :--- | :---: |`,
+              `| Matching Open Issues | **${filteredIssues.length}** |`,
+              `| Total Open Issues | ${openIssues.length} |`,
+              `| Open Pull Requests | ${openPrs.length} |`,
+              ``
+            ];
+
+            if (filteredIssues.length > 0) {
+              lines.push(`### Open Tasks`, ``, `| # | Title | Labels |`, `| :---: | :--- | :--- |`);
+              for (const i of filteredIssues) {
+                const lbls = i.labels.map(l => `\`${l.name}\``).join(' ') || '—';
+                lines.push(`| [#${i.number}](${i.html_url}) | ${i.title.replace(/\|/g, '\\|')} | ${lbls} |`);
+              }
+              lines.push('');
+            }
+
+            if (includeInventory) {
+              const dirs = domain === 'all'
+                ? ['executive_reporting', 'finance_reporting', 'ops_reporting', 'org_reporting']
+                : [domain];
+
+              lines.push(`## Dataform SQLX Model Inventory`, ``, `| Domain | SQLX Definitions |`, `| :--- | :--- |`);
+              for (const d of dirs) {
+                const full = path.join('definitions', d);
+                const files = fs.existsSync(full)
+                  ? fs.readdirSync(full).filter(f => f.endsWith('.sqlx')).sort()
+                  : [];
+                lines.push(`| \`${d}\` | ${files.length ? files.map(f => `\`${f}\``).join(', ') : 'None'} |`);
+              }
+              lines.push('');
+            }
+
+            lines.push(
+              `## Lifecycle Flow`,
+              '```mermaid',
+              'flowchart LR',
+              '  Intake[1. YAML Issue Form] --> Triage[2. Auto-Triage & Labels] --> Dev[3. Linked Branch & PR] --> CI[4. Dataform & Dashboard CI] --> Merge[5. Squash Merge & Auto-Close]',
+              '```'
+            );
+
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');

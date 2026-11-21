@@ -1,0 +1,94 @@
+name: PR Lifecycle Dashboard Card
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  pr-summary-card:
+    if: github.event.sender.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect PR Scope & Update Sticky Lifecycle Card
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const prNumber = pr.number;
+            const marker = '<!-- monorail-pr-lifecycle-card -->';
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner,
+              repo,
+              pull_number: prNumber,
+              per_page: 100
+            });
+
+            const filenames = files.map(f => f.filename);
+            const totalAdditions = files.reduce((s, f) => s + f.additions, 0);
+            const totalDeletions = files.reduce((s, f) => s + f.deletions, 0);
+            const totalChanged = totalAdditions + totalDeletions;
+
+            // Detect impacted MonoRail areas
+            const areaLabels = new Set();
+            if (filenames.some(f => f.startsWith('definitions/executive_reporting/'))) areaLabels.add('area:executive-reporting');
+            if (filenames.some(f => f.startsWith('definitions/finance_reporting/'))) areaLabels.add('area:finance-reporting');
+            if (filenames.some(f => f.startsWith('definitions/ops_reporting/'))) areaLabels.add('area:ops-reporting');
+            if (filenames.some(f => f.startsWith('definitions/org_reporting/'))) areaLabels.add('area:org-reporting');
+            if (filenames.some(f => f.startsWith('definitions/external_sources/'))) areaLabels.add('area:external-sources');
+            if (filenames.some(f => f.startsWith('dashboards/'))) areaLabels.add('area:dashboards');
+            if (filenames.some(f => f.startsWith('models/malloy/'))) areaLabels.add('area:malloy');
+
+            if (areaLabels.size > 0) {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: prNumber,
+                labels: [...areaLabels]
+              });
+            }
+
+            // Check lifecycle hygiene
+            const body = pr.body || '';
+            const linkedIssueMatch = body.match(/(?:closes|fixes|resolves)\s+#(\d+)/i);
+            const hasLinkedIssue = Boolean(linkedIssueMatch);
+            const touchedDashSource = filenames.some(f => f.startsWith('dashboards/operations/') && f !== 'dashboards/operations/index.html');
+            const rebuiltBundle = filenames.includes('dashboards/operations/index.html');
+            const sizeStatus = totalChanged <= 300 ? 'Optimal (<= 300 LOC)' : totalChanged <= 600 ? 'Medium (301–600 LOC)' : 'Large (> 600 LOC — consider splitting)';
+
+            const cardBody = [
+              marker,
+              `### MonoRail PR Lifecycle Readiness`,
+              ``,
+              `| Check | Status | Details |`,
+              `| :--- | :--- | :--- |`,
+              `| **Linked Issue** | ${hasLinkedIssue ? 'PASS' : 'RECOMMENDED'} | ${hasLinkedIssue ? `Linked via \`${linkedIssueMatch[0]}\`` : 'Add `Closes #<issue>` to auto-close the tracking issue on merge'} |`,
+              `| **PR Size** | ${totalChanged <= 300 ? 'PASS' : 'INFO'} | **+${totalAdditions} / -${totalDeletions}** across ${files.length} file(s) — ${sizeStatus} |`,
+              `| **PR State** | ${pr.draft ? 'DRAFT' : 'READY'} | ${pr.draft ? 'Draft PR — early feedback mode' : 'Ready for peer review & CI gates'} |`,
+              `| **Impacted Areas** | INFO | ${areaLabels.size ? [...areaLabels].map(a => `\`${a}\``).join(', ') : '`general / repo config`'} |`,
+              touchedDashSource ? `| **Dashboard Bundle** | ${rebuiltBundle ? 'PASS' : 'CHECK'} | ${rebuiltBundle ? '`dashboards/operations/index.html` updated' : 'Dashboard source changed — ensure `node dashboards/operations/build.cjs` was run'} |` : null,
+              ``,
+              `<sub>Maintained automatically by \`pr-lifecycle-card.yml\`</sub>`
+            ].filter(Boolean).join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100
+            });
+            const existing = comments.find(c => (c.body || '').includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body: cardBody });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body: cardBody });
+            }
+
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, cardBody + '\n');

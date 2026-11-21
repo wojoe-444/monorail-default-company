@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Warehouse Catalog
+    url: https://github.com/wojoe-444/monorail-default-company/blob/main/docs/warehouse-catalog.md
+    about: Look up BigQuery tables, SQL definitions, and columns before filing a pipeline task.
+  - name: Dataform Runbook
+    url: https://github.com/wojoe-444/monorail-default-company/blob/main/docs/dataform-runbook.md
+    about: Compile locally or troubleshoot a warehouse refresh failure.
+  - name: Operations Handbook
+    url: https://github.com/wojoe-444/monorail-default-company/blob/main/docs/operations-handbook.md
+    about: Check metric definitions, reporting periods, and shift-briefing conventions.

@@ -1,0 +1,225 @@
+name: Issue Intake & Interactive Triage
+
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [edited]
+
+permissions:
+  issues: write
+
+jobs:
+  triage-and-sync:
+    if: github.event.sender.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse Issue Form & Update Interactive Triage Card
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const issueNumber = context.payload.issue.number;
+            const marker = '<!-- monorail-triage-card -->';
+
+            // If triggered by a comment edit, only act when the edit touched our sticky triage card.
+            if (context.eventName === 'issue_comment') {
+              const editedBody = context.payload.comment?.body || '';
+              if (!editedBody.includes(marker)) {
+                core.info('Edited comment is not the triage card. Skipping.');
+                return;
+              }
+            }
+
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number: issueNumber
+            });
+
+            // Parse GitHub YAML Issue Form sections: "### Section Label\n\nValue"
+            function parseFormSections(body) {
+              const sections = {};
+              if (!body) return sections;
+              const normalized = body.replace(/\r\n/g, '\n');
+              const parts = normalized.split(/^### /m).slice(1);
+              for (const part of parts) {
+                const nl = part.indexOf('\n');
+                if (nl === -1) continue;
+                const heading = part.slice(0, nl).trim();
+                const value = part.slice(nl + 1).trim();
+                if (value && value !== '_No response_') {
+                  sections[heading] = value;
+                }
+              }
+              return sections;
+            }
+
+            const fields = parseFormSections(issue.body);
+            const domainRaw = fields['Reporting Domain'] || fields['Affected Area'] || fields['Target Workspace Section'] || '';
+            const priorityRaw = fields['Priority'] || fields['Severity / Priority'] || '';
+            const modelsRaw = fields['Affected Models / Relations'] || fields['Failing Relation, Assertion, or File'] || fields['Backing Warehouse Relation or Malloy Source'] || 'Not specified';
+            const metricOrFailure = fields['Metric / Component Name'] || fields['Failure Type'] || fields['Change Type'] || 'Standard task';
+            const stakeholder = fields['Business Stakeholder & Target Date'] || fields['Primary Audience'] || 'Unassigned';
+
+            const desiredLabels = new Set();
+
+            // Map Reporting Domain / Area -> area:* label
+            const domainLower = domainRaw.toLowerCase();
+            if (domainLower.includes('executive_reporting')) desiredLabels.add('area:executive-reporting');
+            if (domainLower.includes('finance_reporting') || domainLower.includes('finance tab')) desiredLabels.add('area:finance-reporting');
+            if (domainLower.includes('ops_reporting') || domainLower.includes('operations tab')) desiredLabels.add('area:ops-reporting');
+            if (domainLower.includes('org_reporting') || domainLower.includes('workforce tab')) desiredLabels.add('area:org-reporting');
+            if (domainLower.includes('external_sources')) desiredLabels.add('area:external-sources');
+            if (domainLower.includes('malloy')) desiredLabels.add('area:malloy');
+            if (domainLower.includes('dashboard') || domainLower.includes('shell')) desiredLabels.add('area:dashboards');
+
+            // Map Priority / Severity -> priority:* label
+            let priorityCode = 'Unset';
+            let sla = 'Standard backlog review';
+            if (priorityRaw.startsWith('P0')) {
+              desiredLabels.add('priority:P0-critical');
+              priorityCode = 'P0 - Critical';
+              sla = 'Immediate (< 2 hours)';
+            } else if (priorityRaw.startsWith('P1')) {
+              desiredLabels.add('priority:P1-high');
+              priorityCode = 'P1 - High';
+              sla = 'Same business day (< 8 hours)';
+            } else if (priorityRaw.startsWith('P2')) {
+              desiredLabels.add('priority:P2-normal');
+              priorityCode = 'P2 - Normal';
+              sla = '48-hour triage SLA';
+            } else if (priorityRaw.startsWith('P3')) {
+              desiredLabels.add('priority:P3-low');
+              priorityCode = 'P3 - Low';
+              sla = 'Next sprint grooming';
+            }
+
+            // Find existing sticky triage comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: issueNumber,
+              per_page: 100
+            });
+            const existingCard = comments.find(c => (c.body || '').includes(marker));
+
+            // Determine workflow stage from interactive checkboxes inside the sticky card
+            let stage = 'needs-triage';
+            const existingLabels = new Set(issue.labels.map(l => l.name));
+
+            if (context.eventName === 'issue_comment' && existingCard) {
+              const cardText = existingCard.body;
+              const checkedBlocked = /- \[[xX]\] \*\*Flag as Blocked\*\*/.test(cardText);
+              const checkedInProgress = /- \[[xX]\] \*\*Move to In Progress\*\*/.test(cardText);
+              const checkedReady = /- \[[xX]\] \*\*Approve & Promote to Ready\*\*/.test(cardText);
+
+              if (checkedBlocked) {
+                stage = 'blocked';
+              } else if (checkedInProgress) {
+                stage = 'in-progress';
+              } else if (checkedReady) {
+                stage = 'ready';
+              } else {
+                stage = 'needs-triage';
+              }
+            } else {
+              if (existingLabels.has('status:blocked')) stage = 'blocked';
+              else if (existingLabels.has('status:in-progress')) stage = 'in-progress';
+              else if (existingLabels.has('status:ready')) stage = 'ready';
+              else stage = 'needs-triage';
+            }
+
+            const statusLabels = ['status:needs-triage', 'status:ready', 'status:in-progress', 'status:blocked'];
+            const targetStatusLabel = `status:${stage}`;
+            desiredLabels.add(targetStatusLabel);
+
+            // Sync labels cleanly (add desired, remove conflicting status/priority labels)
+            const priorityLabels = ['priority:P0-critical', 'priority:P1-high', 'priority:P2-normal', 'priority:P3-low'];
+            const toRemove = [...existingLabels].filter(lbl => {
+              if (statusLabels.includes(lbl) && lbl !== targetStatusLabel) return true;
+              if (priorityCode !== 'Unset' && priorityLabels.includes(lbl) && !desiredLabels.has(lbl)) return true;
+              return false;
+            });
+
+            for (const lbl of toRemove) {
+              try {
+                await github.rest.issues.removeLabel({ owner, repo, issue_number: issueNumber, name: lbl });
+              } catch (e) {
+                core.info(`Label ${lbl} already absent.`);
+              }
+            }
+
+            const toAdd = [...desiredLabels].filter(lbl => !existingLabels.has(lbl));
+            if (toAdd.length > 0) {
+              await github.rest.issues.addLabels({ owner, repo, issue_number: issueNumber, labels: toAdd });
+            }
+
+            const stageDisplay = {
+              'needs-triage': 'Needs Triage',
+              'ready': 'Ready for Engineering',
+              'in-progress': 'In Progress',
+              'blocked': 'Blocked / Needs Clarification'
+            }[stage];
+
+            const chkReady = stage === 'ready' || stage === 'in-progress' ? 'x' : ' ';
+            const chkInProgress = stage === 'in-progress' ? 'x' : ' ';
+            const chkBlocked = stage === 'blocked' ? 'x' : ' ';
+
+            const cleanCell = (v) => String(v || '—').replace(/\n+/g, ', ').replace(/\|/g, '\\|').slice(0, 140);
+
+            const cardBody = [
+              marker,
+              `### MonoRail Task Triage & Lifecycle Card`,
+              ``,
+              `> Parsed automatically from the submitted Issue Form. Toggle the checkboxes below to transition task status without leaving this page.`,
+              ``,
+              `| Field | Value |`,
+              `| :--- | :--- |`,
+              `| **Lifecycle Stage** | \`${stageDisplay}\` |`,
+              `| **Priority & SLA** | **${cleanCell(priorityCode)}** — ${sla} |`,
+              `| **Domain / Area** | ${cleanCell(domainRaw || 'General')} |`,
+              `| **Affected Scope** | \`${cleanCell(modelsRaw)}\` |`,
+              `| **Focus / Kind** | ${cleanCell(metricOrFailure)} |`,
+              `| **Stakeholder / Audience** | ${cleanCell(stakeholder)} |`,
+              ``,
+              `#### Interactive Lifecycle Controls`,
+              `- [${chkReady}] **Approve & Promote to Ready** — marks task \`status:ready\` for sprint pickup`,
+              `- [${chkInProgress}] **Move to In Progress** — marks task \`status:in-progress\` during active branch work`,
+              `- [${chkBlocked}] **Flag as Blocked** — adds \`status:blocked\` until dependencies or questions are resolved`,
+              ``,
+              `<sub>Updated automatically by \`issue-intake-and-triage.yml\` · Last action: \`${context.eventName}.${context.payload.action}\` by @${context.actor}</sub>`
+            ].join('\n');
+
+            if (existingCard) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existingCard.id,
+                body: cardBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                body: cardBody
+              });
+            }
+
+            // Write rich Job Summary on the Actions run page
+            const summary = [
+              `## Issue #${issueNumber} — Triage Sync Complete`,
+              ``,
+              `- **Stage:** \`${stageDisplay}\``,
+              `- **Priority:** ${priorityCode} (${sla})`,
+              `- **Labels added:** ${toAdd.length ? toAdd.map(l => `\`${l}\``).join(', ') : 'None (already synced)'}`,
+              `- **Labels removed:** ${toRemove.length ? toRemove.map(l => `\`${l}\``).join(', ') : 'None'}`,
+              ``,
+              '```mermaid',
+              'flowchart LR',
+              '  A[Needs Triage] --> B[Ready] --> C[In Progress] --> D[Merged / Closed]',
+              '```'
+            ].join('\n');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary + '\n');

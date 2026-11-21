@@ -1,0 +1,93 @@
+name: Data Quality / Pipeline Incident
+description: Report a failing Dataform assertion, stale dashboard snapshot, schema drift, or broken build.
+title: "[Incident] "
+labels:
+  - "type:data-incident"
+  - "bug"
+  - "status:needs-triage"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Data Quality & Pipeline Incident Report
+        For **P0 - Critical** incidents affecting active shift briefings, please include the failing relation and error output below so triage automation can escalate immediately.
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Severity / Priority
+      default: 1
+      options:
+        - P0 - Critical (Dashboard broken or inaccurate executive figures live)
+        - P1 - High (Daily pipeline / assertion failing)
+        - P2 - Normal (Non-blocking warning or minor discrepancy)
+        - P3 - Low (Cosmetic or dev-only issue)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: domain
+    attributes:
+      label: Affected Area
+      options:
+        - executive_reporting
+        - finance_reporting
+        - ops_reporting
+        - org_reporting
+        - external_sources (CTA / GTFS / Synthetic)
+        - dashboards (Operations Workspace)
+        - malloy (Semantic Layer)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: failure_mode
+    attributes:
+      label: Failure Type
+      options:
+        - Dataform assertion failure
+        - Dataform compile / graph error
+        - Upstream schema drift / missing column
+        - Stale or missing CTA / source feed
+        - Dashboard bundle / UI rendering error
+        - Metric mismatch vs. source of truth
+    validations:
+      required: true
+
+  - type: input
+    id: affected_models
+    attributes:
+      label: Failing Relation, Assertion, or File
+      placeholder: e.g., definitions/executive_reporting/demo_quality_checks.sqlx
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Output / Reproduction Logs
+      description: Paste `dataform compile`, BigQuery assertion output, or `check-graph.cjs` error logs.
+      render: shell
+      placeholder: |
+        npx --yes --package @dataform/cli@3.1.6 -- dataform compile --json
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Operational Impact & Workaround
+      description: Which shift briefings, dashboards, or downstream tables are affected?
+      placeholder: Describe user-visible impact and whether a temporary workaround exists...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: containment
+    attributes:
+      label: Incident Containment Checklist
+      options:
+        - label: Reproduced locally or confirmed in GitHub Actions logs.
+          required: true
+        - label: Checked `docs/dataform-runbook.md` for known refresh/dependency recovery steps.
+          required: false
