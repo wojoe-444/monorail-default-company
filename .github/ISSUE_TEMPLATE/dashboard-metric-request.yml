@@ -1,0 +1,93 @@
+name: Dashboard / Malloy Metric Request
+description: Request a new KPI, chart, filter, or semantic measure for the MonoRail Operations Workspace.
+title: "[Dashboard] "
+labels:
+  - "type:dashboard"
+  - "area:dashboards"
+  - "status:needs-triage"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Operations Workspace & Malloy Semantic Request
+        Use this form for visual updates in `dashboards/operations/` or reusable semantic measures in `models/malloy/`.
+
+  - type: dropdown
+    id: workspace_tab
+    attributes:
+      label: Target Workspace Section
+      description: Which dashboard view or semantic layer does this request belong to?
+      options:
+        - Operations Tab (service, incidents, routes)
+        - Finance Tab (budget variance, department & vendor spend)
+        - Workforce Tab (staffing, utilization)
+        - Shell / Global Navigation & Export
+        - Malloy Semantic Model (`models/malloy/`)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      default: 2
+      options:
+        - P0 - Critical (Executive briefing blocker)
+        - P1 - High (Needed this sprint)
+        - P2 - Normal (Planned enhancement)
+        - P3 - Low (Visual polish / backlog)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Primary Audience
+      options:
+        - Shift Dispatch & Service Ops
+        - Finance & Procurement
+        - Executive Leadership
+        - People / Workforce Planning
+        - Analytics Engineering
+    validations:
+      required: true
+
+  - type: input
+    id: metric_name
+    attributes:
+      label: Metric / Component Name
+      placeholder: e.g., Route Cost per Revenue Mile (7-day rolling)
+    validations:
+      required: true
+
+  - type: input
+    id: data_source
+    attributes:
+      label: Backing Warehouse Relation or Malloy Source
+      description: Leave blank if a new warehouse table is also required.
+      placeholder: e.g., executive_reporting.route_cost_efficiency / models/malloy/enterprise.malloy
+    validations:
+      required: false
+
+  - type: textarea
+    id: definition
+    attributes:
+      label: Metric Definition & Visual Behavior
+      description: Specify calculation formula, filters, formatting (currency, %, units), and expected interactions.
+      placeholder: |
+        Formula: total_route_cost_usd / NULLIF(revenue_miles, 0)
+        Display: KPI summary card + route comparison bar chart sorted descending.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Delivery & Bundle Checklist
+      options:
+        - label: Confirmed `node dashboards/operations/build.cjs` must rebuild `dashboards/operations/index.html` cleanly.
+          required: true
+        - label: Verified light/accessible contrast and clear axis/unit labels for shift-briefing readability.
+          required: false
+        - label: Requires updating `dashboards/operations/snapshot.json` via `refresh.cjs`.
+          required: false

@@ -1,0 +1,124 @@
+name: Data Pipeline / SQLX Change
+description: Propose a new Dataform model, schema update, external source declaration, or quality assertion.
+title: "[Pipeline] "
+labels:
+  - "type:data-pipeline"
+  - "status:needs-triage"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### MonoRail Dataform Pipeline Intake
+        Complete the structured fields below. Once submitted, our triage workflow will automatically apply domain/priority labels and attach an interactive **Triage Control Card** to this task.
+
+  - type: dropdown
+    id: domain
+    attributes:
+      label: Reporting Domain
+      description: Primary Dataform directory or warehouse area impacted by this change.
+      options:
+        - executive_reporting
+        - finance_reporting
+        - ops_reporting
+        - org_reporting
+        - external_sources (CTA / GTFS / Synthetic)
+        - malloy (Semantic Layer)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Drives triage SLA and sprint scheduling.
+      default: 2
+      options:
+        - P0 - Critical (Blocking shift operations / executive report)
+        - P1 - High (Current sprint target)
+        - P2 - Normal (Standard backlog prioritization)
+        - P3 - Low (Nice-to-have / optimization)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: change_kind
+    attributes:
+      label: Change Type
+      multiple: true
+      description: Select all pipeline changes included in this task.
+      options:
+        - New SQLX table / view
+        - Schema or column modification
+        - Data quality assertion
+        - External source declaration
+        - Performance / partitioning optimization
+        - Breaking downstream contract change
+    validations:
+      required: true
+
+  - type: input
+    id: affected_models
+    attributes:
+      label: Affected Models / Relations
+      description: Comma-separated SQLX files or BigQuery relations (e.g., `definitions/ops_reporting/route_performance_daily.sqlx`).
+      placeholder: definitions/ops_reporting/route_performance_daily.sqlx
+    validations:
+      required: true
+
+  - type: input
+    id: stakeholder
+    attributes:
+      label: Business Stakeholder & Target Date
+      description: Who requested this change and when is it needed?
+      placeholder: "@ops-lead — Target: 2026-12-01 (Q4 Board Review)"
+    validations:
+      required: false
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Business Context & Goal
+      description: Explain what operational question or reporting need this change solves.
+      placeholder: Describe the business driver, expected grain, and downstream consumers...
+    validations:
+      required: true
+
+  - type: textarea
+    id: sql_spec
+    attributes:
+      label: Proposed Schema / SQL Logic (Optional)
+      description: Draft SQL, expected output columns, or assertion predicate.
+      render: sql
+      placeholder: |
+        SELECT
+          service_date,
+          route_id,
+          SAFE_DIVIDE(on_time_trips, scheduled_trips) AS on_time_rate
+        FROM ${ref("service_ops", "trip_events")}
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Concrete, verifiable conditions required before this issue can be closed.
+      value: |
+        - [ ] `dataform compile` succeeds with zero graph errors (`scripts/check-graph.cjs`)
+        - [ ] Unit / quality assertions added or updated in `definitions/`
+        - [ ] `docs/warehouse-catalog.md` updated if columns or tables changed
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: governance
+    attributes:
+      label: Pre-Submission Readiness Checks
+      description: Confirm required checks before entering triage.
+      options:
+        - label: I checked `docs/warehouse-catalog.md` to confirm this metric/relation does not already exist.
+          required: true
+        - label: I verified whether downstream Malloy models (`models/malloy/`) or Operations Dashboards are affected.
+          required: true
+        - label: This change introduces breaking column renames or removals requiring stakeholder notice.
+          required: false
