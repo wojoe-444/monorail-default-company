@@ -1,0 +1,55 @@
+config {
+  type: "table",
+  schema: "org_reporting",
+  name: "staff_utilization_daily",
+  tags: ["enterprise","workforce_daily"],
+  description: "One row per fictional staff time entry, with leave/training hours and modeled labor cost. Overtime costs 1.5 times the synthetic role rate. Fictional demonstration outputs, not official CTA personnel, service or financial records.",
+  columns: {
+    "time_entry_id": "Time entry id.",
+    "service_date": "Chicago-local synthetic service date; the loaded scenario covers 2026-11-02 through 2026-11-15.",
+    "staff_id": "Fictional employee key, joined to org.staff.",
+    "full_name": "Invented staff name for demonstration purposes.",
+    "department_id": "Synthetic department key; joins org.departments.",
+    "department_name": "Department display name.",
+    "route_id": "Real CTA route identifier; operational and financial values in this dataset are synthetic.",
+    "role_id": "Role id.",
+    "role_name": "Role name.",
+    "regular_hours": "Regular hours.",
+    "overtime_hours": "Overtime hours.",
+    "training_hours": "Training hours.",
+    "absence_hours": "Absence hours.",
+    "productive_hours": "Regular plus training plus overtime hours. This can exceed scheduled hours when overtime is recorded.",
+    "scheduled_hours": "Regular plus training plus absence hours; excludes overtime.",
+    "labor_cost_usd": "Synthetic cost: regular and training hours at the role rate, overtime at 1.5 times that rate.",
+    "status": "Measured result or recorded workflow status."
+  }
+}
+
+SELECT
+  t.time_entry_id,
+  t.service_date,
+  t.staff_id,
+  s.full_name,
+  t.department_id,
+  d.department_name,
+  t.route_id,
+  s.role_id,
+  r.role_name,
+  t.regular_hours,
+  t.overtime_hours,
+  t.training_hours,
+  t.absence_hours,
+  t.regular_hours + t.training_hours + t.overtime_hours AS productive_hours,
+  t.regular_hours + t.training_hours + t.absence_hours AS scheduled_hours,
+  ROUND(
+    (
+      t.regular_hours + t.training_hours + 1.5 * t.overtime_hours
+    ) * r.hourly_rate_usd,
+    2
+  ) AS labor_cost_usd,
+  t.status
+FROM
+  ${ref("service_ops", "time_entries")} t
+  JOIN ${ref("org", "staff")} s USING (staff_id)
+  JOIN ${ref("org", "departments")} d ON t.department_id = d.department_id
+  JOIN ${ref("org", "job_roles")} r USING (role_id)

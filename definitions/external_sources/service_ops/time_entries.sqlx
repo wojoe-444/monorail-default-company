@@ -1,0 +1,19 @@
+config {
+  type: "declaration",
+  schema: "service_ops",
+  name: "time_entries",
+  database: "monorail-sample",
+  description: "Ten business days of staff time; hours, leave and training support staffing and cost reports. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "time_entry_id": "Unique staff/day time-entry identifier.",
+    "staff_id": "Stable synthetic staff identifier. Join org.staff.staff_id.",
+    "department_id": "Stable synthetic department identifier. Join org.departments.department_id.",
+    "service_date": "Chicago-local service date in the synthetic demonstration period, 2026-11-02 through 2026-11-15.",
+    "route_id": "Actual CTA route identifier from the loaded GTFS snapshot; the recorded operational outcomes are synthetic.",
+    "regular_hours": "regular hours: synthetic hours recorded for this staff-day.",
+    "overtime_hours": "overtime hours: synthetic hours recorded for this staff-day.",
+    "training_hours": "training hours: synthetic hours recorded for this staff-day.",
+    "absence_hours": "absence hours: synthetic hours recorded for this staff-day.",
+    "status": "Worked, Training or SickLeave."
+  }
+}

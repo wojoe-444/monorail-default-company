@@ -1,0 +1,14 @@
+config {
+  type: "declaration",
+  schema: "service_ops",
+  name: "vehicles",
+  database: "monorail-sample",
+  description: "Ten fictional fleet assets for maintenance and service planning. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "vehicle_id": "Synthetic fleet-asset primary key.",
+    "vehicle_type": "Bus or RailCar.",
+    "department_id": "Stable synthetic department identifier. Join org.departments.department_id.",
+    "commissioned_year": "Synthetic commissioning year.",
+    "active": "Whether the asset is active in the demonstration."
+  }
+}

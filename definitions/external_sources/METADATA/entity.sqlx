@@ -1,0 +1,17 @@
+config {
+  type: "declaration",
+  schema: "METADATA",
+  name: "entity",
+  database: "monorail-sample",
+  description: "MonoRail entity metadata store. Catalogs the real BigQuery sample project.",
+  columns: {
+    "id": "OpenMetadata UUID of the catalog entity.",
+    "type": "Entity type from the MonoRail/OpenMetadata standard.",
+    "fqn": "Fully qualified name in service.project.dataset.asset order.",
+    "name": "Unqualified entity name.",
+    "version": "Version of the metadata document; prior versions remain in entity_version.",
+    "updated_at": "UTC time at which this metadata record was last changed.",
+    "deleted": "Soft-delete marker. Archived placeholder entities remain available for history.",
+    "json": "Full OpenMetadata-shaped JSON entity or record document."
+  }
+}

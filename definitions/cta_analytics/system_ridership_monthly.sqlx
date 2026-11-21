@@ -1,0 +1,83 @@
+config {
+  type: "view",
+  schema: "cta_analytics",
+  name: "system_ridership_monthly",
+  tags: ["cta","analytics"],
+  description: "One row per month of official CTA system ridership. Reconciles bus route and rail station detail with the published mode totals on comparable dates. Rail detail comparison excludes dates with conflicting station counts.",
+  columns: {
+    "month_start": "First date of the reporting month.",
+    "system_reported_days": "System reported days.",
+    "system_total_rides": "Official monthly system rides summed from daily boarding totals.",
+    "system_bus_rides": "Official monthly bus boardings.",
+    "system_rail_boardings": "Official monthly rail station entries.",
+    "bus_comparable_days": "Bus comparable days.",
+    "bus_route_boardings_on_comparable_days": "Bus route boardings on comparable days.",
+    "bus_detail_minus_system_on_comparable_days": "Bus detail minus system on comparable days.",
+    "rail_comparable_days": "Rail comparable days.",
+    "rail_station_entries_on_comparable_days": "Rail station entries on comparable days.",
+    "rail_detail_minus_system_on_comparable_days": "Rail detail minus system on comparable days.",
+    "conflicting_station_days": "Conflicting station days."
+  }
+}
+
+WITH
+  bus_by_day AS (
+    SELECT
+      service_date,
+      SUM(boardings) AS route_boardings
+    FROM
+      ${ref("cta_staging", "bus_route_ridership_daily")}
+    GROUP BY
+      service_date
+  ),
+  rail_by_day AS (
+    SELECT
+      service_date,
+      IF(
+        COUNTIF(has_conflicting_entries) = 0,
+        SUM(entries),
+        NULL
+      ) AS station_entries,
+      COUNTIF(has_conflicting_entries) AS conflicting_station_days
+    FROM
+      ${ref("cta_staging", "rail_station_ridership_daily")}
+    GROUP BY
+      service_date
+  )
+SELECT
+  DATE_TRUNC(sys.service_date, MONTH) AS month_start,
+  COUNT(*) AS system_reported_days,
+  SUM(sys.total_rides) AS system_total_rides,
+  SUM(sys.bus_rides) AS system_bus_rides,
+  SUM(sys.rail_boardings) AS system_rail_boardings,
+  COUNTIF(
+    bus.route_boardings IS NOT NULL
+    AND sys.bus_rides IS NOT NULL
+  ) AS bus_comparable_days,
+  SUM(
+    IF(
+      sys.bus_rides IS NOT NULL,
+      bus.route_boardings,
+      NULL
+    )
+  ) AS bus_route_boardings_on_comparable_days,
+  SUM(bus.route_boardings - sys.bus_rides) AS bus_detail_minus_system_on_comparable_days,
+  COUNTIF(
+    rail.station_entries IS NOT NULL
+    AND sys.rail_boardings IS NOT NULL
+  ) AS rail_comparable_days,
+  SUM(
+    IF(
+      sys.rail_boardings IS NOT NULL,
+      rail.station_entries,
+      NULL
+    )
+  ) AS rail_station_entries_on_comparable_days,
+  SUM(rail.station_entries - sys.rail_boardings) AS rail_detail_minus_system_on_comparable_days,
+  SUM(COALESCE(rail.conflicting_station_days, 0)) AS conflicting_station_days
+FROM
+  ${ref("cta", "daily_boarding_totals")} AS sys
+  LEFT JOIN bus_by_day AS bus USING (service_date)
+  LEFT JOIN rail_by_day AS rail USING (service_date)
+GROUP BY
+  month_start

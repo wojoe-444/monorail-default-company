@@ -1,0 +1,17 @@
+config {
+  type: "declaration",
+  schema: "cta_gtfs",
+  name: "routes",
+  database: "monorail-sample",
+  description: "CTA GTFS feed (transitchicago.com/downloads/sch_data/google_transit.zip), downloaded 2026-11-18. route_type: 1=subway/'L', 3=bus.",
+  columns: {
+    "agency_id": "Agency id.",
+    "route_id": "CTA route identifier. Join to cta_gtfs.routes.route_id; historical route IDs may be absent from the current feed.",
+    "route_short_name": "Route short name.",
+    "route_long_name": "Route long name.",
+    "route_type": "GTFS mode code in this feed: 1=rail/subway, 3=bus.",
+    "route_url": "Route url.",
+    "route_color": "Route color.",
+    "route_text_color": "Route text color."
+  }
+}

@@ -1,0 +1,13 @@
+config {
+  type: "declaration",
+  schema: "finance",
+  name: "suppliers",
+  database: "monorail-sample",
+  description: "Four invented vendors; names are demonstration labels. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "supplier_id": "Supplier primary key.",
+    "supplier_name": "Invented supplier name.",
+    "category": "Purchasing category.",
+    "country": "Country code."
+  }
+}

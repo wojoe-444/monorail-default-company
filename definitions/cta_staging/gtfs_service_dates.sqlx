@@ -1,0 +1,63 @@
+config {
+  type: "view",
+  schema: "cta_staging",
+  name: "gtfs_service_dates",
+  tags: ["cta","staging"],
+  description: "One row per active GTFS service ID and date in the loaded schedule. Expands weekly calendar patterns and applies service additions and removals.",
+  columns: {
+    "service_id": "GTFS weekly service pattern identifier; expand calendar and calendar_dates to obtain active dates.",
+    "service_date": "Service calendar date in Chicago local time. GTFS times after 24:00 remain attached to this service date."
+  }
+}
+
+WITH
+  weekly_service AS (
+    SELECT
+      c.service_id,
+      service_date
+    FROM
+      ${ref("cta_gtfs", "calendar")} AS c
+      CROSS JOIN UNNEST (GENERATE_DATE_ARRAY(c.start_date, c.end_date)) AS service_date
+    WHERE
+      [
+        c.sunday,
+        c.monday,
+        c.tuesday,
+        c.wednesday,
+        c.thursday,
+        c.friday,
+        c.saturday
+      ] [
+        ORDINAL(
+          EXTRACT(
+            DAYOFWEEK
+            FROM
+              service_date
+          )
+        )
+      ] = 1
+  )
+SELECT
+  w.service_id,
+  w.service_date
+FROM
+  weekly_service AS w
+WHERE
+  NOT EXISTS (
+    SELECT
+      1
+    FROM
+      ${ref("cta_gtfs", "calendar_dates")} AS e
+    WHERE
+      e.service_id = w.service_id
+      AND e.date = w.service_date
+      AND e.exception_type = 2
+  )
+UNION DISTINCT
+SELECT
+  service_id,
+  date AS service_date
+FROM
+  ${ref("cta_gtfs", "calendar_dates")}
+WHERE
+  exception_type = 1

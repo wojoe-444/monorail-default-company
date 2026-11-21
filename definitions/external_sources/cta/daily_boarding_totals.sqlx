@@ -1,0 +1,14 @@
+config {
+  type: "declaration",
+  schema: "cta",
+  name: "daily_boarding_totals",
+  database: "monorail-sample",
+  description: "Source: City of Chicago Data Portal (data.cityofchicago.org), CTA Daily Boarding Totals (6iiy-9s97). day_type: W=weekday, A=Saturday, U=Sunday/holiday.",
+  columns: {
+    "service_date": "Service calendar date in Chicago local time. GTFS times after 24:00 remain attached to this service date.",
+    "day_type": "CTA day category: W=weekday, A=Saturday, U=Sunday or holiday.",
+    "bus_rides": "Published bus boardings on this service date.",
+    "rail_boardings": "Published rail station entries on this service date.",
+    "total_rides": "Official system rides: bus_rides plus rail_boardings."
+  }
+}

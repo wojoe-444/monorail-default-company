@@ -1,0 +1,33 @@
+config {
+  type: "table",
+  schema: "finance_reporting",
+  name: "vendor_spend_monthly",
+  tags: ["enterprise","finance_monthly"],
+  description: "Fictional supplier spend by month, with approved and pending invoice totals. Fictional demonstration outputs, not official CTA personnel, service or financial records.",
+  columns: {
+    "report_month": "First day of the budget/report month. November actuals cover only the loaded demonstration period.",
+    "supplier_id": "Supplier id.",
+    "supplier_name": "Supplier name.",
+    "category": "Category.",
+    "invoice_count": "Number of synthetic supplier invoices.",
+    "approved_spend_usd": "Approved synthetic supplier spend for this month and vendor.",
+    "pending_spend_usd": "Synthetic vendor spend awaiting approval."
+  }
+}
+
+SELECT
+  DATE_TRUNC(i.invoice_date, MONTH) AS report_month,
+  i.supplier_id,
+  s.supplier_name,
+  s.category,
+  COUNT(*) AS invoice_count,
+  SUM(IF(i.status = 'Approved', i.amount_usd, 0)) AS approved_spend_usd,
+  SUM(IF(i.status != 'Approved', i.amount_usd, 0)) AS pending_spend_usd
+FROM
+  ${ref("finance", "supplier_invoices")} i
+  JOIN ${ref("finance", "suppliers")} s USING (supplier_id)
+GROUP BY
+  1,
+  2,
+  3,
+  4

@@ -1,0 +1,15 @@
+config {
+  type: "assertion",
+  tags: ["enterprise", "cta", "quality"],
+  description: "The planned trip count on each modeled route-day matches the loaded GTFS schedule."
+}
+
+SELECT
+  ops.service_date,
+  ops.route_id,
+  ops.scheduled_trips AS operations_plan,
+  gtfs.scheduled_trips AS gtfs_plan
+FROM ${ref("ops_reporting", "route_performance_daily")} AS ops
+LEFT JOIN ${ref("cta_analytics", "route_scheduled_service_daily")} AS gtfs
+  USING (service_date, route_id)
+WHERE ops.scheduled_trips IS DISTINCT FROM gtfs.scheduled_trips

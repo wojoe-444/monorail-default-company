@@ -1,0 +1,35 @@
+config {
+  type: "table",
+  schema: "ops_reporting",
+  name: "incident_summary",
+  tags: ["enterprise","operations_daily"],
+  description: "Fictional incident volumes and resolution time by route, department and category. Fictional demonstration outputs, not official CTA personnel, service or financial records.",
+  columns: {
+    "route_id": "Real CTA route identifier; operational and financial values in this dataset are synthetic.",
+    "route_long_name": "Current route name from the actual CTA GTFS snapshot.",
+    "department_id": "Synthetic department key; joins org.departments.",
+    "category": "Category.",
+    "incident_count": "Count of fictional incidents at this route/category grain.",
+    "high_severity_incidents": "Fictional incidents labeled High severity.",
+    "unresolved_incidents": "Fictional incidents not yet Resolved.",
+    "avg_resolution_minutes": "Average recorded synthetic resolution duration in minutes."
+  }
+}
+
+SELECT
+  i.route_id,
+  r.route_long_name,
+  i.department_id,
+  i.category,
+  COUNT(*) AS incident_count,
+  COUNTIF(severity = 'High') AS high_severity_incidents,
+  COUNTIF(status != 'Resolved') AS unresolved_incidents,
+  AVG(resolution_minutes) AS avg_resolution_minutes
+FROM
+  ${ref("service_ops", "incidents")} i
+  JOIN ${ref("cta_gtfs", "routes")} r USING (route_id)
+GROUP BY
+  1,
+  2,
+  3,
+  4

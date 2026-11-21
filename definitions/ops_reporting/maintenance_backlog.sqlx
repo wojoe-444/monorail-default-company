@@ -1,0 +1,39 @@
+config {
+  type: "table",
+  schema: "ops_reporting",
+  name: "maintenance_backlog",
+  tags: ["enterprise","operations_daily"],
+  description: "Fictional fleet readiness by vehicle, including open and critical work orders. Owner department is distinct from the fleet team performing maintenance. Fictional demonstration outputs, not official CTA personnel, service or financial records.",
+  columns: {
+    "vehicle_id": "Vehicle id.",
+    "vehicle_type": "Vehicle type.",
+    "vehicle_owner_department_id": "Bus or rail department that owns the fictional vehicle.",
+    "maintenance_department_id": "Fleet department performing maintenance, distinct from the vehicle owner.",
+    "total_work_orders": "Number of fictional repair orders linked to this vehicle.",
+    "open_work_orders": "Repair orders whose status is Open.",
+    "critical_open_orders": "Open repair orders whose priority is Critical; a deliberately seeded demonstration risk.",
+    "open_parts_cost_usd": "Estimated parts cost for open work orders, in synthetic USD.",
+    "open_labor_hours": "Estimated technician hours on open work orders."
+  }
+}
+
+SELECT
+  v.vehicle_id,
+  v.vehicle_type,
+  v.department_id AS vehicle_owner_department_id,
+  'FLEET' AS maintenance_department_id,
+  COUNT(w.work_order_id) AS total_work_orders,
+  COUNTIF(w.status = 'Open') AS open_work_orders,
+  COUNTIF(
+    w.status = 'Open'
+    AND w.priority = 'Critical'
+  ) AS critical_open_orders,
+  SUM(IF(w.status = 'Open', w.parts_cost_usd, 0)) AS open_parts_cost_usd,
+  SUM(IF(w.status = 'Open', w.labor_hours, 0)) AS open_labor_hours
+FROM
+  ${ref("service_ops", "vehicles")} v
+  LEFT JOIN ${ref("service_ops", "maintenance_work_orders")} w USING (vehicle_id)
+GROUP BY
+  1,
+  2,
+  3

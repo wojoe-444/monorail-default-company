@@ -1,0 +1,16 @@
+config {
+  type: "declaration",
+  schema: "service_ops",
+  name: "route_performance",
+  database: "monorail-sample",
+  description: "Synthetic delivered-service outcomes against actual planned GTFS trip counts for six routes over fourteen days. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "service_date": "Chicago-local service date in the synthetic demonstration period, 2026-11-02 through 2026-11-15.",
+    "route_id": "Actual CTA route identifier from the loaded GTFS snapshot; the recorded operational outcomes are synthetic.",
+    "scheduled_trips": "Actual planned trip count from the loaded GTFS schedule for this route-day.",
+    "completed_trips": "Synthetic number of completed trips.",
+    "on_time_trips": "Synthetic completed trips within the demonstration on-time threshold.",
+    "cancelled_trips": "Synthetic scheduled trips not completed.",
+    "delay_minutes": "Synthetic aggregate delay minutes."
+  }
+}

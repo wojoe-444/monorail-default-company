@@ -1,0 +1,23 @@
+config {
+  type: "assertion",
+  tags: ["enterprise", "finance_monthly", "quality"],
+  description: "Monthly pending invoice totals agree between the department budget ledger and supplier spend."
+}
+
+WITH departments AS (
+  SELECT report_month, SUM(pending_invoice_usd) AS pending_usd
+  FROM ${ref("finance_reporting", "budget_variance")}
+  GROUP BY report_month
+),
+suppliers AS (
+  SELECT report_month, SUM(pending_spend_usd) AS pending_usd
+  FROM ${ref("finance_reporting", "vendor_spend_monthly")}
+  GROUP BY report_month
+)
+SELECT
+  report_month,
+  COALESCE(departments.pending_usd, 0) AS department_pending_usd,
+  COALESCE(suppliers.pending_usd, 0) AS supplier_pending_usd
+FROM departments
+FULL OUTER JOIN suppliers USING (report_month)
+WHERE ABS(COALESCE(departments.pending_usd, 0) - COALESCE(suppliers.pending_usd, 0)) > 0.005

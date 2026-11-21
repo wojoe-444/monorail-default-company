@@ -1,0 +1,27 @@
+name: Check warehouse and dashboards
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Compile Dataform
+        run: |
+          npx --yes --package @dataform/cli@3.1.6 -- dataform compile --json > compiled.json
+          node scripts/check-graph.cjs compiled.json
+      - name: Verify the dashboard bundle
+        run: |
+          node dashboards/operations/build.cjs
+          git diff --exit-code -- dashboards/operations/index.html

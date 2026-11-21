@@ -1,0 +1,77 @@
+config {
+  type: "view",
+  schema: "cta_staging",
+  name: "dim_rail_station",
+  tags: ["cta","staging"],
+  description: "One row per CTA rail station (l_stops.map_id). Rolls up current platform records into a station name, accessibility, lines and a representative map point.",
+  columns: {
+    "station_id": "CTA rail station identifier at station grain; matches cta.l_stops.map_id.",
+    "station_name": "Station name.",
+    "has_accessible_platform": "True when at least one listed platform is marked ADA accessible. Not a guarantee of current elevator availability.",
+    "platform_stop_count": "Platform stop count.",
+    "location": "Geographic point for the stop/station in WGS84.",
+    "lines": "Rail line names serving the station, stored as a repeated string field."
+  }
+}
+
+WITH
+  stations AS (
+    SELECT
+      map_id AS station_id,
+      MIN(station_name) AS station_name,
+      LOGICAL_OR(ada) AS has_accessible_platform,
+      COUNT(DISTINCT stop_id) AS platform_stop_count,
+      ARRAY_AGG(
+        location IGNORE NULLS
+        ORDER BY
+          stop_id
+        LIMIT
+          1
+      ) [SAFE_OFFSET(0)] AS location,
+      LOGICAL_OR(red) AS red,
+      LOGICAL_OR(blue) AS blue,
+      LOGICAL_OR(green) AS green,
+      LOGICAL_OR(brown) AS brown,
+      LOGICAL_OR(purple) AS purple,
+      LOGICAL_OR(yellow) AS yellow,
+      LOGICAL_OR(pink) AS pink,
+      LOGICAL_OR(orange) AS orange
+    FROM
+      ${ref("cta", "l_stops")}
+    WHERE
+      map_id IS NOT NULL
+    GROUP BY
+      station_id
+  )
+SELECT
+  station_id,
+  station_name,
+  has_accessible_platform,
+  platform_stop_count,
+  location,
+  ARRAY(
+    SELECT
+      line
+    FROM
+      UNNEST (
+        [
+          STRUCT('Red' AS line, red AS serves_station),
+          ('Blue', blue),
+          ('Green', green),
+          ('Brown', brown),
+          ('Purple', purple),
+          ('Yellow', yellow),
+          ('Pink', pink),
+          ('Orange', orange)
+        ]
+      ) AS line_flag
+    WITH
+    OFFSET
+      AS position
+    WHERE
+      serves_station
+    ORDER BY
+      position
+  ) AS lines
+FROM
+  stations

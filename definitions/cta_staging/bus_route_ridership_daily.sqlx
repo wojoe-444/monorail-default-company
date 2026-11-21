@@ -1,0 +1,27 @@
+config {
+  type: "view",
+  schema: "cta_staging",
+  name: "bus_route_ridership_daily",
+  tags: ["cta","staging"],
+  description: "One row per bus route and service date. Left joins route IDs to the current GTFS snapshot and retains historical routes without a metadata match.",
+  columns: {
+    "route_id": "CTA route identifier. Join to cta_gtfs.routes.route_id; historical route IDs may be absent from the current feed.",
+    "service_date": "Service calendar date in Chicago local time. GTFS times after 24:00 remain attached to this service date.",
+    "current_route_name": "Current route name.",
+    "has_current_route_metadata": "True when the historical route ID matches the currently loaded GTFS route snapshot.",
+    "day_type": "CTA day category: W=weekday, A=Saturday, U=Sunday or holiday.",
+    "boardings": "Official bus or rail boardings for the indicated month and mode. A transfer can count another boarding."
+  }
+}
+
+SELECT
+  d.route AS route_id,
+  d.date AS service_date,
+  r.route_long_name AS current_route_name,
+  r.route_id IS NOT NULL AS has_current_route_metadata,
+  d.day_type,
+  d.rides AS boardings
+FROM
+  ${ref("cta", "bus_route_ridership_daily")} AS d
+  LEFT JOIN ${ref("cta_gtfs", "routes")} AS r ON d.route = r.route_id
+  AND r.route_type = 3

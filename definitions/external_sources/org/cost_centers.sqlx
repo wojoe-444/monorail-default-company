@@ -1,0 +1,12 @@
+config {
+  type: "declaration",
+  schema: "org",
+  name: "cost_centers",
+  database: "monorail-sample",
+  description: "Finance allocation keys, one per department. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "cost_center_id": "Unique cost-center identifier.",
+    "department_id": "Stable synthetic department identifier. Join org.departments.department_id.",
+    "cost_center_name": "Display name for financial allocation."
+  }
+}

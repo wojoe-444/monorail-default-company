@@ -1,0 +1,16 @@
+config {
+  type: "declaration",
+  schema: "cta_gtfs",
+  name: "agency",
+  database: "monorail-sample",
+  description: "CTA GTFS feed (transitchicago.com/downloads/sch_data/google_transit.zip), downloaded 2026-11-18.",
+  columns: {
+    "agency_id": "Agency id.",
+    "agency_name": "Agency name.",
+    "agency_url": "Agency url.",
+    "agency_timezone": "Agency timezone.",
+    "agency_lang": "Agency lang.",
+    "agency_phone": "Agency phone.",
+    "agency_fare_url": "Agency fare url."
+  }
+}

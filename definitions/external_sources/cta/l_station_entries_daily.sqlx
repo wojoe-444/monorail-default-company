@@ -1,0 +1,14 @@
+config {
+  type: "declaration",
+  schema: "cta",
+  name: "l_station_entries_daily",
+  database: "monorail-sample",
+  description: "Source: City of Chicago Data Portal (data.cityofchicago.org), CTA 'L' Station Entries - Daily Totals (5neh-572f). station_id = l_stops.map_id.",
+  columns: {
+    "station_id": "CTA rail station identifier at station grain; matches cta.l_stops.map_id.",
+    "station_name": "Station name.",
+    "date": "Calendar date in the source feed. Ridership dates represent reported service days.",
+    "day_type": "CTA day category: W=weekday, A=Saturday, U=Sunday or holiday.",
+    "rides": "Published boardings or station entries at the source grain. Does not count unique people."
+  }
+}

@@ -1,0 +1,12 @@
+config {
+  type: "declaration",
+  schema: "cta_gtfs",
+  name: "calendar_dates",
+  database: "monorail-sample",
+  description: "CTA GTFS feed (transitchicago.com/downloads/sch_data/google_transit.zip), downloaded 2026-11-18. exception_type: 1=service added, 2=service removed.",
+  columns: {
+    "service_id": "GTFS weekly service pattern identifier; expand calendar and calendar_dates to obtain active dates.",
+    "date": "Calendar date in the source feed. Ridership dates represent reported service days.",
+    "exception_type": "GTFS service exception: 1 adds service on this date; 2 removes service."
+  }
+}

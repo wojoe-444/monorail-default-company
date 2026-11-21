@@ -1,0 +1,29 @@
+config {
+  type: "view",
+  schema: "cta_analytics",
+  name: "ridership_monthly_by_mode",
+  tags: ["cta","analytics"],
+  description: "One row per calendar month and mode (Bus or Rail), using official system totals. Boardings are rides, not unique riders. Historical ridership and the current GTFS feed cover different dates.",
+  columns: {
+    "month_start": "First date of the reporting month.",
+    "mode": "Transportation mode: Bus or Rail.",
+    "boardings": "Official bus or rail boardings for the indicated month and mode. A transfer can count another boarding.",
+    "reported_days": "Number of days with a non-NULL reported measure. Missing/conflicting days are excluded."
+  }
+}
+
+SELECT
+  month_start,
+  'Bus' AS mode,
+  system_bus_rides AS boardings,
+  system_reported_days AS reported_days
+FROM
+  ${ref("cta_analytics", "system_ridership_monthly")}
+UNION ALL
+SELECT
+  month_start,
+  'Rail' AS mode,
+  system_rail_boardings AS boardings,
+  system_reported_days AS reported_days
+FROM
+  ${ref("cta_analytics", "system_ridership_monthly")}

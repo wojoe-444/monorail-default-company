@@ -1,0 +1,14 @@
+config {
+  type: "declaration",
+  schema: "org",
+  name: "route_assignments",
+  database: "monorail-sample",
+  description: "Departmental responsibility for six real CTA routes used by the synthetic service scenario. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "route_id": "Actual CTA route identifier from the loaded GTFS snapshot; the recorded operational outcomes are synthetic.",
+    "department_id": "Stable synthetic department identifier. Join org.departments.department_id.",
+    "cost_center_id": "Cost center accountable for the route.",
+    "planning_owner_staff_id": "Fictional planner accountable for reviewing the route.",
+    "effective_from": "Date the synthetic responsibility assignment begins."
+  }
+}

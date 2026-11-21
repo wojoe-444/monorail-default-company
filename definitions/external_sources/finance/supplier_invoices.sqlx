@@ -1,0 +1,17 @@
+config {
+  type: "declaration",
+  schema: "finance",
+  name: "supplier_invoices",
+  database: "monorail-sample",
+  description: "Twenty-one fictional invoices allocated to departments and cost centers. Pending approvals remain separate from committed spend. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "invoice_id": "Invoice primary key.",
+    "supplier_id": "Supplier foreign key.",
+    "department_id": "Stable synthetic department identifier. Join org.departments.department_id.",
+    "cost_center_id": "Allocation cost-center foreign key.",
+    "invoice_date": "Synthetic invoice date.",
+    "due_date": "Payment due date.",
+    "amount_usd": "Synthetic invoiced amount in USD.",
+    "status": "Approved or PendingApproval."
+  }
+}

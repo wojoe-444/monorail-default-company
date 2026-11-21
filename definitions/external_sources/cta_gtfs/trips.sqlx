@@ -1,0 +1,18 @@
+config {
+  type: "declaration",
+  schema: "cta_gtfs",
+  name: "trips",
+  database: "monorail-sample",
+  description: "CTA GTFS feed (transitchicago.com/downloads/sch_data/google_transit.zip), downloaded 2026-11-18.",
+  columns: {
+    "route_id": "CTA route identifier. Join to cta_gtfs.routes.route_id; historical route IDs may be absent from the current feed.",
+    "service_id": "GTFS weekly service pattern identifier; expand calendar and calendar_dates to obtain active dates.",
+    "trip_id": "Identifier of a scheduled GTFS trip template in the loaded feed; not an observed vehicle journey.",
+    "direction_id": "Direction id.",
+    "block_id": "Block id.",
+    "shape_id": "Shape id.",
+    "direction": "Direction.",
+    "wheelchair_accessible": "GTFS trip accessibility: 0=unknown, 1=accessible, 2=not accessible.",
+    "schd_trip_id": "Schd trip id."
+  }
+}

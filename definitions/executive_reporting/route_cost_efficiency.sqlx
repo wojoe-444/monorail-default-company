@@ -1,0 +1,58 @@
+config {
+  type: "table",
+  schema: "executive_reporting",
+  name: "route_cost_efficiency",
+  tags: ["enterprise","executive_scorecard"],
+  description: "Synthetic assigned labor plus allocated approved non-labor spend per completed trip. Monthly department overhead is allocated by completed-trip share. Not real CTA operating cost. Fictional demonstration outputs, not official CTA personnel, service or financial records.",
+  columns: {
+    "service_date": "Chicago-local synthetic service date; the loaded scenario covers 2026-11-02 through 2026-11-15.",
+    "route_id": "Real CTA route identifier; operational and financial values in this dataset are synthetic.",
+    "route_long_name": "Current route name from the actual CTA GTFS snapshot.",
+    "department_id": "Synthetic department key; joins org.departments.",
+    "completed_trips": "Completed trips.",
+    "on_time_ratio": "On-time trips divided by completed trips, as a 0-to-1 fraction. These delivered-service values are synthetic.",
+    "assigned_labor_cost_usd": "Synthetic labor cost from recorded staff assignments to this route-day.",
+    "allocated_nonlabor_cost_usd": "Approved department invoice and expense cost allocated by this route-day share of completed trips in the loaded month.",
+    "modeled_operating_cost_usd": "Assigned synthetic staff cost plus allocated approved non-labor cost. Not a real CTA cost.",
+    "modeled_cost_per_trip_usd": "Modeled synthetic operating cost divided by completed trips."
+  }
+}
+
+WITH
+  totals AS (
+    SELECT
+      DATE_TRUNC(service_date, MONTH) AS report_month,
+      department_id,
+      SUM(completed_trips) AS month_completed_trips
+    FROM
+      ${ref("ops_reporting", "route_performance_daily")}
+    GROUP BY
+      1,
+      2
+  )
+SELECT
+  p.service_date,
+  p.route_id,
+  p.route_long_name,
+  p.department_id,
+  p.completed_trips,
+  p.on_time_ratio,
+  p.assigned_labor_cost_usd,
+  ROUND(
+    SAFE_DIVIDE(p.completed_trips, t.month_completed_trips) * (f.approved_invoice_usd + f.approved_expense_usd),
+    2
+  ) AS allocated_nonlabor_cost_usd,
+  ROUND(
+    p.assigned_labor_cost_usd + SAFE_DIVIDE(p.completed_trips, t.month_completed_trips) * (f.approved_invoice_usd + f.approved_expense_usd),
+    2
+  ) AS modeled_operating_cost_usd,
+  SAFE_DIVIDE(
+    p.assigned_labor_cost_usd + SAFE_DIVIDE(p.completed_trips, t.month_completed_trips) * (f.approved_invoice_usd + f.approved_expense_usd),
+    p.completed_trips
+  ) AS modeled_cost_per_trip_usd
+FROM
+  ${ref("ops_reporting", "route_performance_daily")} p
+  JOIN totals t ON DATE_TRUNC(p.service_date, MONTH) = t.report_month
+  AND p.department_id = t.department_id
+  JOIN ${ref("finance_reporting", "department_cost_monthly")} f ON f.report_month = t.report_month
+  AND f.department_id = t.department_id

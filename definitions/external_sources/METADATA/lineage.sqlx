@@ -1,0 +1,16 @@
+config {
+  type: "declaration",
+  schema: "METADATA",
+  name: "lineage",
+  database: "monorail-sample",
+  description: "MonoRail lineage metadata store. Catalogs the real BigQuery sample project.",
+  columns: {
+    "from_id": "UUID of the upstream lineage entity.",
+    "from_type": "Entity type of the upstream asset.",
+    "to_id": "UUID of the downstream lineage entity.",
+    "to_type": "Entity type of the downstream asset.",
+    "updated_at": "UTC time at which this metadata record was last changed.",
+    "deleted": "Soft-delete marker. Archived placeholder entities remain available for history.",
+    "json": "Full OpenMetadata-shaped JSON entity or record document."
+  }
+}

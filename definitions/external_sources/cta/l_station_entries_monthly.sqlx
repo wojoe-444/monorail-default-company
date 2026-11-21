@@ -1,0 +1,16 @@
+config {
+  type: "declaration",
+  schema: "cta",
+  name: "l_station_entries_monthly",
+  database: "monorail-sample",
+  description: "Source: City of Chicago Data Portal (data.cityofchicago.org), CTA 'L' Station Entries - Monthly Day-Type Averages & Totals (t2rn-p8d7).",
+  columns: {
+    "station_id": "CTA rail station identifier at station grain; matches cta.l_stops.map_id.",
+    "station_name": "Station name.",
+    "month_beginning": "First date of the month in the published monthly source.",
+    "avg_weekday_rides": "Avg weekday rides.",
+    "avg_saturday_rides": "Avg saturday rides.",
+    "avg_sunday_holiday_rides": "Avg sunday holiday rides.",
+    "month_total": "Month total."
+  }
+}

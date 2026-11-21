@@ -1,0 +1,13 @@
+config {
+  type: "declaration",
+  schema: "METADATA",
+  name: "entity_version",
+  database: "monorail-sample",
+  description: "MonoRail entity_version metadata store. Catalogs the real BigQuery sample project.",
+  columns: {
+    "id": "OpenMetadata UUID of the catalog entity.",
+    "version": "Version of the metadata document; prior versions remain in entity_version.",
+    "updated_at": "UTC time at which this metadata record was last changed.",
+    "json": "Full OpenMetadata-shaped JSON entity or record document."
+  }
+}

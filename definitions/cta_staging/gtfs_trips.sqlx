@@ -1,0 +1,41 @@
+config {
+  type: "view",
+  schema: "cta_staging",
+  name: "gtfs_trips",
+  tags: ["cta","staging"],
+  description: "One row per scheduled GTFS trip template. Joins trips to route metadata and attaches the number of stop-time records for each trip.",
+  columns: {
+    "trip_id": "Identifier of a scheduled GTFS trip template in the loaded feed; not an observed vehicle journey.",
+    "service_id": "GTFS weekly service pattern identifier; expand calendar and calendar_dates to obtain active dates.",
+    "route_id": "CTA route identifier. Join to cta_gtfs.routes.route_id; historical route IDs may be absent from the current feed.",
+    "route_short_name": "Route short name.",
+    "route_long_name": "Route long name.",
+    "route_type": "GTFS mode code in this feed: 1=rail/subway, 3=bus.",
+    "direction_id": "Direction id.",
+    "scheduled_stop_calls": "Number of scheduled stop-time records across the selected trips."
+  }
+}
+
+WITH
+  trip_stop_calls AS (
+    SELECT
+      trip_id,
+      COUNT(*) AS scheduled_stop_calls
+    FROM
+      ${ref("cta_gtfs", "stop_times")}
+    GROUP BY
+      trip_id
+  )
+SELECT
+  t.trip_id,
+  t.service_id,
+  t.route_id,
+  r.route_short_name,
+  r.route_long_name,
+  r.route_type,
+  t.direction_id,
+  COALESCE(c.scheduled_stop_calls, 0) AS scheduled_stop_calls
+FROM
+  ${ref("cta_gtfs", "trips")} AS t
+  LEFT JOIN ${ref("cta_gtfs", "routes")} AS r USING (route_id)
+  LEFT JOIN trip_stop_calls AS c USING (trip_id)

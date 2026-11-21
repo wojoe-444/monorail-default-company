@@ -1,0 +1,60 @@
+config {
+  type: "table",
+  schema: "ops_reporting",
+  name: "route_performance_daily",
+  tags: ["enterprise","operations_daily"],
+  description: "Synthetic delivered service versus actual GTFS planned counts, with departmental ownership and assigned workforce cost. Includes weekends with zero recorded workforce time. Fictional demonstration outputs, not official CTA personnel, service or financial records.",
+  columns: {
+    "service_date": "Chicago-local synthetic service date; the loaded scenario covers 2026-11-02 through 2026-11-15.",
+    "route_id": "Real CTA route identifier; operational and financial values in this dataset are synthetic.",
+    "route_long_name": "Current route name from the actual CTA GTFS snapshot.",
+    "route_type": "GTFS transportation mode: 1=rail and 3=bus in this sample.",
+    "department_id": "Synthetic department key; joins org.departments.",
+    "department_name": "Department display name.",
+    "scheduled_trips": "Scheduled trips.",
+    "completed_trips": "Completed trips.",
+    "on_time_trips": "On time trips.",
+    "cancelled_trips": "Cancelled trips.",
+    "delay_minutes": "Delay minutes.",
+    "on_time_ratio": "On-time trips divided by completed trips, as a 0-to-1 fraction. These delivered-service values are synthetic.",
+    "assigned_work_hours": "Recorded productive staff hours assigned to the route-day; zero on days with no time entries.",
+    "assigned_labor_cost_usd": "Synthetic labor cost from recorded staff assignments to this route-day."
+  }
+}
+
+WITH
+  labor AS (
+    SELECT
+      service_date,
+      route_id,
+      SUM(productive_hours) AS assigned_work_hours,
+      SUM(labor_cost_usd) AS assigned_labor_cost_usd
+    FROM
+      ${ref("org_reporting", "staff_utilization_daily")}
+    WHERE
+      route_id IS NOT NULL
+    GROUP BY
+      1,
+      2
+  )
+SELECT
+  p.service_date,
+  p.route_id,
+  r.route_long_name,
+  r.route_type,
+  a.department_id,
+  d.department_name,
+  p.scheduled_trips,
+  p.completed_trips,
+  p.on_time_trips,
+  p.cancelled_trips,
+  p.delay_minutes,
+  SAFE_DIVIDE(p.on_time_trips, p.completed_trips) AS on_time_ratio,
+  COALESCE(l.assigned_work_hours, 0) AS assigned_work_hours,
+  COALESCE(l.assigned_labor_cost_usd, 0) AS assigned_labor_cost_usd
+FROM
+  ${ref("service_ops", "route_performance")} p
+  JOIN ${ref("cta_gtfs", "routes")} r USING (route_id)
+  JOIN ${ref("org", "route_assignments")} a USING (route_id)
+  JOIN ${ref("org", "departments")} d USING (department_id)
+  LEFT JOIN labor l USING (service_date, route_id)

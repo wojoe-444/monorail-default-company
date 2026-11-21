@@ -1,0 +1,17 @@
+config {
+  type: "declaration",
+  schema: "cta_gtfs",
+  name: "stop_times",
+  database: "monorail-sample",
+  description: "CTA GTFS feed (transitchicago.com/downloads/sch_data/google_transit.zip), downloaded 2026-11-18. Times are HH:MM:SS and may pass 24:00:00 for trips after midnight, so they are strings.",
+  columns: {
+    "trip_id": "Identifier of a scheduled GTFS trip template in the loaded feed; not an observed vehicle journey.",
+    "arrival_time": "Scheduled local HH:MM:SS arrival time. Values may exceed 24:00:00 for service after midnight.",
+    "departure_time": "Scheduled local HH:MM:SS departure time; preserve values above 24 hours as strings.",
+    "stop_id": "GTFS stop or platform identifier. Use parent_station or station map_id when aggregating platforms into stations.",
+    "stop_sequence": "Stop sequence.",
+    "stop_headsign": "Stop headsign.",
+    "pickup_type": "Pickup type.",
+    "shape_dist_traveled": "Shape dist traveled."
+  }
+}

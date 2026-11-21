@@ -1,0 +1,44 @@
+config {
+  type: "table",
+  schema: "org_reporting",
+  name: "department_staffing",
+  tags: ["enterprise","workforce_daily"],
+  description: "Current fictional staffing by department and manager. Active headcount is a snapshot, not historical staffing. Fictional demonstration outputs, not official CTA personnel, service or financial records.",
+  columns: {
+    "department_id": "Synthetic department key; joins org.departments.",
+    "department_name": "Department display name.",
+    "domain_name": "MonoRail governance domain responsible for this department.",
+    "cost_center_id": "Cost center id.",
+    "manager_staff_id": "Manager staff id.",
+    "manager_name": "Invented department-manager name.",
+    "active_staff": "Current active headcount, counted from the fictional staff directory.",
+    "part_time_staff": "Active staff classified as PartTime.",
+    "avg_hourly_rate_usd": "Mean synthetic role hourly cost rate among active staff, in USD per hour."
+  }
+}
+
+SELECT
+  d.department_id,
+  d.department_name,
+  d.domain_name,
+  d.cost_center_id,
+  d.manager_staff_id,
+  m.full_name AS manager_name,
+  COUNTIF(s.active) AS active_staff,
+  COUNTIF(
+    s.active
+    AND s.employment_type = 'PartTime'
+  ) AS part_time_staff,
+  AVG(IF(s.active, r.hourly_rate_usd, NULL)) AS avg_hourly_rate_usd
+FROM
+  ${ref("org", "departments")} d
+  LEFT JOIN ${ref("org", "staff")} s USING (department_id)
+  LEFT JOIN ${ref("org", "job_roles")} r USING (role_id)
+  LEFT JOIN ${ref("org", "staff")} m ON d.manager_staff_id = m.staff_id
+GROUP BY
+  1,
+  2,
+  3,
+  4,
+  5,
+  6

@@ -1,0 +1,11 @@
+config {
+  type: "declaration",
+  schema: "METADATA",
+  name: "meta",
+  database: "monorail-sample",
+  description: "MonoRail meta metadata store. Catalogs the real BigQuery sample project.",
+  columns: {
+    "key": "Metadata key or record key.",
+    "value": "Metadata value."
+  }
+}

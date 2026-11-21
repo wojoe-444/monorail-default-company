@@ -1,0 +1,16 @@
+config {
+  type: "declaration",
+  schema: "finance",
+  name: "expense_claims",
+  database: "monorail-sample",
+  description: "Eighteen fictional staff expense claims, with approval status. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "claim_id": "Expense-claim primary key.",
+    "staff_id": "Stable synthetic staff identifier. Join org.staff.staff_id.",
+    "department_id": "Stable synthetic department identifier. Join org.departments.department_id.",
+    "claim_date": "Synthetic purchase date.",
+    "category": "Training, Travel or Equipment.",
+    "amount_usd": "Synthetic claimed amount in USD.",
+    "status": "Approved or Submitted."
+  }
+}

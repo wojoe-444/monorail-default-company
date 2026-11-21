@@ -1,0 +1,17 @@
+config {
+  type: "declaration",
+  schema: "service_ops",
+  name: "incidents",
+  database: "monorail-sample",
+  description: "Twelve fictional route incidents for operational reporting. No real safety events or people are represented. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "incident_id": "Synthetic incident primary key.",
+    "service_date": "Chicago-local service date in the synthetic demonstration period, 2026-11-02 through 2026-11-15.",
+    "route_id": "Actual CTA route identifier from the loaded GTFS snapshot; the recorded operational outcomes are synthetic.",
+    "department_id": "Stable synthetic department identifier. Join org.departments.department_id.",
+    "category": "Synthetic incident category.",
+    "severity": "Low, Medium or High.",
+    "resolution_minutes": "Synthetic time to resolve in minutes.",
+    "status": "Resolved or Investigating."
+  }
+}

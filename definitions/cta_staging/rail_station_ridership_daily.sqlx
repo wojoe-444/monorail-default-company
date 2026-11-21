@@ -1,0 +1,54 @@
+config {
+  type: "view",
+  schema: "cta_staging",
+  name: "rail_station_ridership_daily",
+  tags: ["cta","staging"],
+  description: "One row per rail station and service date. Preserves historical station IDs and labels with current station metadata when available. Conflicting source counts are flagged and entries are null.",
+  columns: {
+    "station_id": "CTA rail station identifier at station grain; matches cta.l_stops.map_id.",
+    "service_date": "Service calendar date in Chicago local time. GTFS times after 24:00 remain attached to this service date.",
+    "station_name": "Station name.",
+    "reported_station_name": "Reported station name.",
+    "day_type": "CTA day category: W=weekday, A=Saturday, U=Sunday or holiday.",
+    "entries": "Station entries for the station-day; NULL when source counts conflict.",
+    "source_row_count": "Number of raw source rows contributing to this station-day.",
+    "has_conflicting_entries": "True when the raw station-day has more than one distinct entry count.",
+    "has_current_station_metadata": "True when this station ID is in the current station/platform list.",
+    "has_accessible_platform": "True when at least one listed platform is marked ADA accessible. Not a guarantee of current elevator availability.",
+    "lines": "Rail line names serving the station, stored as a repeated string field.",
+    "location": "Geographic point for the stop/station in WGS84."
+  }
+}
+
+WITH
+  station_days AS (
+    SELECT
+      station_id,
+      date AS service_date,
+      MIN(station_name) AS reported_station_name,
+      IF(COUNT(DISTINCT day_type) = 1, MIN(day_type), NULL) AS day_type,
+      IF(COUNT(DISTINCT rides) = 1, MIN(rides), NULL) AS entries,
+      COUNT(*) AS source_row_count,
+      COUNT(DISTINCT rides) > 1 AS has_conflicting_entries
+    FROM
+      ${ref("cta", "l_station_entries_daily")}
+    GROUP BY
+      station_id,
+      service_date
+  )
+SELECT
+  d.station_id,
+  d.service_date,
+  COALESCE(s.station_name, d.reported_station_name) AS station_name,
+  d.reported_station_name,
+  d.day_type,
+  d.entries,
+  d.source_row_count,
+  d.has_conflicting_entries,
+  s.station_id IS NOT NULL AS has_current_station_metadata,
+  s.has_accessible_platform,
+  s.lines,
+  s.location
+FROM
+  station_days AS d
+  LEFT JOIN ${ref("cta_staging", "dim_rail_station")} AS s USING (station_id)

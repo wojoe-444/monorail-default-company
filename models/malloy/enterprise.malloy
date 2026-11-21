@@ -1,0 +1,157 @@
+// Fictional transit organization. Personnel, costs, incidents and completed
+// service are synthetic. November actuals cover a partial demonstration period.
+
+# "Seven fictional departments, their managers and current staffing."
+source: departments is bigquery.table('monorail-sample.org_reporting.department_staffing') extend {
+  primary_key: department_id
+  measure: headcount is active_staff.sum()
+}
+
+# "Fictional staff directory. Addresses use example.com."
+source: staff_directory is bigquery.table('monorail-sample.org.staff') extend {
+  primary_key: staff_id
+  join_one: department is departments on department_id = department.department_id
+  measure: staff_count is count()
+}
+
+# "Daily staff time, leave, training and synthetic labor cost. Ten business days are loaded."
+source: workforce is bigquery.table('monorail-sample.org_reporting.staff_utilization_daily') extend {
+  primary_key: time_entry_id
+  join_one: staff is staff_directory on staff_id = staff.staff_id
+  join_one: department is departments on department_id = department.department_id
+  measure:
+    total_productive_hours is productive_hours.sum()
+    total_scheduled_hours is scheduled_hours.sum()
+    total_absence_hours is absence_hours.sum()
+    total_overtime_hours is overtime_hours.sum()
+    total_labor_cost is labor_cost_usd.sum()
+}
+
+# "Synthetic service reliability and assigned staff cost on six real CTA route IDs. Planned trips come from the loaded GTFS calendar."
+source: service_reliability is bigquery.table('monorail-sample.ops_reporting.route_performance_daily') extend {
+  join_one: department is departments on department_id = department.department_id
+  measure:
+    trips_completed is completed_trips.sum()
+    trips_cancelled is cancelled_trips.sum()
+    trips_on_time is on_time_trips.sum()
+    workforce_hours is assigned_work_hours.sum()
+    route_labor_cost is assigned_labor_cost_usd.sum()
+}
+
+# "Fictional fleet work and critical-open repair scenario."
+source: fleet_readiness is bigquery.table('monorail-sample.ops_reporting.maintenance_backlog') extend {
+  primary_key: vehicle_id
+  join_one: vehicle_owner is departments on vehicle_owner_department_id = vehicle_owner.department_id
+  measure:
+    open_orders is open_work_orders.sum()
+    critical_orders is critical_open_orders.sum()
+    open_parts_cost is open_parts_cost_usd.sum()
+}
+
+# "Monthly department budget versus loaded partial-period synthetic actuals. December is budget-only."
+source: financial_control is bigquery.table('monorail-sample.finance_reporting.budget_variance') extend {
+  join_one: department is departments on department_id = department.department_id
+  measure:
+    budget_total is budget_usd.sum()
+    actual_cost_total is total_actual_cost_usd.sum()
+    remaining_budget_total is remaining_budget_usd.sum()
+    pending_approval_total is pending_invoice_usd.sum()
+}
+
+# "Four fictional suppliers with approved and pending monthly invoice spending."
+source: vendor_spend is bigquery.table('monorail-sample.finance_reporting.vendor_spend_monthly') extend {
+  measure:
+    approved_spend is approved_spend_usd.sum()
+    pending_spend is pending_spend_usd.sum()
+    invoices is invoice_count.sum()
+}
+
+# "Executive reporting joins staffing, financial control, service reliability and fleet risk across governance domains."
+source: executive_departments is bigquery.table('monorail-sample.executive_reporting.department_scorecard') extend {
+  join_one: department is departments on department_id = department.department_id
+  measure:
+    actual_cost is total_actual_cost_usd.sum()
+    budget_remaining is remaining_budget_usd.sum()
+    completed_service is completed_trips.sum()
+    critical_repairs is critical_open_orders.sum()
+}
+
+# "Modeled synthetic labor and allocated approved non-labor expense per completed trip; not official CTA operating cost."
+source: route_efficiency is bigquery.table('monorail-sample.executive_reporting.route_cost_efficiency') extend {
+  measure:
+    modeled_cost is modeled_operating_cost_usd.sum()
+    completed_service is completed_trips.sum()
+}
+
+# "Measured structural checks and two intentionally seeded synthetic business risks."
+source: organization_quality is bigquery.table('monorail-sample.executive_reporting.demo_quality_checks') extend {
+  primary_key: check_name
+  measure:
+    checks is count()
+    violations is failed_rows.sum()
+}
+
+# "Actual BigQuery run records for four on-demand stored-procedure pipelines."
+source: pipeline_runs is bigquery.table('monorail-sample.demo_pipelines.run_log') extend {
+  primary_key: run_id
+  measure: executions is count()
+}
+
+query: headcount_by_department is departments -> {
+  group_by: department_name, manager_name
+  aggregate: headcount
+  order_by: headcount desc
+}
+
+query: workforce_cost_by_department is workforce -> {
+  group_by: department.department_name
+  aggregate: total_productive_hours, total_absence_hours, total_overtime_hours, total_labor_cost
+  order_by: total_labor_cost desc
+}
+
+query: service_reliability_by_route is service_reliability -> {
+  group_by: route_id, route_long_name, department.department_name
+  aggregate: trips_completed, trips_cancelled, trips_on_time
+  order_by: trips_cancelled desc
+}
+
+query: fleet_risk_by_owner is fleet_readiness -> {
+  group_by: vehicle_owner.department_name
+  aggregate: open_orders, critical_orders, open_parts_cost
+}
+
+query: budget_by_department is financial_control -> {
+  where: report_month = @2026-11-01
+  group_by: department_name, budget_status
+  aggregate: budget_total, actual_cost_total, remaining_budget_total, pending_approval_total
+  order_by: remaining_budget_total asc
+}
+
+query: vendor_approval_pipeline is vendor_spend -> {
+  group_by: supplier_name, category
+  aggregate: approved_spend, pending_spend, invoices
+  order_by: approved_spend desc
+}
+
+query: executive_department_review is executive_departments -> {
+  where: report_month = @2026-11-01
+  group_by: department_name, manager_name, budget_status
+  aggregate: actual_cost, budget_remaining, completed_service, critical_repairs
+  order_by: budget_remaining asc
+}
+
+query: route_cost_review is route_efficiency -> {
+  group_by: route_id, route_long_name
+  aggregate: modeled_cost, completed_service
+  order_by: modeled_cost desc
+}
+
+query: integrity_and_risk_checks is organization_quality -> {
+  group_by: check_kind, status
+  aggregate: checks, violations
+}
+
+query: actual_pipeline_executions is pipeline_runs -> {
+  group_by: pipeline_name, status
+  aggregate: executions
+}

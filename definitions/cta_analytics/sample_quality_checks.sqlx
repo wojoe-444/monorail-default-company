@@ -1,0 +1,153 @@
+config {
+  type: "view",
+  schema: "cta_analytics",
+  name: "sample_quality_checks",
+  tags: ["cta","analytics"],
+  description: "Live validation results for the CTA sample. failed_rows=0 is Success. Source station-day conflicts are deliberately visible as a real failed check; no source rows are modified.",
+  columns: {
+    "check_name": "Stable identifier of the executable data-quality check.",
+    "asset": "Project-relative dataset.table targeted by the check.",
+    "failed_rows": "Number of observations violating the named quality expectation. Zero means the check passes.",
+    "tested_rows": "Number of observations examined by this check.",
+    "status": "Measured quality-check result: Success or Failed."
+  }
+}
+
+WITH
+  routes AS (
+    SELECT
+      route_id
+    FROM
+      ${ref("cta_gtfs", "routes")}
+  ),
+  trips AS (
+    SELECT
+      trip_id,
+      route_id
+    FROM
+      ${ref("cta_gtfs", "trips")}
+  ),
+  stops AS (
+    SELECT
+      stop_id
+    FROM
+      ${ref("cta_gtfs", "stops")}
+  ),
+  stop_times AS (
+    SELECT
+      trip_id,
+      stop_id
+    FROM
+      ${ref("cta_gtfs", "stop_times")}
+  ),
+  checks AS (
+    SELECT
+      'route_id_present' AS check_name,
+      'cta_gtfs.routes' AS asset,
+      COUNTIF(
+        route_id IS NULL
+        OR route_id = ''
+      ) AS failed_rows,
+      COUNT(*) AS tested_rows
+    FROM
+      routes
+    UNION ALL
+    SELECT
+      'route_id_unique',
+      'cta_gtfs.routes',
+      COUNT(*) - COUNT(DISTINCT route_id),
+      COUNT(*)
+    FROM
+      routes
+    UNION ALL
+    SELECT
+      'trip_id_unique',
+      'cta_gtfs.trips',
+      COUNT(*) - COUNT(DISTINCT trip_id),
+      COUNT(*)
+    FROM
+      trips
+    UNION ALL
+    SELECT
+      'trips_reference_routes',
+      'cta_gtfs.trips',
+      COUNTIF(r.route_id IS NULL),
+      COUNT(*)
+    FROM
+      trips t
+      LEFT JOIN routes r USING (route_id)
+    UNION ALL
+    SELECT
+      'stop_times_reference_trips',
+      'cta_gtfs.stop_times',
+      COUNTIF(t.trip_id IS NULL),
+      COUNT(*)
+    FROM
+      stop_times s
+      LEFT JOIN trips t USING (trip_id)
+    UNION ALL
+    SELECT
+      'stop_times_reference_stops',
+      'cta_gtfs.stop_times',
+      COUNTIF(s.stop_id IS NULL),
+      COUNT(*)
+    FROM
+      stop_times st
+      LEFT JOIN stops s USING (stop_id)
+    UNION ALL
+    SELECT
+      'system_totals_add_up',
+      'cta.daily_boarding_totals',
+      COUNTIF(total_rides != bus_rides + rail_boardings),
+      COUNT(*)
+    FROM
+      ${ref("cta", "daily_boarding_totals")}
+    UNION ALL
+    SELECT
+      'monthly_bus_reconciles',
+      'cta_analytics.system_ridership_monthly',
+      COUNTIF(bus_detail_minus_system_on_comparable_days != 0),
+      COUNT(*)
+    FROM
+      ${ref("cta_analytics", "system_ridership_monthly")}
+    UNION ALL
+    SELECT
+      'monthly_rail_reconciles',
+      'cta_analytics.system_ridership_monthly',
+      COUNTIF(rail_detail_minus_system_on_comparable_days != 0),
+      COUNT(*)
+    FROM
+      ${ref("cta_analytics", "system_ridership_monthly")}
+    UNION ALL
+    SELECT
+      'rail_source_has_no_conflicts',
+      'cta_staging.rail_station_ridership_daily',
+      COUNTIF(has_conflicting_entries),
+      COUNT(*)
+    FROM
+      ${ref("cta_staging", "rail_station_ridership_daily")}
+    UNION ALL
+    SELECT
+      'calendar_exceptions_applied',
+      'cta_staging.gtfs_service_dates',
+      COUNTIF(
+        (
+          e.exception_type = 1
+          AND d.service_id IS NULL
+        )
+        OR (
+          e.exception_type = 2
+          AND d.service_id IS NOT NULL
+        )
+      ),
+      COUNT(*)
+    FROM
+      ${ref("cta_gtfs", "calendar_dates")} e
+      LEFT JOIN ${ref("cta_staging", "gtfs_service_dates")} d ON e.service_id = d.service_id
+      AND e.date = d.service_date
+  )
+SELECT
+  *,
+  IF(failed_rows = 0, 'Success', 'Failed') AS status
+FROM
+  checks

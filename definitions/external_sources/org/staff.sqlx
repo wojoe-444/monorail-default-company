@@ -1,0 +1,18 @@
+config {
+  type: "declaration",
+  schema: "org",
+  name: "staff",
+  database: "monorail-sample",
+  description: "Fictional staff directory with departmental management hierarchy. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "staff_id": "Stable synthetic staff identifier. Join org.staff.staff_id.",
+    "full_name": "Invented staff name; not an actual CTA employee.",
+    "work_email": "Invented demonstration address under example.com; not deliverable.",
+    "department_id": "Stable synthetic department identifier. Join org.departments.department_id.",
+    "role_id": "Job-role key, joined to org.job_roles.role_id.",
+    "manager_staff_id": "Manager staff key; NULL for department managers.",
+    "hire_date": "Synthetic hire date.",
+    "employment_type": "FullTime or PartTime.",
+    "active": "Whether the synthetic employee is active."
+  }
+}

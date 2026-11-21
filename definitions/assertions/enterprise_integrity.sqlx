@@ -1,0 +1,14 @@
+config {
+  type: "assertion",
+  tags: ["enterprise", "quality"],
+  description: "Return failed structural checks from the enterprise quality mart."
+}
+
+SELECT
+  check_name,
+  asset,
+  failed_rows,
+  tested_rows
+FROM ${ref("executive_reporting", "demo_quality_checks")}
+WHERE check_kind = 'Integrity'
+  AND failed_rows > 0

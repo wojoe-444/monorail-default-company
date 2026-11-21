@@ -1,0 +1,27 @@
+config {
+  type: "declaration",
+  schema: "cta",
+  name: "l_stops",
+  database: "monorail-sample",
+  description: "Source: City of Chicago Data Portal (data.cityofchicago.org), CTA System Information - List of 'L' Stops (8pix-ypme). One row per platform direction; map_id is the station (parent stop).",
+  columns: {
+    "stop_id": "GTFS stop or platform identifier. Use parent_station or station map_id when aggregating platforms into stations.",
+    "direction_id": "Direction id.",
+    "stop_name": "Stop name.",
+    "station_name": "Station name.",
+    "station_descriptive_name": "Station descriptive name.",
+    "map_id": "Parent rail station identifier shared by platform directions. Join station ridership using this value.",
+    "ada": "Ada.",
+    "red": "Red.",
+    "blue": "Blue.",
+    "green": "Green.",
+    "brown": "Brown.",
+    "purple": "Purple.",
+    "yellow": "Yellow.",
+    "pink": "Pink.",
+    "orange": "Orange.",
+    "latitude": "Latitude.",
+    "longitude": "Longitude.",
+    "location": "Geographic point for the stop/station in WGS84."
+  }
+}

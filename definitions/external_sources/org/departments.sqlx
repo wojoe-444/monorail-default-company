@@ -1,0 +1,14 @@
+config {
+  type: "declaration",
+  schema: "org",
+  name: "departments",
+  database: "monorail-sample",
+  description: "Seven accountable departments; each manager links to the staff directory. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "department_id": "Stable synthetic department identifier. Join org.departments.department_id.",
+    "department_name": "Department display name.",
+    "domain_name": "Corresponding MonoRail governance domain.",
+    "manager_staff_id": "Fictional manager identifier, joined to org.staff.staff_id.",
+    "cost_center_id": "Finance cost center owned by this department."
+  }
+}

@@ -1,0 +1,32 @@
+config {
+  type: "view",
+  schema: "cta_analytics",
+  name: "bus_route_ridership_monthly",
+  tags: ["cta","analytics"],
+  description: "One row per bus route and month. Sums daily boardings and counts reported days. Route names are from the current GTFS snapshot, when the ID is present.",
+  columns: {
+    "month_start": "First date of the reporting month.",
+    "route_id": "CTA route identifier. Join to cta_gtfs.routes.route_id; historical route IDs may be absent from the current feed.",
+    "current_route_name": "Current route name.",
+    "has_current_route_metadata": "True when the historical route ID matches the currently loaded GTFS route snapshot.",
+    "bus_boardings": "Sum of bus route boardings for this route and month.",
+    "reported_days": "Number of days with a non-NULL reported measure. Missing/conflicting days are excluded.",
+    "avg_boardings_per_reported_day": "Avg boardings per reported day."
+  }
+}
+
+SELECT
+  DATE_TRUNC(service_date, MONTH) AS month_start,
+  route_id,
+  current_route_name,
+  has_current_route_metadata,
+  SUM(boardings) AS bus_boardings,
+  COUNT(boardings) AS reported_days,
+  AVG(boardings) AS avg_boardings_per_reported_day
+FROM
+  ${ref("cta_staging", "bus_route_ridership_daily")}
+GROUP BY
+  month_start,
+  route_id,
+  current_route_name,
+  has_current_route_metadata

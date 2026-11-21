@@ -1,0 +1,36 @@
+config {
+  type: "view",
+  schema: "cta_analytics",
+  name: "route_scheduled_service_daily",
+  tags: ["cta","analytics"],
+  description: "One row per GTFS route and active service date in the loaded feed. Counts scheduled trips and stop calls using the exception-adjusted calendar. Measures scheduled service.",
+  columns: {
+    "service_date": "Service calendar date in Chicago local time. GTFS times after 24:00 remain attached to this service date.",
+    "route_id": "CTA route identifier. Join to cta_gtfs.routes.route_id; historical route IDs may be absent from the current feed.",
+    "route_short_name": "Route short name.",
+    "route_long_name": "Route long name.",
+    "route_type": "GTFS mode code in this feed: 1=rail/subway, 3=bus.",
+    "scheduled_trips": "Count of scheduled trip templates active for the route and service date; not observed vehicle trips.",
+    "scheduled_stop_calls": "Number of scheduled stop-time records across the selected trips.",
+    "scheduled_directions": "Count of distinct direction_id values active on the route and service date."
+  }
+}
+
+SELECT
+  d.service_date,
+  t.route_id,
+  t.route_short_name,
+  t.route_long_name,
+  t.route_type,
+  COUNT(*) AS scheduled_trips,
+  SUM(t.scheduled_stop_calls) AS scheduled_stop_calls,
+  COUNT(DISTINCT t.direction_id) AS scheduled_directions
+FROM
+  ${ref("cta_staging", "gtfs_service_dates")} AS d
+  JOIN ${ref("cta_staging", "gtfs_trips")} AS t USING (service_id)
+GROUP BY
+  d.service_date,
+  t.route_id,
+  t.route_short_name,
+  t.route_long_name,
+  t.route_type

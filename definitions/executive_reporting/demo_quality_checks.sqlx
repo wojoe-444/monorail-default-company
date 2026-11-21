@@ -1,0 +1,166 @@
+config {
+  type: "table",
+  schema: "executive_reporting",
+  name: "demo_quality_checks",
+  tags: ["enterprise","executive_scorecard"],
+  description: "Measured integrity checks and two intentional business-risk scenarios. Synthetic budget overruns and a critical-open work order are demonstration cases, not real CTA issues. Fictional demonstration outputs, not official CTA personnel, service or financial records.",
+  columns: {
+    "check_name": "Stable executable check identifier.",
+    "asset": "Project-relative table to which the check applies.",
+    "failed_rows": "Measured violations. DemonstrationRisk failures are intentional synthetic scenarios.",
+    "tested_rows": "Number of tested observations.",
+    "check_kind": "Integrity for structural checks; DemonstrationRisk for intentionally seeded business-risk scenarios.",
+    "status": "Measured result or recorded workflow status."
+  }
+}
+
+WITH
+  checks AS (
+    SELECT
+      'unique_staff_ids' AS check_name,
+      'org.staff' AS asset,
+      COUNT(*) - COUNT(DISTINCT staff_id) AS failed_rows,
+      COUNT(*) AS tested_rows,
+      'Integrity' AS check_kind
+    FROM
+      ${ref("org", "staff")}
+    UNION ALL
+    SELECT
+      'staff_department_reference',
+      'org.staff',
+      COUNTIF(d.department_id IS NULL),
+      COUNT(*),
+      'Integrity'
+    FROM
+      ${ref("org", "staff")} s
+      LEFT JOIN ${ref("org", "departments")} d USING (department_id)
+    UNION ALL
+    SELECT
+      'staff_role_reference',
+      'org.staff',
+      COUNTIF(r.role_id IS NULL),
+      COUNT(*),
+      'Integrity'
+    FROM
+      ${ref("org", "staff")} s
+      LEFT JOIN ${ref("org", "job_roles")} r USING (role_id)
+    UNION ALL
+    SELECT
+      'staff_manager_reference',
+      'org.staff',
+      COUNTIF(
+        s.manager_staff_id IS NOT NULL
+        AND m.staff_id IS NULL
+      ),
+      COUNT(*),
+      'Integrity'
+    FROM
+      ${ref("org", "staff")} s
+      LEFT JOIN ${ref("org", "staff")} m ON s.manager_staff_id = m.staff_id
+    UNION ALL
+    SELECT
+      'time_entry_staff_reference',
+      'service_ops.time_entries',
+      COUNTIF(s.staff_id IS NULL),
+      COUNT(*),
+      'Integrity'
+    FROM
+      ${ref("service_ops", "time_entries")} t
+      LEFT JOIN ${ref("org", "staff")} s USING (staff_id)
+    UNION ALL
+    SELECT
+      'invoice_supplier_reference',
+      'finance.supplier_invoices',
+      COUNTIF(s.supplier_id IS NULL),
+      COUNT(*),
+      'Integrity'
+    FROM
+      ${ref("finance", "supplier_invoices")} i
+      LEFT JOIN ${ref("finance", "suppliers")} s USING (supplier_id)
+    UNION ALL
+    SELECT
+      'expense_department_matches_staff',
+      'finance.expense_claims',
+      COUNTIF(
+        e.department_id != s.department_id
+        OR s.staff_id IS NULL
+      ),
+      COUNT(*),
+      'Integrity'
+    FROM
+      ${ref("finance", "expense_claims")} e
+      LEFT JOIN ${ref("org", "staff")} s USING (staff_id)
+    UNION ALL
+    SELECT
+      'scheduled_trip_balance',
+      'service_ops.route_performance',
+      COUNTIF(
+        scheduled_trips != completed_trips + cancelled_trips
+        OR on_time_trips > completed_trips
+      ),
+      COUNT(*),
+      'Integrity'
+    FROM
+      ${ref("service_ops", "route_performance")}
+    UNION ALL
+    SELECT
+      'workforce_headcount_rollup',
+      'org_reporting.department_staffing',
+      ABS(
+        SUM(active_staff) - (
+          SELECT
+            COUNTIF(active)
+          FROM
+            ${ref("org", "staff")}
+        )
+      ),
+      SUM(active_staff),
+      'Integrity'
+    FROM
+      ${ref("org_reporting", "department_staffing")}
+    UNION ALL
+    SELECT
+      'positive_department_budgets',
+      'finance.monthly_budgets',
+      COUNTIF(budget_usd <= 0),
+      COUNT(*),
+      'Integrity'
+    FROM
+      ${ref("finance", "monthly_budgets")}
+    UNION ALL
+    SELECT
+      'finance_cost_components_reconcile',
+      'finance_reporting.department_cost_monthly',
+      COUNTIF(
+        ABS(
+          total_actual_cost_usd-labor_cost_usd-approved_invoice_usd-approved_expense_usd
+        ) > 0.01
+      ),
+      COUNT(*),
+      'Integrity'
+    FROM
+      ${ref("finance_reporting", "department_cost_monthly")}
+    UNION ALL
+    SELECT
+      'no_overbudget_departments',
+      'finance_reporting.budget_variance',
+      COUNTIF(budget_status = 'OverBudget'),
+      COUNT(*),
+      'DemonstrationRisk'
+    FROM
+      ${ref("finance_reporting", "budget_variance")}
+    UNION ALL
+    SELECT
+      'no_critical_open_maintenance',
+      'ops_reporting.maintenance_backlog',
+      SUM(critical_open_orders),
+      SUM(total_work_orders),
+      'DemonstrationRisk'
+    FROM
+      ${ref("ops_reporting", "maintenance_backlog")}
+  )
+SELECT
+  *,
+  IF(failed_rows = 0, 'Success', 'Failed') AS status
+FROM
+  checks

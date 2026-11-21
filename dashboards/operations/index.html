@@ -1,0 +1,2901 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Shift briefing · MonoRail Operations</title>
+  <style>
+:root {
+  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+  color: #192b2b;
+  background: #f3f5f2;
+  font-synthesis: none;
+  --ink: #192b2b;
+  --muted: #506460;
+  --surface: #fff;
+  --background: #f3f5f2;
+  --border: #d8e2dc;
+  --accent: #006d60;
+  --accent-soft: #e0f0e8;
+  --good: #11684e;
+  --danger: #a13b32;
+  --warning: #835706;
+  --chart-1: #147e70;
+  --chart-2: #4f728d;
+  --chart-3: #a57629;
+  --chart-4: #a93f37;
+  --chart-5: #75558b;
+  --mono: 'Cascadia Mono', Consolas, monospace;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 0; display: grid; grid-template-columns: 224px minmax(0, 1fr); min-height: 100vh; }
+a { color: var(--accent); }
+button, select, input { font: inherit; }
+button, select, summary { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.skip-link { position: fixed; left: 16px; top: -100px; padding: 12px; z-index: 10; background: var(--surface); }
+.skip-link:focus { top: 16px; }
+.rail { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; align-self: start; padding: 28px 15px 21px; background: #102827; color: #e6f1eb; }
+.rail :focus-visible { outline-color: #9ef2d3; }
+.brand { display: flex; align-items: center; gap: 11px; width: fit-content; color: inherit; text-decoration: none; font-weight: 700; font-size: 18px; line-height: 1.1; margin: 0 0 36px 8px; }
+.brand-mark { display: grid; place-items: center; height: 43px; width: 43px; background: #afe8d2; color: #12352d; border-radius: 10px; }
+.brand small { display: block; margin-top: 5px; color: #aac6bb; font-weight: 500; font-size: 11px; }
+.desk-nav { display: grid; gap: 5px; }
+.desk-nav a { display: flex; align-items: center; gap: 10px; padding: 11px 10px; border-radius: 7px; color: #c5d9d0; text-decoration: none; font-weight: 600; font-size: 13px; line-height: 1.3; }
+.desk-nav a:hover { background: #21403a; color: #fff; }
+.desk-nav a[aria-current='page'] { background: #294b42; color: #effff6; }
+.desk-nav a[aria-current='page'] svg { color: #a6edcf; }
+.desk-nav .sources-link { margin-top: 14px; }
+.desk-nav svg { width: 17px; height: 17px; flex: none; }
+.rail-note { display: flex; align-items: flex-start; gap: 10px; margin: auto 7px 0; padding: 16px 2px 1px; border-top: 1px solid #34504a; font-size: 12px; color: #dcebe3; line-height: 1.5; }
+.rail-note small { color: #acc8bc; font-size: 11px; }
+.rail-dot { width: 8px; height: 8px; background: #afe8d2; border-radius: 50%; margin-top: 5px; flex: none; }
+.main-wrap { min-width: 0; }
+.workspace-bar { min-height: 63px; display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; padding: 12px clamp(16px, 3.6vw, 50px); border-bottom: 1px solid var(--border); background: var(--surface); font-size: 13px; }
+.workspace-path { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.workspace-path strong { color: var(--ink); font-weight: 650; }
+.workspace-period { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12px; }
+#workspace { width: min(100%, 1480px); margin: 0 auto; padding: clamp(20px, 3.5vw, 48px); }
+.workspace-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; border-top: 1px solid var(--border); padding: 18px clamp(16px, 3.6vw, 50px) 24px; color: var(--muted); font-size: 12px; }
+.workspace-footer a { text-underline-offset: 3px; }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: clamp(29px, 4vw, 46px); line-height: 1.09; letter-spacing: -.042em; }
+h2 { font-size: 19px; letter-spacing: -.015em; }
+.panel { padding: clamp(15px, 2vw, 23px); border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius); min-width: 0; }
+.panel-title { font-size: 17px; font-weight: 680; line-height: 1.25; }
+.kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.kpi { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); display: grid; align-content: start; gap: 6px; padding: 17px 18px; min-width: 0; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.briefing, .sources { display: grid; gap: 20px; }
+.desk-heading { display: grid; gap: 9px; }
+.desk-heading > p { max-width: 66ch; color: var(--muted); line-height: 1.55; }
+.briefing-hero { background: #e7f1ea; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) minmax(204px, .6fr); align-items: end; padding: clamp(20px, 3.1vw, 38px); border-radius: 15px; border: 1px solid #cfdfd5; }
+.briefing-hero .desk-heading { align-self: center; }
+.briefing-hero .desk-heading > p { color: #3f5b52; }
+.briefing-kpis small, .briefing .kpi .label { color: var(--muted); font-size: 12px; line-height: 1.4; }
+.briefing-kpis .label { font-weight: 650; }
+.briefing-kpis .value { font-size: clamp(25px, 3vw, 34px); letter-spacing: -.045em; font-weight: 730; font-variant-numeric: tabular-nums; line-height: 1.18; }
+.briefing-kpis .negative { color: var(--danger); }
+.mini-chart { display: grid; gap: 7px; margin: 0; font-size: 12px; color: #36534b; }
+.mini-chart figcaption { font-weight: 620; }
+.mini-chart .chart-columns { height: 62px; display: grid; grid-template-columns: repeat(var(--points), minmax(0, 1fr)); align-items: end; gap: 4px; border-bottom: 1px solid #a8c4b6; }
+.mini-chart .chart-bar { height: var(--height); width: 100%; display: block; background: #438576; border-radius: 3px 3px 0 0; }
+.mini-chart .chart-bar[data-peak] { background: #165b50; }
+.mini-chart .chart-dates { display: flex; justify-content: space-between; line-height: 1.35; font-variant-numeric: tabular-nums; }
+.briefing .review-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.directory { list-style: none; padding: 0; margin: 11px 0 0; }
+.directory li { display: flex; flex-wrap: wrap; gap: 3px 12px; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--border); font-size: 13px; }
+.directory .manager { color: var(--muted); }
+.review-list { list-style: none; margin: 6px 0 0; padding: 0; }
+.review-item + .review-item { border-top: 1px solid var(--border); }
+.review-item a { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 9px; align-items: start; padding: 13px 0; color: var(--ink); text-decoration: none; }
+.review-item a:hover strong { text-decoration: underline; text-underline-offset: 3px; }
+.review-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; background: currentColor; color: var(--warning); }
+.review-dot.critical { color: var(--danger); }
+.review-dot.staffing { color: var(--accent); }
+.review-item strong { display: block; font-size: 14px; }
+.review-item p { margin-top: 4px; font-size: 13px; color: var(--muted); line-height: 1.48; }
+.review-arrow { color: var(--accent); }
+.sources .panel { display: grid; gap: 13px; }
+.sources .panel > p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+.source-list details { border-top: 1px solid var(--border); }
+.source-list summary { padding: 10px 0; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.source-list summary span { color: var(--muted); }
+.source-list code { font-family: var(--mono); }
+.source-list pre { background: var(--background); border-radius: 5px; padding: 10px; margin: 0 0 10px; overflow-x: auto; font-size: 12px; }
+.checks-wrap { overflow-x: auto; }
+.checks-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+.checks-table td, .checks-table th { padding: 9px 11px 9px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+.checks-table td code { overflow-wrap: anywhere; font-size: 12px; }
+.checks-table .flag { color: var(--danger); font-weight: 650; }
+.checks-table .pass { color: var(--good); }
+
+@media (max-width: 1050px) {
+  body { grid-template-columns: 192px minmax(0, 1fr); }
+  .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  body { display: block; }
+  .rail { position: static; height: auto; padding: 14px 16px 11px; }
+  .brand { margin: 0 0 12px; }
+  .brand-mark { width: 34px; height: 34px; }
+  .brand-mark svg { width: 20px; height: 20px; }
+  .desk-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+  .desk-nav a { padding: 8px 6px; font-size: 12px; gap: 5px; }
+  .desk-nav .sources-link { margin-top: 0; }
+  .rail-note { display: none; }
+  .workspace-bar { min-height: 42px; }
+  .briefing .review-grid, .dashboard-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 525px) {
+  .briefing-hero { grid-template-columns: 1fr; }
+  .briefing { gap: 14px; }
+  .workspace-bar { padding: 8px 16px; }
+  .desk-nav a svg { display: none; }
+  .kpi { padding: 13px; }
+}
+
+[data-dashboard="operations"] {
+  --ops-border: var(--border, #d7e0e7);
+  --ops-surface: var(--surface, #fff);
+  --ops-ink: var(--ink, #142832);
+  --ops-muted: var(--muted, #516472);
+  --ops-accent: var(--accent, #146e83);
+  --ops-ontime: var(--chart-1, #28788e);
+  --ops-completed: color-mix(in srgb, var(--ops-ontime) 32%, var(--ops-surface));
+  --ops-warn: color-mix(in srgb, var(--warning, #a65d09) 78%, var(--ops-ink));
+  --ops-critical: color-mix(in srgb, var(--danger, #ba4145) 82%, var(--ops-ink));
+  --ops-mono: var(--mono, ui-monospace, Consolas, monospace);
+  container-type: inline-size;
+  min-width: 0;
+  color: var(--ops-ink);
+}
+
+[data-dashboard="operations"] .ops-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.5rem;
+  margin-bottom: 1.15rem;
+}
+
+[data-dashboard="operations"] .ops-title {
+  margin: 0;
+  font-size: clamp(1.55rem, 4vw, 2.3rem);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+
+[data-dashboard="operations"] .ops-header p {
+  margin: 0.35rem 0 0;
+  color: var(--ops-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+[data-dashboard="operations"] .ops-window {
+  display: grid;
+  gap: 0.22rem;
+  max-width: 100%;
+  border-inline-start: 2px solid var(--ops-accent);
+  padding: 0.12rem 0 0.12rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+[data-dashboard="operations"] .ops-window span {
+  color: var(--ops-muted);
+  font-size: 0.73rem;
+}
+
+[data-dashboard="operations"] .ops-window strong {
+  font-weight: 650;
+}
+
+[data-dashboard="operations"] .ops-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1.05rem;
+}
+
+[data-dashboard="operations"] .ops-kpi {
+  min-width: 0;
+  gap: 0;
+  border: 1px solid var(--ops-border);
+  border-radius: var(--radius, 0.65rem);
+  background: var(--ops-surface);
+  padding: 0.86rem 0.95rem;
+}
+
+[data-dashboard="operations"] .ops-kpi dt {
+  margin: 0;
+  color: var(--ops-muted);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+[data-dashboard="operations"] .ops-kpi-value {
+  margin: 0.25rem 0 0.15rem;
+  font-size: clamp(1.45rem, 3.5vw, 2rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1.13;
+  overflow-wrap: anywhere;
+}
+
+[data-dashboard="operations"] .ops-kpi-detail {
+  margin: 0;
+  color: var(--ops-muted);
+  font-size: 0.73rem;
+  line-height: 1.4;
+}
+
+[data-dashboard="operations"] .ops-kpi-attention .ops-kpi-value,
+[data-dashboard="operations"] .ops-count-warning {
+  color: var(--ops-warn);
+}
+
+[data-dashboard="operations"] .ops-kpi-attention:last-child .ops-kpi-value,
+[data-dashboard="operations"] .ops-count-critical {
+  color: var(--ops-critical);
+}
+
+[data-dashboard="operations"] .ops-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.68fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+}
+
+[data-dashboard="operations"] .ops-trend { grid-column: 1 / -1; }
+
+[data-dashboard="operations"] .ops-panel {
+  min-width: 0;
+  border: 1px solid var(--ops-border);
+  border-radius: var(--radius, 0.75rem);
+  background: var(--ops-surface);
+  padding: 1rem;
+}
+
+[data-dashboard="operations"] .ops-panel-title {
+  margin: 0;
+  color: var(--ops-ink);
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+[data-dashboard="operations"] .ops-panel-detail,
+[data-dashboard="operations"] .ops-note,
+[data-dashboard="operations"] .ops-provenance {
+  color: var(--ops-muted);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+[data-dashboard="operations"] .ops-panel-detail { margin: 0.3rem 0 0.65rem; }
+[data-dashboard="operations"] .ops-note { margin: 0.65rem 0 0; }
+[data-dashboard="operations"] .ops-provenance { margin: 0.8rem 0 0; }
+
+[data-dashboard="operations"] .ops-table-wrap,
+[data-dashboard="operations"] .ops-chart-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+[data-dashboard="operations"] .ops-table {
+  width: 100%;
+  min-width: 26rem;
+  margin: 0;
+  border-collapse: collapse;
+  color: var(--ops-ink);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+[data-dashboard="operations"] .ops-table th,
+[data-dashboard="operations"] .ops-table td {
+  border-bottom: 1px solid var(--ops-border);
+  padding: 0.48rem 0.42rem;
+  text-align: end;
+  vertical-align: middle;
+}
+
+[data-dashboard="operations"] .ops-table thead th {
+  color: var(--ops-muted);
+  font-size: 0.71rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+[data-dashboard="operations"] .ops-table tbody td {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+[data-dashboard="operations"] .ops-rank-note {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 650;
+}
+
+[data-dashboard="operations"] .ops-table th:first-child {
+  padding-inline-start: 0;
+  text-align: start;
+  font-weight: 650;
+}
+
+[data-dashboard="operations"] .ops-table th:last-child,
+[data-dashboard="operations"] .ops-table td:last-child { padding-inline-end: 0; }
+
+[data-dashboard="operations"] .ops-route-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+[data-dashboard="operations"] .ops-route-cell small,
+[data-dashboard="operations"] .ops-vehicle-list small {
+  display: block;
+  margin-top: 0.12rem;
+  color: var(--ops-muted);
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+[data-dashboard="operations"] .ops-route-tag {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.45rem;
+  min-height: 1.75rem;
+  flex: none;
+  padding: 0.12rem 0.3rem;
+  border: 1px solid var(--ops-border);
+  border-radius: 0.3rem;
+  background: color-mix(in srgb, var(--ops-accent) 7%, var(--ops-surface));
+  color: var(--ops-ink);
+  font-family: var(--ops-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+[data-dashboard="operations"] .ops-route-button { cursor: pointer; }
+
+[data-dashboard="operations"] .ops-route-button:hover,
+[data-dashboard="operations"] .ops-route-button[aria-pressed="true"] {
+  border-color: var(--ops-accent);
+  background: color-mix(in srgb, var(--ops-accent) 17%, var(--ops-surface));
+}
+
+[data-dashboard="operations"] .ops-route-button:focus-visible,
+[data-dashboard="operations"] .ops-route-filter select:focus-visible,
+[data-dashboard="operations"] .ops-table-wrap:focus-visible,
+[data-dashboard="operations"] .ops-chart-scroll:focus-visible {
+  outline: 2px solid var(--ops-accent);
+  outline-offset: -2px;
+}
+
+[data-dashboard="operations"] .ops-count-warning,
+[data-dashboard="operations"] .ops-count-critical { font-weight: 700; }
+
+[data-dashboard="operations"] .ops-trend-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+}
+
+[data-dashboard="operations"] .ops-route-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  color: var(--ops-muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+[data-dashboard="operations"] .ops-route-filter select {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: min(15rem, 55vw);
+  min-height: 2rem;
+  border: 1px solid var(--ops-border);
+  border-radius: 0.32rem;
+  padding: 0.18rem 0.35rem;
+  background: var(--ops-surface);
+  color: var(--ops-ink);
+  font: inherit;
+  text-overflow: ellipsis;
+}
+
+[data-dashboard="operations"] .ops-route-filter select:disabled { opacity: 0.65; }
+
+[data-dashboard="operations"] .ops-trend-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.8rem;
+  margin: 0.55rem 0 0.8rem;
+  font-size: 0.8rem;
+  color: var(--ops-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-dashboard="operations"] .ops-trend-summary strong { color: var(--ops-ink); }
+[data-dashboard="operations"] .ops-chart { margin: 0; }
+
+[data-dashboard="operations"] .ops-chart-caption {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.85rem;
+  margin: 0 0 0.65rem;
+  color: var(--ops-muted);
+  font-size: 0.7rem;
+}
+
+[data-dashboard="operations"] .ops-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.27rem;
+}
+
+[data-dashboard="operations"] .ops-legend-swatch {
+  width: 0.68rem;
+  height: 0.68rem;
+  border-radius: 0.14rem;
+}
+
+[data-dashboard="operations"] .ops-legend-ontime,
+[data-dashboard="operations"] .ops-chart-bar-ontime { background: var(--ops-ontime); }
+
+[data-dashboard="operations"] .ops-legend-completed,
+[data-dashboard="operations"] .ops-chart-bar { background: var(--ops-completed); }
+
+[data-dashboard="operations"] .ops-legend-cancelled { background: var(--ops-warn); }
+
+[data-dashboard="operations"] .ops-chart-inner {
+  --ops-plot-height: 6.6rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.42rem;
+  min-width: max(100%, calc(var(--ops-days) * 2.8rem + 2.1rem));
+}
+
+[data-dashboard="operations"] .ops-chart-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: var(--ops-plot-height);
+  color: var(--ops-muted);
+  font-family: var(--ops-mono);
+  font-size: 0.62rem;
+  line-height: 1;
+  text-align: end;
+}
+
+[data-dashboard="operations"] .ops-chart-days {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--ops-days), minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-dashboard="operations"] .ops-chart-days::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: var(--ops-plot-height);
+  box-sizing: border-box;
+  border-block: 1px solid var(--ops-border);
+  background: linear-gradient(var(--ops-border), var(--ops-border)) center / 100% 1px no-repeat;
+  content: "";
+  pointer-events: none;
+}
+
+[data-dashboard="operations"] .ops-chart-day {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  color: var(--ops-muted);
+  font-size: 0.67rem;
+}
+
+[data-dashboard="operations"] .ops-chart-track {
+  display: flex;
+  align-items: end;
+  width: clamp(0.85rem, 57%, 2rem);
+  height: var(--ops-plot-height);
+}
+
+[data-dashboard="operations"] .ops-chart-bar {
+  display: flex;
+  align-items: end;
+  width: 100%;
+  border-radius: 0.22rem 0.22rem 0 0;
+  overflow: hidden;
+}
+
+[data-dashboard="operations"] .ops-chart-bar-ontime { width: 100%; }
+[data-dashboard="operations"] .ops-chart-day time { white-space: nowrap; }
+
+[data-dashboard="operations"] .ops-chart-cancelled {
+  display: inline-grid;
+  min-width: 1.3rem;
+  min-height: 1.15rem;
+  place-items: center;
+  border-radius: 0.2rem;
+  padding-inline: 0.18rem;
+  font-family: var(--ops-mono);
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+[data-dashboard="operations"] .ops-chart-cancelled.ops-count-warning {
+  background: color-mix(in srgb, var(--ops-warn) 12%, var(--ops-surface));
+}
+
+[data-dashboard="operations"] .ops-vehicle-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-dashboard="operations"] .ops-vehicle-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content max-content;
+  align-items: start;
+  gap: 0.7rem;
+  border-bottom: 1px solid var(--ops-border);
+  padding: 0.55rem 0;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+[data-dashboard="operations"] .ops-vehicle-list li > div:first-child { overflow-wrap: anywhere; }
+
+[data-dashboard="operations"] .ops-vehicle-count,
+[data-dashboard="operations"] .ops-vehicle-cost {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-dashboard="operations"] .ops-vehicle-count strong { color: var(--ops-critical); }
+
+[data-dashboard="operations"] .ops-owner-section { margin-top: 1.15rem; }
+
+[data-dashboard="operations"] .ops-owner-section h3 {
+  margin: 0 0 0.4rem;
+  color: var(--ops-ink);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+[data-dashboard="operations"] .ops-owner-table { min-width: 0; }
+
+[data-dashboard="operations"] .ops-empty {
+  margin: 0.6rem 0;
+  border: 1px dashed var(--ops-border);
+  border-radius: 0.35rem;
+  padding: 0.65rem;
+  color: var(--ops-muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+[data-dashboard="operations"] .ops-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@container (max-width: 53rem) {
+  [data-dashboard="operations"] .ops-layout { grid-template-columns: minmax(0, 1fr); }
+}
+
+@container (max-width: 36rem) {
+  [data-dashboard="operations"] .ops-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  [data-dashboard="operations"] .ops-kpi,
+  [data-dashboard="operations"] .ops-panel { padding: 0.75rem; }
+}
+
+[data-dashboard="workforce"] .wf-desk {
+  --wf-line: color-mix(in srgb, var(--border) 77%, var(--surface));
+  --wf-tint: color-mix(in srgb, var(--accent) 6%, var(--surface));
+  --wf-plot-height: 176px;
+  display: grid;
+  gap: 17px;
+  min-width: 0;
+}
+
+[data-dashboard="workforce"] .wf-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: end;
+  gap: 20px 28px;
+  min-width: 0;
+  margin-bottom: 3px;
+  padding: clamp(19px, 2.6vw, 32px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 12px);
+  background: linear-gradient(112deg, var(--wf-tint), var(--surface) 85%);
+}
+
+[data-dashboard="workforce"] .wf-heading {
+  display: grid;
+  gap: 6px;
+}
+
+[data-dashboard="workforce"] .wf-eyebrow {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+[data-dashboard="workforce"] .wf-heading h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(30px, 3.5vw, 49px);
+  font-weight: 750;
+  letter-spacing: -.05em;
+  line-height: 1.08;
+}
+
+[data-dashboard="workforce"] .wf-period {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+[data-dashboard="workforce"] .wf-period span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+[data-dashboard="workforce"] .wf-period span::before {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  content: '';
+}
+
+[data-dashboard="workforce"] .wf-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 10px;
+  width: min(100%, 340px);
+}
+
+[data-dashboard="workforce"] .wf-filters label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+[data-dashboard="workforce"] .wf-filters select {
+  min-width: 0;
+  width: 100%;
+  min-height: 41px;
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+}
+
+[data-dashboard="workforce"] .wf-filters select:disabled {
+  cursor: default;
+  color: var(--muted);
+}
+
+[data-dashboard="workforce"] .wf-kpis {
+  gap: 13px;
+}
+
+[data-dashboard="workforce"] .wf-kpi {
+  position: relative;
+  gap: 6px;
+  padding-top: 18px;
+}
+
+[data-dashboard="workforce"] .wf-kpi::before {
+  position: absolute;
+  top: -1px;
+  left: 17px;
+  width: 26px;
+  height: 3px;
+  border-radius: 0 0 2px 2px;
+  background: var(--wf-key);
+  content: '';
+}
+
+[data-dashboard="workforce"] .wf-kpi--roster { --wf-key: var(--chart-2); }
+[data-dashboard="workforce"] .wf-kpi--productive { --wf-key: var(--chart-1); }
+[data-dashboard="workforce"] .wf-kpi--overtime { --wf-key: var(--chart-3); }
+[data-dashboard="workforce"] .wf-kpi--cost { --wf-key: var(--chart-5); }
+
+[data-dashboard="workforce"] .wf-kpi-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+[data-dashboard="workforce"] .wf-kpi-value {
+  color: var(--ink);
+  font-size: clamp(22px, 2.2vw, 33px);
+  font-weight: 740;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.045em;
+  line-height: 1.13;
+  overflow-wrap: anywhere;
+}
+
+[data-dashboard="workforce"] .wf-kpi-note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+[data-dashboard="workforce"] .wf-grid {
+  grid-template-columns: minmax(0, 2.05fr) minmax(224px, 1fr);
+}
+
+[data-dashboard="workforce"] .wf-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px 14px;
+  margin-bottom: 16px;
+}
+
+[data-dashboard="workforce"] .wf-panel-head p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+[data-dashboard="workforce"] .wf-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--wf-line);
+  border-radius: 7px;
+  background: var(--wf-tint);
+}
+
+[data-dashboard="workforce"] .wf-modes button {
+  padding: 5px 7px;
+  min-height: 29px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+[data-dashboard="workforce"] .wf-modes button:hover,
+[data-dashboard="workforce"] .wf-modes button[aria-pressed="true"] {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--accent);
+}
+
+[data-dashboard="workforce"] .wf-color-scheduled { --wf-bar-color: var(--chart-2); }
+[data-dashboard="workforce"] .wf-color-productive { --wf-bar-color: var(--chart-1); }
+[data-dashboard="workforce"] .wf-color-absence { --wf-bar-color: var(--chart-4); }
+[data-dashboard="workforce"] .wf-color-overtime { --wf-bar-color: var(--chart-3); }
+[data-dashboard="workforce"] .wf-color-cost { --wf-bar-color: var(--chart-5); }
+
+[data-dashboard="workforce"] .wf-chart-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 5px 10px;
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 620;
+}
+
+[data-dashboard="workforce"] .wf-legend,
+[data-dashboard="workforce"] .wf-legend-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 12px;
+}
+
+[data-dashboard="workforce"] .wf-legend-item { gap: 5px; }
+
+[data-dashboard="workforce"] .wf-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--wf-bar-color);
+}
+
+[data-dashboard="workforce"] .wf-chart-body {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  padding-top: 6px;
+}
+
+[data-dashboard="workforce"] .wf-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: end;
+  height: calc(var(--wf-plot-height) + 11px);
+  margin-top: -6px;
+  color: var(--muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  line-height: 11px;
+}
+
+[data-dashboard="workforce"] .wf-plot-scroll,
+[data-dashboard="workforce"] .wf-table-scroll {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-color: var(--border) transparent;
+  scrollbar-width: thin;
+}
+
+[data-dashboard="workforce"] .wf-plot {
+  position: relative;
+  min-width: max(125px, calc(var(--wf-days) * 43px));
+}
+
+[data-dashboard="workforce"] .wf-gridlines {
+  position: absolute;
+  inset: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: var(--wf-plot-height);
+  pointer-events: none;
+}
+
+[data-dashboard="workforce"] .wf-gridlines i { border-top: 1px solid var(--wf-line); }
+[data-dashboard="workforce"] .wf-gridlines i:last-child { border-color: var(--border); }
+
+[data-dashboard="workforce"] .wf-days {
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(var(--wf-days), minmax(0, 1fr));
+  gap: 2px;
+}
+
+[data-dashboard="workforce"] .wf-day {
+  position: relative;
+  display: grid;
+  grid-template-rows: var(--wf-plot-height) auto;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 2px 3px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  text-align: center;
+}
+
+[data-dashboard="workforce"] .wf-day:hover,
+[data-dashboard="workforce"] .wf-day:focus-visible {
+  z-index: 1;
+  outline-offset: -2px;
+  background: var(--wf-tint);
+  color: var(--ink);
+}
+
+[data-dashboard="workforce"] .wf-day[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  color: var(--accent);
+  font-weight: 750;
+}
+
+[data-dashboard="workforce"] .wf-day-bars {
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  gap: 2px;
+  height: 100%;
+}
+
+[data-dashboard="workforce"] .wf-bar {
+  display: block;
+  width: min(40%, 17px);
+  height: max(2px, var(--wf-height));
+  border-radius: 3px 3px 0 0;
+  background: var(--wf-bar-color);
+}
+
+[data-dashboard="workforce"] .wf-day--muted .wf-bar { opacity: .45; }
+
+[data-dashboard="workforce"] .wf-bar[data-value="missing"] {
+  height: 3px;
+  border: 1px dashed var(--muted);
+  border-radius: 0;
+  background: transparent;
+}
+
+[data-dashboard="workforce"] .wf-day-date {
+  padding-block: 3px;
+  font-size: 10px;
+  line-height: 14px;
+  white-space: nowrap;
+}
+
+[data-dashboard="workforce"] .wf-tooltip {
+  display: none;
+  position: absolute;
+  z-index: 2;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 142px;
+  padding: 7px 8px;
+  border-radius: 5px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 11px;
+  font-weight: 570;
+  line-height: 1.45;
+  text-align: left;
+  pointer-events: none;
+}
+
+[data-dashboard="workforce"] .wf-day:is(:hover, :focus-visible) .wf-tooltip { display: block; }
+[data-dashboard="workforce"] .wf-day:nth-child(-n+2) .wf-tooltip { left: 2px; transform: none; }
+[data-dashboard="workforce"] .wf-day:nth-last-child(-n+2):not(:first-child) .wf-tooltip { left: auto; right: 2px; transform: none; }
+
+[data-dashboard="workforce"] .wf-chart-note,
+[data-dashboard="workforce"] .wf-source-note {
+  margin: 11px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+[data-dashboard="workforce"] .wf-exception {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+[data-dashboard="workforce"] .wf-exception-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 630;
+}
+
+[data-dashboard="workforce"] .wf-exception-label strong {
+  font-variant-numeric: tabular-nums;
+  font-weight: 740;
+}
+
+[data-dashboard="workforce"] .wf-meter {
+  height: 6px;
+  border-radius: 5px;
+  background: var(--wf-line);
+  overflow: hidden;
+}
+
+[data-dashboard="workforce"] .wf-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--wf-bar-color);
+}
+
+[data-dashboard="workforce"] .wf-exception-share {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+[data-dashboard="workforce"] .wf-finding {
+  display: grid;
+  gap: 4px;
+  margin-top: 19px;
+  padding: 12px;
+  border: 1px solid var(--wf-line);
+  border-radius: 7px;
+  background: var(--wf-tint);
+}
+
+[data-dashboard="workforce"] .wf-finding span {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+[data-dashboard="workforce"] .wf-finding strong { font-size: 15px; font-weight: 730; }
+[data-dashboard="workforce"] .wf-finding p { color: var(--muted); font-size: 12px; line-height: 1.4; }
+
+[data-dashboard="workforce"] .wf-table {
+  width: 100%;
+  min-width: 695px;
+  border-spacing: 0;
+  color: var(--ink);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-dashboard="workforce"] .wf-table :is(th, td) {
+  padding: 10px 10px 10px 0;
+  border-bottom: 1px solid var(--wf-line);
+  text-align: right;
+  white-space: nowrap;
+}
+
+[data-dashboard="workforce"] .wf-table thead th {
+  padding-block: 8px;
+  background: var(--wf-tint);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+[data-dashboard="workforce"] .wf-table :is(th, td):nth-child(3) { text-align: left; padding-left: 12px; }
+
+[data-dashboard="workforce"] .wf-table th:first-child {
+  padding-left: 8px;
+  text-align: left;
+}
+
+[data-dashboard="workforce"] .wf-selected-row :is(th, td) { background: var(--wf-tint); }
+
+[data-dashboard="workforce"] .wf-department {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 710;
+  line-height: 1.4;
+  text-align: left;
+}
+
+[data-dashboard="workforce"] .wf-department:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+[data-dashboard="workforce"] .wf-manager {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 450;
+}
+
+[data-dashboard="workforce"] .wf-coverage {
+  display: inline-flex;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--wf-line);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 620;
+  line-height: 1.45;
+}
+
+[data-dashboard="workforce"] .wf-coverage--recorded {
+  background: color-mix(in srgb, var(--good) 9%, var(--surface));
+  color: var(--good);
+}
+
+[data-dashboard="workforce"] .wf-empty {
+  padding: 20px 14px;
+  border: 1px dashed var(--border);
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+[data-dashboard="workforce"] .wf-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 1080px) {
+  [data-dashboard="workforce"] .wf-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 1000px) {
+  [data-dashboard="workforce"] .wf-table th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    border-right: 1px solid var(--wf-line);
+  }
+
+  [data-dashboard="workforce"] .wf-table tbody th { background: var(--surface); }
+  [data-dashboard="workforce"] .wf-table .wf-selected-row th { background: var(--wf-tint); }
+}
+
+@media (max-width: 525px) {
+  [data-dashboard="workforce"] .wf-desk { --wf-plot-height: 146px; gap: 13px; }
+  [data-dashboard="workforce"] .wf-kpis { gap: 8px; }
+  [data-dashboard="workforce"] .wf-kpi { min-height: 96px; }
+  [data-dashboard="workforce"] .wf-kpi::before { left: 13px; }
+  [data-dashboard="workforce"] .wf-kpi-value { font-size: clamp(18px, 5vw, 25px); }
+  [data-dashboard="workforce"] .wf-filters { width: 100%; }
+}
+
+[data-dashboard="finance"] .finance-desk {
+  --finance-pending: var(--warning, #8c520e);
+  --finance-actual: var(--chart-1, #247d75);
+  --finance-line: var(--border, #d9e1df);
+  --finance-track: color-mix(in srgb, var(--muted, #566967) 16%, transparent);
+  container: finance-desk / inline-size;
+  color: var(--ink, #192b2c);
+}
+
+[data-dashboard="finance"] .finance-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  margin-block-end: 1.25rem;
+}
+
+[data-dashboard="finance"] .finance-header h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 4.5cqi, 2.85rem);
+  line-height: 1.05;
+  letter-spacing: -.045em;
+}
+
+[data-dashboard="finance"] .finance-period-note,
+[data-dashboard="finance"] .finance-panel-heading p {
+  margin: .45rem 0 0;
+  color: var(--muted, #566967);
+  font-size: .88rem;
+  line-height: 1.45;
+}
+
+[data-dashboard="finance"] .finance-period {
+  display: grid;
+  gap: .35rem;
+  min-width: min(11rem, 100%);
+  color: var(--muted, #566967);
+  font-size: .76rem;
+  font-weight: 650;
+}
+
+[data-dashboard="finance"] :is(.finance-period select, .finance-ledger-tools select, .finance-ledger-tools button) {
+  min-height: 2.375rem;
+  padding: .38rem .6rem;
+  border: 1px solid var(--finance-line);
+  border-radius: .45rem;
+  background: var(--surface, #fff);
+  color: var(--ink, #192b2c);
+  font: inherit;
+}
+
+[data-dashboard="finance"] :is(.finance-period select, .finance-ledger-tools select) {
+  padding-inline-end: .4rem;
+}
+
+[data-dashboard="finance"] :is(.finance-period select, .finance-ledger-tools select, .finance-ledger-tools button):enabled {
+  cursor: pointer;
+}
+
+[data-dashboard="finance"] :is(.finance-period select, .finance-ledger-tools select, .finance-ledger-tools button, .finance-route-scroll):focus-visible {
+  outline: 2px solid var(--accent, #247d75);
+  outline-offset: 2px;
+}
+
+[data-dashboard="finance"] .finance-period select:disabled {
+  opacity: 1;
+  appearance: none;
+}
+
+[data-dashboard="finance"] .finance-kpis {
+  display: grid;
+  grid-template-columns: minmax(0, 1.28fr) repeat(3, minmax(0, 1fr));
+  gap: .8rem;
+  margin: 0 0 1rem;
+}
+
+[data-dashboard="finance"] .finance-kpi {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: .36rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--finance-line);
+  border-radius: .8rem;
+  background: var(--surface, #fff);
+}
+
+[data-dashboard="finance"] .finance-kpi-label {
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+[data-dashboard="finance"] .finance-kpi-value {
+  max-width: 100%;
+  font-size: clamp(1.22rem, 2.8cqi, 2rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.045em;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+[data-dashboard="finance"] .finance-kpi-unavailable {
+  font-size: .9em;
+  letter-spacing: -.02em;
+}
+
+[data-dashboard="finance"] .finance-kpi p {
+  margin: 0;
+  color: var(--muted, #566967);
+  font-size: .75rem;
+  line-height: 1.35;
+}
+
+[data-dashboard="finance"] .finance-kpi-review {
+  min-height: 7rem;
+  border-color: #214846;
+  background: linear-gradient(118deg, #143b3b, #102d36);
+  color: #f5f9f7;
+}
+
+[data-dashboard="finance"] .finance-kpi-review .finance-kpi-value {
+  color: #ffe6b5;
+  font-size: clamp(1.6rem, 3.55cqi, 2.55rem);
+}
+
+[data-dashboard="finance"] .finance-kpi-review :is(p, .finance-missing) {
+  color: #c7dcda;
+}
+
+[data-dashboard="finance"] .finance-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(18rem, 1fr);
+  align-items: start;
+  gap: 1rem;
+}
+
+[data-dashboard="finance"] .finance-panel {
+  min-width: 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--finance-line);
+  border-radius: .8rem;
+  background: var(--surface, #fff);
+}
+
+[data-dashboard="finance"] .finance-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .65rem;
+  margin-block-end: .85rem;
+}
+
+[data-dashboard="finance"] .finance-panel-heading .panel-title {
+  margin: 0;
+  color: var(--ink, #192b2c);
+  font-size: 1.075rem;
+  line-height: 1.2;
+  letter-spacing: -.02em;
+}
+
+[data-dashboard="finance"] .finance-ledger-tools,
+[data-dashboard="finance"] .finance-order {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem;
+  font-size: .74rem;
+}
+
+[data-dashboard="finance"] .finance-order > span {
+  color: var(--muted, #566967);
+}
+
+[data-dashboard="finance"] .finance-ledger-tools button[aria-pressed="true"] {
+  border-color: var(--finance-pending);
+  background: color-mix(in srgb, var(--finance-pending) 14%, var(--surface, #fff));
+  font-weight: 700;
+}
+
+[data-dashboard="finance"] .finance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .79rem;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-dashboard="finance"] .finance-table :is(th, td) {
+  padding: .68rem .45rem;
+  border-bottom: 1px solid var(--finance-line);
+  text-align: start;
+  vertical-align: top;
+}
+
+[data-dashboard="finance"] .finance-table thead th {
+  padding-block: .52rem;
+  color: var(--muted, #566967);
+  font-size: .72rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+[data-dashboard="finance"] .finance-table tbody tr:last-child > * {
+  padding-block-end: .2rem;
+  border-bottom: 0;
+}
+
+[data-dashboard="finance"] .finance-table tr > :first-child {
+  padding-inline-start: 0;
+}
+
+[data-dashboard="finance"] .finance-table tr > :last-child {
+  padding-inline-end: 0;
+}
+
+[data-dashboard="finance"] .finance-ledger-table :is(th, td):nth-child(n+3),
+[data-dashboard="finance"] .finance-route-table :is(th, td):nth-child(n+2) {
+  text-align: end;
+}
+
+[data-dashboard="finance"] .finance-mobile-label {
+  display: none;
+}
+
+[data-dashboard="finance"] .finance-secondary,
+[data-dashboard="finance"] .finance-status,
+[data-dashboard="finance"] .finance-missing {
+  color: var(--muted, #566967);
+  font-weight: 400;
+}
+
+[data-dashboard="finance"] :is(.finance-department, .finance-budget-amounts) {
+  font-weight: 680;
+}
+
+[data-dashboard="finance"] .finance-ledger-table th .finance-secondary,
+[data-dashboard="finance"] .finance-status {
+  display: block;
+  margin-block-start: .15rem;
+  font-size: .69rem;
+  line-height: 1.25;
+}
+
+[data-dashboard="finance"] .finance-amount-cell > span:not(.finance-status, .finance-mobile-label) {
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+[data-dashboard="finance"] .finance-negative {
+  color: var(--danger, #a22f3a);
+}
+
+[data-dashboard="finance"] .finance-pending,
+[data-dashboard="finance"] .finance-supplier-pending strong {
+  color: var(--finance-pending);
+}
+
+[data-dashboard="finance"] .finance-budget-use {
+  display: grid;
+  grid-template-columns: minmax(1.5rem, 1fr) auto;
+  align-items: center;
+  gap: .36rem;
+  width: min(100%, 10rem);
+  margin-block-start: .25rem;
+  color: var(--muted, #566967);
+  font-size: .68rem;
+}
+
+[data-dashboard="finance"] .finance-bar {
+  display: block;
+  min-width: 0;
+  height: .33rem;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: var(--finance-track);
+}
+
+[data-dashboard="finance"] .finance-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--finance-actual);
+}
+
+[data-dashboard="finance"] .finance-over .finance-bar > span {
+  background: var(--danger, #a22f3a);
+}
+
+[data-dashboard="finance"] .finance-supplier-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: .25rem .5rem;
+  padding-block-end: .65rem;
+  border-bottom: 1px solid var(--finance-line);
+  color: var(--muted, #566967);
+  font-size: .73rem;
+}
+
+[data-dashboard="finance"] .finance-supplier-summary p {
+  margin: 0;
+}
+
+[data-dashboard="finance"] .finance-supplier-summary strong {
+  color: var(--finance-pending);
+  font-size: .84rem;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-dashboard="finance"] .finance-supplier-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-dashboard="finance"] .finance-supplier-list li {
+  padding-block: .78rem;
+  border-bottom: 1px solid var(--finance-line);
+}
+
+[data-dashboard="finance"] .finance-supplier-list li:last-child {
+  padding-block-end: .15rem;
+  border-bottom: 0;
+}
+
+[data-dashboard="finance"] .finance-supplier-name {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .4rem;
+  margin-block-end: .45rem;
+  font-size: .79rem;
+}
+
+[data-dashboard="finance"] .finance-supplier-name div > span {
+  display: block;
+  margin-block-start: .1rem;
+}
+
+[data-dashboard="finance"] .finance-supplier-name .finance-secondary {
+  font-size: .71rem;
+}
+
+[data-dashboard="finance"] .finance-supplier-name > .finance-secondary {
+  flex-shrink: 0;
+}
+
+[data-dashboard="finance"] .finance-supplier-lane {
+  display: grid;
+  grid-template-columns: 3.8rem minmax(.85rem, 1fr) 5.75rem;
+  align-items: center;
+  gap: .45rem;
+  margin-block-start: .23rem;
+  font-size: .7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-dashboard="finance"] .finance-supplier-lane > :first-child {
+  color: var(--muted, #566967);
+}
+
+[data-dashboard="finance"] .finance-supplier-lane strong {
+  justify-self: end;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+[data-dashboard="finance"] .finance-supplier-pending .finance-bar > span {
+  background: var(--finance-pending);
+}
+
+[data-dashboard="finance"] .finance-routes {
+  grid-column: 1 / -1;
+}
+
+[data-dashboard="finance"] .finance-route-scroll {
+  overflow-x: auto;
+}
+
+[data-dashboard="finance"] .finance-route-table {
+  min-width: 27rem;
+}
+
+[data-dashboard="finance"] .finance-route-name {
+  display: flex;
+  align-items: baseline;
+  gap: .45rem;
+}
+
+[data-dashboard="finance"] .finance-route-id {
+  min-width: 2.2ch;
+  padding: .08rem .3rem;
+  border: 1px solid var(--finance-line);
+  border-radius: .25rem;
+  font-family: var(--mono, monospace);
+  text-align: center;
+}
+
+[data-dashboard="finance"] .finance-empty {
+  margin: 0;
+  padding-block: .85rem;
+  border-top: 1px solid var(--finance-line);
+  color: var(--muted, #566967);
+  font-size: .83rem;
+  line-height: 1.45;
+}
+
+@container finance-desk (max-width: 57rem) {
+  [data-dashboard="finance"] .finance-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container finance-desk (max-width: 41rem) {
+  [data-dashboard="finance"] .finance-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container finance-desk (max-width: 34rem) {
+  [data-dashboard="finance"] .finance-ledger-table :is(thead, tbody) {
+    display: block;
+  }
+
+  [data-dashboard="finance"] .finance-ledger-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  [data-dashboard="finance"] .finance-ledger-table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: .6rem .5rem;
+    padding-block: .65rem;
+    border-top: 1px solid var(--finance-line);
+  }
+
+  [data-dashboard="finance"] .finance-ledger-table tbody tr > :is(th, td) {
+    padding: 0;
+    border: 0;
+    text-align: start;
+  }
+
+  [data-dashboard="finance"] .finance-mobile-label {
+    display: block;
+    margin-block-end: .1rem;
+    color: var(--muted, #566967);
+    font-size: .69rem;
+    font-weight: 400;
+  }
+}
+
+@container finance-desk (max-width: 27rem) {
+  [data-dashboard="finance"] .finance-header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  [data-dashboard="finance"] .finance-kpis {
+    gap: .55rem;
+  }
+
+  [data-dashboard="finance"] :is(.finance-kpi, .finance-panel) {
+    padding-inline: .75rem;
+  }
+}
+
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to dashboard</a>
+  <aside class="rail">
+    <a href="#briefing" class="brand" aria-label="MonoRail Operations briefing">
+      <span class="brand-mark" aria-hidden="true"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="15" rx="4"/><path d="M5 11h14M12 3v8M9 15h.01M15 15h.01M9 18l-3 4m9-4 3 4"/></svg></span>
+      <span>MonoRail <small>Transit operations</small></span>
+    </a>
+    <nav class="desk-nav" aria-label="Transit desks"></nav>
+    <div class="rail-note"><span class="rail-dot" aria-hidden="true"></span><span>Fictional enterprise<br><small>Sample workspace</small></span></div>
+  </aside>
+  <div class="main-wrap">
+    <header class="workspace-bar">
+      <div class="workspace-path"><span>Enterprise</span><span aria-hidden="true">/</span><strong id="current-desk">Shift briefing</strong></div>
+      <div class="workspace-period" id="coverage"></div>
+    </header>
+    <main id="workspace" tabindex="-1"></main>
+    <footer class="workspace-footer"><span>MonoRail sample enterprise</span><a href="#sources">Data &amp; Malloy queries</a></footer>
+  </div>
+  <script>window.sampleDashboards = {}; window.sampleSnapshot = {"project":"monorail-sample","models":["enterprise.malloy","cta.malloy"],"exportedAt":"2026-11-21T05:38:28.938Z","data":{"headcount_by_department":[{"department_name":"Bus Operations","manager_name":"Morgan Reed","headcount":"6"},{"department_name":"Fleet Maintenance","manager_name":"Drew Bennett","headcount":"4"},{"department_name":"Rail Operations","manager_name":"Riley Shah","headcount":"4"},{"department_name":"People Operations","manager_name":"Dakota Hayes","headcount":"3"},{"department_name":"Data Platform","manager_name":"Remy Cole","headcount":"3"},{"department_name":"Finance","manager_name":"Rowan Blake","headcount":"3"},{"department_name":"Service Planning","manager_name":"Logan Wells","headcount":"3"}],"workforce_cost_by_department":[{"department_name":"Bus Operations","total_productive_hours":480,"total_absence_hours":8,"total_overtime_hours":8,"total_labor_cost":16988},{"department_name":"Fleet Maintenance","total_productive_hours":324,"total_absence_hours":0,"total_overtime_hours":4,"total_labor_cost":13550},{"department_name":"Rail Operations","total_productive_hours":334,"total_absence_hours":0,"total_overtime_hours":14,"total_labor_cost":13346},{"department_name":"Data Platform","total_productive_hours":240,"total_absence_hours":8,"total_overtime_hours":8,"total_labor_cost":12044},{"department_name":"Finance","total_productive_hours":248,"total_absence_hours":0,"total_overtime_hours":8,"total_labor_cost":11076},{"department_name":"People Operations","total_productive_hours":234,"total_absence_hours":16,"total_overtime_hours":10,"total_labor_cost":9980},{"department_name":"Service Planning","total_productive_hours":218,"total_absence_hours":24,"total_overtime_hours":2,"total_labor_cost":9948}],"service_reliability_by_route":[{"route_id":"22","route_long_name":"Clark","department_name":"Bus Operations","trips_completed":"3200","trips_cancelled":"26","trips_on_time":"2963"},{"route_id":"49","route_long_name":"Western","department_name":"Bus Operations","trips_completed":"3653","trips_cancelled":"23","trips_on_time":"2952"},{"route_id":"79","route_long_name":"79th","department_name":"Bus Operations","trips_completed":"5797","trips_cancelled":"23","trips_on_time":"5390"},{"route_id":"9","route_long_name":"Ashland","department_name":"Bus Operations","trips_completed":"4785","trips_cancelled":"23","trips_on_time":"4443"},{"route_id":"Blue","route_long_name":"Blue Line","department_name":"Rail Operations","trips_completed":"4687","trips_cancelled":"23","trips_on_time":"4350"},{"route_id":"Red","route_long_name":"Red Line","department_name":"Rail Operations","trips_completed":"5545","trips_cancelled":"23","trips_on_time":"5143"}],"fleet_risk_by_owner":[{"department_name":"Bus Operations","open_orders":"4","critical_orders":"1","open_parts_cost":1350},{"department_name":"Rail Operations","open_orders":"2","critical_orders":"0","open_parts_cost":675}],"budget_by_department":[{"department_name":"Fleet Maintenance","budget_status":"OverBudget","budget_total":10000,"actual_cost_total":23391.5,"remaining_budget_total":-13391.5,"pending_approval_total":5800},{"department_name":"People Operations","budget_status":"WithinBudget","budget_total":14000,"actual_cost_total":12171,"remaining_budget_total":1829,"pending_approval_total":1210},{"department_name":"Finance","budget_status":"WithinBudget","budget_total":16000,"actual_cost_total":13235,"remaining_budget_total":2765,"pending_approval_total":1120},{"department_name":"Data Platform","budget_status":"WithinBudget","budget_total":19000,"actual_cost_total":14981.5,"remaining_budget_total":4018.5,"pending_approval_total":1390},{"department_name":"Service Planning","budget_status":"WithinBudget","budget_total":17000,"actual_cost_total":12668.5,"remaining_budget_total":4331.5,"pending_approval_total":1300},{"department_name":"Bus Operations","budget_status":"WithinBudget","budget_total":26000,"actual_cost_total":18568,"remaining_budget_total":7432,"pending_approval_total":850},{"department_name":"Rail Operations","budget_status":"WithinBudget","budget_total":23000,"actual_cost_total":15252,"remaining_budget_total":7748,"pending_approval_total":940}],"vendor_approval_pipeline":[{"supplier_name":"Northline Systems","category":"Software","approved_spend":7330,"pending_spend":2060,"invoices":"6"},{"supplier_name":"Harbor Training Studio","category":"Training","approved_spend":7135,"pending_spend":2240,"invoices":"5"},{"supplier_name":"Prairie Office Supply","category":"Office supplies","approved_spend":3550,"pending_spend":1120,"invoices":"5"},{"supplier_name":"Lakefront Fleet Parts","category":"Fleet parts","approved_spend":2555,"pending_spend":7190,"invoices":"5"}],"executive_department_review":[{"department_name":"Fleet Maintenance","manager_name":"Drew Bennett","budget_status":"OverBudget","actual_cost":23391.5,"budget_remaining":-13391.5,"completed_service":"0","critical_repairs":"1"},{"department_name":"People Operations","manager_name":"Dakota Hayes","budget_status":"WithinBudget","actual_cost":12171,"budget_remaining":1829,"completed_service":"0","critical_repairs":"0"},{"department_name":"Finance","manager_name":"Rowan Blake","budget_status":"WithinBudget","actual_cost":13235,"budget_remaining":2765,"completed_service":"0","critical_repairs":"0"},{"department_name":"Data Platform","manager_name":"Remy Cole","budget_status":"WithinBudget","actual_cost":14981.5,"budget_remaining":4018.5,"completed_service":"0","critical_repairs":"0"},{"department_name":"Service Planning","manager_name":"Logan Wells","budget_status":"WithinBudget","actual_cost":12668.5,"budget_remaining":4331.5,"completed_service":"0","critical_repairs":"0"},{"department_name":"Bus Operations","manager_name":"Morgan Reed","budget_status":"WithinBudget","actual_cost":18568,"budget_remaining":7432,"completed_service":"17435","critical_repairs":"0"},{"department_name":"Rail Operations","manager_name":"Riley Shah","budget_status":"WithinBudget","actual_cost":15252,"budget_remaining":7748,"completed_service":"10232","critical_repairs":"0"}],"route_cost_review":[{"route_id":"Red","route_long_name":"Red Line","modeled_cost":7783.920000000001,"completed_service":"5545"},{"route_id":"Blue","route_long_name":"Blue Line","modeled_cost":7468.110000000001,"completed_service":"4687"},{"route_id":"49","route_long_name":"Western","modeled_cost":4935.060000000001,"completed_service":"3653"},{"route_id":"9","route_long_name":"Ashland","modeled_cost":4753.669999999998,"completed_service":"4785"},{"route_id":"22","route_long_name":"Clark","modeled_cost":4450.02,"completed_service":"3200"},{"route_id":"79","route_long_name":"79th","modeled_cost":4429.370000000001,"completed_service":"5797"}],"integrity_and_risk_checks":[{"check_kind":"Integrity","status":"Success","checks":11,"violations":"0"},{"check_kind":"DemonstrationRisk","status":"Failed","checks":2,"violations":"2"}],"route_daily":[{"service_date":"2026-11-02T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"234","trips_cancelled":"6","trips_on_time":"212","trips_scheduled":"240","delay_total":"14"},{"service_date":"2026-11-02T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"270","trips_cancelled":"1","trips_on_time":"218","trips_scheduled":"271","delay_total":"28"},{"service_date":"2026-11-02T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"445","trips_cancelled":"1","trips_on_time":"413","trips_scheduled":"446","delay_total":"42"},{"service_date":"2026-11-02T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"362","trips_cancelled":"1","trips_on_time":"340","trips_scheduled":"363","delay_total":"56"},{"service_date":"2026-11-02T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"353","trips_cancelled":"1","trips_on_time":"335","trips_scheduled":"354","delay_total":"70"},{"service_date":"2026-11-02T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"421","trips_cancelled":"1","trips_on_time":"383","trips_scheduled":"422","delay_total":"84"},{"service_date":"2026-11-03T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"238","trips_cancelled":"1","trips_on_time":"218","trips_scheduled":"239","delay_total":"98"},{"service_date":"2026-11-03T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"268","trips_cancelled":"3","trips_on_time":"217","trips_scheduled":"271","delay_total":"112"},{"service_date":"2026-11-03T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"449","trips_cancelled":"1","trips_on_time":"422","trips_scheduled":"450","delay_total":"126"},{"service_date":"2026-11-03T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"364","trips_cancelled":"1","trips_on_time":"345","trips_scheduled":"365","delay_total":"14"},{"service_date":"2026-11-03T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"355","trips_cancelled":"1","trips_on_time":"323","trips_scheduled":"356","delay_total":"28"},{"service_date":"2026-11-03T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"423","trips_cancelled":"1","trips_on_time":"389","trips_scheduled":"424","delay_total":"42"},{"service_date":"2026-11-04T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"238","trips_cancelled":"1","trips_on_time":"221","trips_scheduled":"239","delay_total":"56"},{"service_date":"2026-11-04T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"265","trips_cancelled":"6","trips_on_time":"214","trips_scheduled":"271","delay_total":"70"},{"service_date":"2026-11-04T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"447","trips_cancelled":"3","trips_on_time":"424","trips_scheduled":"450","delay_total":"84"},{"service_date":"2026-11-04T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"364","trips_cancelled":"1","trips_on_time":"331","trips_scheduled":"365","delay_total":"98"},{"service_date":"2026-11-04T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"355","trips_cancelled":"1","trips_on_time":"326","trips_scheduled":"356","delay_total":"112"},{"service_date":"2026-11-04T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"423","trips_cancelled":"1","trips_on_time":"393","trips_scheduled":"424","delay_total":"126"},{"service_date":"2026-11-05T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"238","trips_cancelled":"1","trips_on_time":"223","trips_scheduled":"239","delay_total":"14"},{"service_date":"2026-11-05T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"270","trips_cancelled":"1","trips_on_time":"218","trips_scheduled":"271","delay_total":"28"},{"service_date":"2026-11-05T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"449","trips_cancelled":"1","trips_on_time":"408","trips_scheduled":"450","delay_total":"42"},{"service_date":"2026-11-05T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"362","trips_cancelled":"3","trips_on_time":"333","trips_scheduled":"365","delay_total":"56"},{"service_date":"2026-11-05T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"355","trips_cancelled":"1","trips_on_time":"330","trips_scheduled":"356","delay_total":"70"},{"service_date":"2026-11-05T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"423","trips_cancelled":"1","trips_on_time":"397","trips_scheduled":"424","delay_total":"84"},{"service_date":"2026-11-06T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"238","trips_cancelled":"1","trips_on_time":"226","trips_scheduled":"239","delay_total":"98"},{"service_date":"2026-11-06T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"270","trips_cancelled":"1","trips_on_time":"218","trips_scheduled":"271","delay_total":"112"},{"service_date":"2026-11-06T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"444","trips_cancelled":"6","trips_on_time":"408","trips_scheduled":"450","delay_total":"126"},{"service_date":"2026-11-06T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"364","trips_cancelled":"1","trips_on_time":"338","trips_scheduled":"365","delay_total":"14"},{"service_date":"2026-11-06T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"353","trips_cancelled":"3","trips_on_time":"331","trips_scheduled":"356","delay_total":"28"},{"service_date":"2026-11-06T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"423","trips_cancelled":"1","trips_on_time":"401","trips_scheduled":"424","delay_total":"42"},{"service_date":"2026-11-07T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"223","trips_cancelled":"1","trips_on_time":"202","trips_scheduled":"224","delay_total":"56"},{"service_date":"2026-11-07T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"255","trips_cancelled":"1","trips_on_time":"206","trips_scheduled":"256","delay_total":"70"},{"service_date":"2026-11-07T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"380","trips_cancelled":"1","trips_on_time":"353","trips_scheduled":"381","delay_total":"84"},{"service_date":"2026-11-07T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"304","trips_cancelled":"1","trips_on_time":"285","trips_scheduled":"305","delay_total":"98"},{"service_date":"2026-11-07T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"283","trips_cancelled":"1","trips_on_time":"268","trips_scheduled":"284","delay_total":"112"},{"service_date":"2026-11-07T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"346","trips_cancelled":"3","trips_on_time":"314","trips_scheduled":"349","delay_total":"126"},{"service_date":"2026-11-08T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"192","trips_cancelled":"1","trips_on_time":"176","trips_scheduled":"193","delay_total":"14"},{"service_date":"2026-11-08T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"226","trips_cancelled":"1","trips_on_time":"183","trips_scheduled":"227","delay_total":"28"},{"service_date":"2026-11-08T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"282","trips_cancelled":"1","trips_on_time":"265","trips_scheduled":"283","delay_total":"42"},{"service_date":"2026-11-08T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"270","trips_cancelled":"6","trips_on_time":"256","trips_scheduled":"276","delay_total":"56"},{"service_date":"2026-11-08T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"257","trips_cancelled":"1","trips_on_time":"233","trips_scheduled":"258","delay_total":"70"},{"service_date":"2026-11-08T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"316","trips_cancelled":"1","trips_on_time":"290","trips_scheduled":"317","delay_total":"84"},{"service_date":"2026-11-09T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"237","trips_cancelled":"3","trips_on_time":"220","trips_scheduled":"240","delay_total":"98"},{"service_date":"2026-11-09T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"270","trips_cancelled":"1","trips_on_time":"218","trips_scheduled":"271","delay_total":"112"},{"service_date":"2026-11-09T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"445","trips_cancelled":"1","trips_on_time":"422","trips_scheduled":"446","delay_total":"126"},{"service_date":"2026-11-09T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"362","trips_cancelled":"1","trips_on_time":"329","trips_scheduled":"363","delay_total":"14"},{"service_date":"2026-11-09T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"353","trips_cancelled":"1","trips_on_time":"324","trips_scheduled":"354","delay_total":"28"},{"service_date":"2026-11-09T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"421","trips_cancelled":"1","trips_on_time":"391","trips_scheduled":"422","delay_total":"42"},{"service_date":"2026-11-10T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"238","trips_cancelled":"1","trips_on_time":"223","trips_scheduled":"239","delay_total":"56"},{"service_date":"2026-11-10T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"268","trips_cancelled":"3","trips_on_time":"217","trips_scheduled":"271","delay_total":"70"},{"service_date":"2026-11-10T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"449","trips_cancelled":"1","trips_on_time":"408","trips_scheduled":"450","delay_total":"84"},{"service_date":"2026-11-10T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"364","trips_cancelled":"1","trips_on_time":"334","trips_scheduled":"365","delay_total":"98"},{"service_date":"2026-11-10T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"350","trips_cancelled":"6","trips_on_time":"325","trips_scheduled":"356","delay_total":"112"},{"service_date":"2026-11-10T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"423","trips_cancelled":"1","trips_on_time":"397","trips_scheduled":"424","delay_total":"126"},{"service_date":"2026-11-11T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"238","trips_cancelled":"1","trips_on_time":"226","trips_scheduled":"239","delay_total":"14"},{"service_date":"2026-11-11T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"270","trips_cancelled":"1","trips_on_time":"218","trips_scheduled":"271","delay_total":"28"},{"service_date":"2026-11-11T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"447","trips_cancelled":"3","trips_on_time":"411","trips_scheduled":"450","delay_total":"42"},{"service_date":"2026-11-11T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"364","trips_cancelled":"1","trips_on_time":"338","trips_scheduled":"365","delay_total":"56"},{"service_date":"2026-11-11T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"355","trips_cancelled":"1","trips_on_time":"333","trips_scheduled":"356","delay_total":"70"},{"service_date":"2026-11-11T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"423","trips_cancelled":"1","trips_on_time":"401","trips_scheduled":"424","delay_total":"84"},{"service_date":"2026-11-12T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"238","trips_cancelled":"1","trips_on_time":"216","trips_scheduled":"239","delay_total":"98"},{"service_date":"2026-11-12T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"270","trips_cancelled":"1","trips_on_time":"218","trips_scheduled":"271","delay_total":"112"},{"service_date":"2026-11-12T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"449","trips_cancelled":"1","trips_on_time":"417","trips_scheduled":"450","delay_total":"126"},{"service_date":"2026-11-12T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"362","trips_cancelled":"3","trips_on_time":"340","trips_scheduled":"365","delay_total":"14"},{"service_date":"2026-11-12T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"355","trips_cancelled":"1","trips_on_time":"337","trips_scheduled":"356","delay_total":"28"},{"service_date":"2026-11-12T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"418","trips_cancelled":"6","trips_on_time":"380","trips_scheduled":"424","delay_total":"42"},{"service_date":"2026-11-13T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"238","trips_cancelled":"1","trips_on_time":"218","trips_scheduled":"239","delay_total":"56"},{"service_date":"2026-11-13T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"270","trips_cancelled":"1","trips_on_time":"218","trips_scheduled":"271","delay_total":"70"},{"service_date":"2026-11-13T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"449","trips_cancelled":"1","trips_on_time":"422","trips_scheduled":"450","delay_total":"84"},{"service_date":"2026-11-13T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"364","trips_cancelled":"1","trips_on_time":"345","trips_scheduled":"365","delay_total":"98"},{"service_date":"2026-11-13T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"353","trips_cancelled":"3","trips_on_time":"321","trips_scheduled":"356","delay_total":"112"},{"service_date":"2026-11-13T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"423","trips_cancelled":"1","trips_on_time":"389","trips_scheduled":"424","delay_total":"126"},{"service_date":"2026-11-14T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"223","trips_cancelled":"1","trips_on_time":"207","trips_scheduled":"224","delay_total":"14"},{"service_date":"2026-11-14T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"255","trips_cancelled":"1","trips_on_time":"206","trips_scheduled":"256","delay_total":"28"},{"service_date":"2026-11-14T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"380","trips_cancelled":"1","trips_on_time":"361","trips_scheduled":"381","delay_total":"42"},{"service_date":"2026-11-14T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"304","trips_cancelled":"1","trips_on_time":"276","trips_scheduled":"305","delay_total":"56"},{"service_date":"2026-11-14T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"283","trips_cancelled":"1","trips_on_time":"260","trips_scheduled":"284","delay_total":"70"},{"service_date":"2026-11-14T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"346","trips_cancelled":"3","trips_on_time":"321","trips_scheduled":"349","delay_total":"84"},{"service_date":"2026-11-15T00:00:00.000Z","route_id":"22","route_long_name":"Clark","trips_completed":"187","trips_cancelled":"6","trips_on_time":"175","trips_scheduled":"193","delay_total":"98"},{"service_date":"2026-11-15T00:00:00.000Z","route_id":"49","route_long_name":"Western","trips_completed":"226","trips_cancelled":"1","trips_on_time":"183","trips_scheduled":"227","delay_total":"112"},{"service_date":"2026-11-15T00:00:00.000Z","route_id":"79","route_long_name":"79th","trips_completed":"282","trips_cancelled":"1","trips_on_time":"256","trips_scheduled":"283","delay_total":"126"},{"service_date":"2026-11-15T00:00:00.000Z","route_id":"9","route_long_name":"Ashland","trips_completed":"275","trips_cancelled":"1","trips_on_time":"253","trips_scheduled":"276","delay_total":"14"},{"service_date":"2026-11-15T00:00:00.000Z","route_id":"Blue","route_long_name":"Blue Line","trips_completed":"327","trips_cancelled":"1","trips_on_time":"304","trips_scheduled":"328","delay_total":"28"},{"service_date":"2026-11-15T00:00:00.000Z","route_id":"Red","route_long_name":"Red Line","trips_completed":"316","trips_cancelled":"1","trips_on_time":"297","trips_scheduled":"317","delay_total":"42"}],"fleet_detail":[{"vehicle_id":"V001","vehicle_type":"Bus","department_name":"Bus Operations","open_orders":"1","critical_orders":"1","open_parts_cost":150},{"vehicle_id":"V003","vehicle_type":"Bus","department_name":"Bus Operations","open_orders":"1","critical_orders":"0","open_parts_cost":150},{"vehicle_id":"V004","vehicle_type":"Bus","department_name":"Bus Operations","open_orders":"1","critical_orders":"0","open_parts_cost":525},{"vehicle_id":"V006","vehicle_type":"Bus","department_name":"Bus Operations","open_orders":"1","critical_orders":"0","open_parts_cost":525},{"vehicle_id":"V007","vehicle_type":"RailCar","department_name":"Rail Operations","open_orders":"1","critical_orders":"0","open_parts_cost":150},{"vehicle_id":"V010","vehicle_type":"RailCar","department_name":"Rail Operations","open_orders":"1","critical_orders":"0","open_parts_cost":525},{"vehicle_id":"V002","vehicle_type":"Bus","department_name":"Bus Operations","open_orders":"0","critical_orders":"0","open_parts_cost":0},{"vehicle_id":"V005","vehicle_type":"Bus","department_name":"Bus Operations","open_orders":"0","critical_orders":"0","open_parts_cost":0},{"vehicle_id":"V008","vehicle_type":"RailCar","department_name":"Rail Operations","open_orders":"0","critical_orders":"0","open_parts_cost":0},{"vehicle_id":"V009","vehicle_type":"RailCar","department_name":"Rail Operations","open_orders":"0","critical_orders":"0","open_parts_cost":0}],"workforce_daily":[{"work_date":"2026-11-02T00:00:00.000Z","department_name":"Bus Operations","total_productive_hours":40,"total_scheduled_hours":48,"total_absence_hours":8,"total_overtime_hours":0,"total_labor_cost":1280},{"work_date":"2026-11-02T00:00:00.000Z","department_name":"Data Platform","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1184},{"work_date":"2026-11-02T00:00:00.000Z","department_name":"Finance","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1056},{"work_date":"2026-11-02T00:00:00.000Z","department_name":"Fleet Maintenance","total_productive_hours":32,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1328},{"work_date":"2026-11-02T00:00:00.000Z","department_name":"People Operations","total_productive_hours":26,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1100},{"work_date":"2026-11-02T00:00:00.000Z","department_name":"Rail Operations","total_productive_hours":34,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1361},{"work_date":"2026-11-02T00:00:00.000Z","department_name":"Service Planning","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1088},{"work_date":"2026-11-03T00:00:00.000Z","department_name":"Bus Operations","total_productive_hours":48,"total_scheduled_hours":48,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1696},{"work_date":"2026-11-03T00:00:00.000Z","department_name":"Data Platform","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1184},{"work_date":"2026-11-03T00:00:00.000Z","department_name":"Finance","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1056},{"work_date":"2026-11-03T00:00:00.000Z","department_name":"Fleet Maintenance","total_productive_hours":32,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1328},{"work_date":"2026-11-03T00:00:00.000Z","department_name":"People Operations","total_productive_hours":26,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1148},{"work_date":"2026-11-03T00:00:00.000Z","department_name":"Rail Operations","total_productive_hours":34,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1361},{"work_date":"2026-11-03T00:00:00.000Z","department_name":"Service Planning","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1088},{"work_date":"2026-11-04T00:00:00.000Z","department_name":"Bus Operations","total_productive_hours":48,"total_scheduled_hours":48,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1696},{"work_date":"2026-11-04T00:00:00.000Z","department_name":"Data Platform","total_productive_hours":26,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1328},{"work_date":"2026-11-04T00:00:00.000Z","department_name":"Finance","total_productive_hours":26,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1176},{"work_date":"2026-11-04T00:00:00.000Z","department_name":"Fleet Maintenance","total_productive_hours":32,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1328},{"work_date":"2026-11-04T00:00:00.000Z","department_name":"People Operations","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":992},{"work_date":"2026-11-04T00:00:00.000Z","department_name":"Rail Operations","total_productive_hours":34,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1361},{"work_date":"2026-11-04T00:00:00.000Z","department_name":"Service Planning","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1088},{"work_date":"2026-11-05T00:00:00.000Z","department_name":"Bus Operations","total_productive_hours":48,"total_scheduled_hours":48,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1696},{"work_date":"2026-11-05T00:00:00.000Z","department_name":"Data Platform","total_productive_hours":26,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1328},{"work_date":"2026-11-05T00:00:00.000Z","department_name":"Finance","total_productive_hours":26,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1176},{"work_date":"2026-11-05T00:00:00.000Z","department_name":"Fleet Maintenance","total_productive_hours":32,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1328},{"work_date":"2026-11-05T00:00:00.000Z","department_name":"People Operations","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":992},{"work_date":"2026-11-05T00:00:00.000Z","department_name":"Rail Operations","total_productive_hours":34,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1412},{"work_date":"2026-11-05T00:00:00.000Z","department_name":"Service Planning","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1088},{"work_date":"2026-11-06T00:00:00.000Z","department_name":"Bus Operations","total_productive_hours":50,"total_scheduled_hours":48,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1792},{"work_date":"2026-11-06T00:00:00.000Z","department_name":"Data Platform","total_productive_hours":18,"total_scheduled_hours":24,"total_absence_hours":8,"total_overtime_hours":2,"total_labor_cost":956},{"work_date":"2026-11-06T00:00:00.000Z","department_name":"Finance","total_productive_hours":26,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1212},{"work_date":"2026-11-06T00:00:00.000Z","department_name":"Fleet Maintenance","total_productive_hours":32,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1328},{"work_date":"2026-11-06T00:00:00.000Z","department_name":"People Operations","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":992},{"work_date":"2026-11-06T00:00:00.000Z","department_name":"Rail Operations","total_productive_hours":32,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1256},{"work_date":"2026-11-06T00:00:00.000Z","department_name":"Service Planning","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1088},{"work_date":"2026-11-09T00:00:00.000Z","department_name":"Bus Operations","total_productive_hours":50,"total_scheduled_hours":48,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1792},{"work_date":"2026-11-09T00:00:00.000Z","department_name":"Data Platform","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1184},{"work_date":"2026-11-09T00:00:00.000Z","department_name":"Finance","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1056},{"work_date":"2026-11-09T00:00:00.000Z","department_name":"Fleet Maintenance","total_productive_hours":34,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1442},{"work_date":"2026-11-09T00:00:00.000Z","department_name":"People Operations","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":992},{"work_date":"2026-11-09T00:00:00.000Z","department_name":"Rail Operations","total_productive_hours":32,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1256},{"work_date":"2026-11-09T00:00:00.000Z","department_name":"Service Planning","total_productive_hours":18,"total_scheduled_hours":24,"total_absence_hours":8,"total_overtime_hours":2,"total_labor_cost":908},{"work_date":"2026-11-10T00:00:00.000Z","department_name":"Bus Operations","total_productive_hours":50,"total_scheduled_hours":48,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1792},{"work_date":"2026-11-10T00:00:00.000Z","department_name":"Data Platform","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1184},{"work_date":"2026-11-10T00:00:00.000Z","department_name":"Finance","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1056},{"work_date":"2026-11-10T00:00:00.000Z","department_name":"Fleet Maintenance","total_productive_hours":34,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1484},{"work_date":"2026-11-10T00:00:00.000Z","department_name":"People Operations","total_productive_hours":26,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1100},{"work_date":"2026-11-10T00:00:00.000Z","department_name":"Rail Operations","total_productive_hours":32,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1256},{"work_date":"2026-11-10T00:00:00.000Z","department_name":"Service Planning","total_productive_hours":16,"total_scheduled_hours":24,"total_absence_hours":8,"total_overtime_hours":0,"total_labor_cost":752},{"work_date":"2026-11-11T00:00:00.000Z","department_name":"Bus Operations","total_productive_hours":50,"total_scheduled_hours":48,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1852},{"work_date":"2026-11-11T00:00:00.000Z","department_name":"Data Platform","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1184},{"work_date":"2026-11-11T00:00:00.000Z","department_name":"Finance","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1056},{"work_date":"2026-11-11T00:00:00.000Z","department_name":"Fleet Maintenance","total_productive_hours":32,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1328},{"work_date":"2026-11-11T00:00:00.000Z","department_name":"People Operations","total_productive_hours":26,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1100},{"work_date":"2026-11-11T00:00:00.000Z","department_name":"Rail Operations","total_productive_hours":34,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1361},{"work_date":"2026-11-11T00:00:00.000Z","department_name":"Service Planning","total_productive_hours":16,"total_scheduled_hours":24,"total_absence_hours":8,"total_overtime_hours":0,"total_labor_cost":672},{"work_date":"2026-11-12T00:00:00.000Z","department_name":"Bus Operations","total_productive_hours":48,"total_scheduled_hours":48,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1696},{"work_date":"2026-11-12T00:00:00.000Z","department_name":"Data Platform","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1184},{"work_date":"2026-11-12T00:00:00.000Z","department_name":"Finance","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1056},{"work_date":"2026-11-12T00:00:00.000Z","department_name":"Fleet Maintenance","total_productive_hours":32,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1328},{"work_date":"2026-11-12T00:00:00.000Z","department_name":"People Operations","total_productive_hours":18,"total_scheduled_hours":24,"total_absence_hours":8,"total_overtime_hours":2,"total_labor_cost":860},{"work_date":"2026-11-12T00:00:00.000Z","department_name":"Rail Operations","total_productive_hours":34,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1361},{"work_date":"2026-11-12T00:00:00.000Z","department_name":"Service Planning","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1088},{"work_date":"2026-11-13T00:00:00.000Z","department_name":"Bus Operations","total_productive_hours":48,"total_scheduled_hours":48,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1696},{"work_date":"2026-11-13T00:00:00.000Z","department_name":"Data Platform","total_productive_hours":26,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1328},{"work_date":"2026-11-13T00:00:00.000Z","department_name":"Finance","total_productive_hours":26,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1176},{"work_date":"2026-11-13T00:00:00.000Z","department_name":"Fleet Maintenance","total_productive_hours":32,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1328},{"work_date":"2026-11-13T00:00:00.000Z","department_name":"People Operations","total_productive_hours":16,"total_scheduled_hours":24,"total_absence_hours":8,"total_overtime_hours":0,"total_labor_cost":704},{"work_date":"2026-11-13T00:00:00.000Z","department_name":"Rail Operations","total_productive_hours":34,"total_scheduled_hours":32,"total_absence_hours":0,"total_overtime_hours":2,"total_labor_cost":1361},{"work_date":"2026-11-13T00:00:00.000Z","department_name":"Service Planning","total_productive_hours":24,"total_scheduled_hours":24,"total_absence_hours":0,"total_overtime_hours":0,"total_labor_cost":1088}],"budget_by_month":[{"report_month":"2026-11-01T00:00:00.000Z","department_name":"Fleet Maintenance","budget_status":"OverBudget","budget_total":10000,"actual_cost_total":23391.5,"remaining_budget_total":-13391.5,"pending_approval_total":5800},{"report_month":"2026-11-01T00:00:00.000Z","department_name":"People Operations","budget_status":"WithinBudget","budget_total":14000,"actual_cost_total":12171,"remaining_budget_total":1829,"pending_approval_total":1210},{"report_month":"2026-11-01T00:00:00.000Z","department_name":"Finance","budget_status":"WithinBudget","budget_total":16000,"actual_cost_total":13235,"remaining_budget_total":2765,"pending_approval_total":1120},{"report_month":"2026-11-01T00:00:00.000Z","department_name":"Data Platform","budget_status":"WithinBudget","budget_total":19000,"actual_cost_total":14981.5,"remaining_budget_total":4018.5,"pending_approval_total":1390},{"report_month":"2026-11-01T00:00:00.000Z","department_name":"Service Planning","budget_status":"WithinBudget","budget_total":17000,"actual_cost_total":12668.5,"remaining_budget_total":4331.5,"pending_approval_total":1300},{"report_month":"2026-11-01T00:00:00.000Z","department_name":"Bus Operations","budget_status":"WithinBudget","budget_total":26000,"actual_cost_total":18568,"remaining_budget_total":7432,"pending_approval_total":850},{"report_month":"2026-11-01T00:00:00.000Z","department_name":"Rail Operations","budget_status":"WithinBudget","budget_total":23000,"actual_cost_total":15252,"remaining_budget_total":7748,"pending_approval_total":940},{"report_month":"2026-12-01T00:00:00.000Z","department_name":"Fleet Maintenance","budget_status":"WithinBudget","budget_total":10300,"actual_cost_total":0,"remaining_budget_total":10300,"pending_approval_total":0},{"report_month":"2026-12-01T00:00:00.000Z","department_name":"People Operations","budget_status":"WithinBudget","budget_total":14420,"actual_cost_total":0,"remaining_budget_total":14420,"pending_approval_total":0},{"report_month":"2026-12-01T00:00:00.000Z","department_name":"Finance","budget_status":"WithinBudget","budget_total":16480,"actual_cost_total":0,"remaining_budget_total":16480,"pending_approval_total":0},{"report_month":"2026-12-01T00:00:00.000Z","department_name":"Service Planning","budget_status":"WithinBudget","budget_total":17510,"actual_cost_total":0,"remaining_budget_total":17510,"pending_approval_total":0},{"report_month":"2026-12-01T00:00:00.000Z","department_name":"Data Platform","budget_status":"WithinBudget","budget_total":19570,"actual_cost_total":0,"remaining_budget_total":19570,"pending_approval_total":0},{"report_month":"2026-12-01T00:00:00.000Z","department_name":"Rail Operations","budget_status":"WithinBudget","budget_total":23690,"actual_cost_total":0,"remaining_budget_total":23690,"pending_approval_total":0},{"report_month":"2026-12-01T00:00:00.000Z","department_name":"Bus Operations","budget_status":"WithinBudget","budget_total":26780,"actual_cost_total":0,"remaining_budget_total":26780,"pending_approval_total":0}],"vendor_by_month":[{"report_month":"2026-11-01T00:00:00.000Z","supplier_name":"Lakefront Fleet Parts","category":"Fleet parts","approved_spend":2555,"pending_spend":7190,"invoices":"5"},{"report_month":"2026-11-01T00:00:00.000Z","supplier_name":"Harbor Training Studio","category":"Training","approved_spend":7135,"pending_spend":2240,"invoices":"5"},{"report_month":"2026-11-01T00:00:00.000Z","supplier_name":"Northline Systems","category":"Software","approved_spend":7330,"pending_spend":2060,"invoices":"6"},{"report_month":"2026-11-01T00:00:00.000Z","supplier_name":"Prairie Office Supply","category":"Office supplies","approved_spend":3550,"pending_spend":1120,"invoices":"5"}],"risk_detail":[{"check_name":"no_critical_open_maintenance","asset":"ops_reporting.maintenance_backlog","check_kind":"DemonstrationRisk","status":"Failed","failed_rows":"1","tested_rows":"18"},{"check_name":"no_overbudget_departments","asset":"finance_reporting.budget_variance","check_kind":"DemonstrationRisk","status":"Failed","failed_rows":"1","tested_rows":"14"},{"check_name":"expense_department_matches_staff","asset":"finance.expense_claims","check_kind":"Integrity","status":"Success","failed_rows":"0","tested_rows":"18"},{"check_name":"finance_cost_components_reconcile","asset":"finance_reporting.department_cost_monthly","check_kind":"Integrity","status":"Success","failed_rows":"0","tested_rows":"14"},{"check_name":"invoice_supplier_reference","asset":"finance.supplier_invoices","check_kind":"Integrity","status":"Success","failed_rows":"0","tested_rows":"21"},{"check_name":"positive_department_budgets","asset":"finance.monthly_budgets","check_kind":"Integrity","status":"Success","failed_rows":"0","tested_rows":"14"},{"check_name":"scheduled_trip_balance","asset":"service_ops.route_performance","check_kind":"Integrity","status":"Success","failed_rows":"0","tested_rows":"84"},{"check_name":"staff_department_reference","asset":"org.staff","check_kind":"Integrity","status":"Success","failed_rows":"0","tested_rows":"26"},{"check_name":"staff_manager_reference","asset":"org.staff","check_kind":"Integrity","status":"Success","failed_rows":"0","tested_rows":"26"},{"check_name":"staff_role_reference","asset":"org.staff","check_kind":"Integrity","status":"Success","failed_rows":"0","tested_rows":"26"},{"check_name":"time_entry_staff_reference","asset":"service_ops.time_entries","check_kind":"Integrity","status":"Success","failed_rows":"0","tested_rows":"260"},{"check_name":"unique_staff_ids","asset":"org.staff","check_kind":"Integrity","status":"Success","failed_rows":"0","tested_rows":"26"},{"check_name":"workforce_headcount_rollup","asset":"org_reporting.department_staffing","check_kind":"Integrity","status":"Success","failed_rows":"0","tested_rows":"26"}],"cta_schedule_reference":[{"service_date":"2026-11-02T00:00:00.000Z","route_id":"22","total_scheduled_trips":"240"},{"service_date":"2026-11-02T00:00:00.000Z","route_id":"49","total_scheduled_trips":"271"},{"service_date":"2026-11-02T00:00:00.000Z","route_id":"79","total_scheduled_trips":"446"},{"service_date":"2026-11-02T00:00:00.000Z","route_id":"9","total_scheduled_trips":"363"},{"service_date":"2026-11-02T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"354"},{"service_date":"2026-11-02T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"422"},{"service_date":"2026-11-03T00:00:00.000Z","route_id":"22","total_scheduled_trips":"239"},{"service_date":"2026-11-03T00:00:00.000Z","route_id":"49","total_scheduled_trips":"271"},{"service_date":"2026-11-03T00:00:00.000Z","route_id":"79","total_scheduled_trips":"450"},{"service_date":"2026-11-03T00:00:00.000Z","route_id":"9","total_scheduled_trips":"365"},{"service_date":"2026-11-03T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"356"},{"service_date":"2026-11-03T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"424"},{"service_date":"2026-11-04T00:00:00.000Z","route_id":"22","total_scheduled_trips":"239"},{"service_date":"2026-11-04T00:00:00.000Z","route_id":"49","total_scheduled_trips":"271"},{"service_date":"2026-11-04T00:00:00.000Z","route_id":"79","total_scheduled_trips":"450"},{"service_date":"2026-11-04T00:00:00.000Z","route_id":"9","total_scheduled_trips":"365"},{"service_date":"2026-11-04T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"356"},{"service_date":"2026-11-04T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"424"},{"service_date":"2026-11-05T00:00:00.000Z","route_id":"22","total_scheduled_trips":"239"},{"service_date":"2026-11-05T00:00:00.000Z","route_id":"49","total_scheduled_trips":"271"},{"service_date":"2026-11-05T00:00:00.000Z","route_id":"79","total_scheduled_trips":"450"},{"service_date":"2026-11-05T00:00:00.000Z","route_id":"9","total_scheduled_trips":"365"},{"service_date":"2026-11-05T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"356"},{"service_date":"2026-11-05T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"424"},{"service_date":"2026-11-06T00:00:00.000Z","route_id":"22","total_scheduled_trips":"239"},{"service_date":"2026-11-06T00:00:00.000Z","route_id":"49","total_scheduled_trips":"271"},{"service_date":"2026-11-06T00:00:00.000Z","route_id":"79","total_scheduled_trips":"450"},{"service_date":"2026-11-06T00:00:00.000Z","route_id":"9","total_scheduled_trips":"365"},{"service_date":"2026-11-06T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"356"},{"service_date":"2026-11-06T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"424"},{"service_date":"2026-11-07T00:00:00.000Z","route_id":"22","total_scheduled_trips":"224"},{"service_date":"2026-11-07T00:00:00.000Z","route_id":"49","total_scheduled_trips":"256"},{"service_date":"2026-11-07T00:00:00.000Z","route_id":"79","total_scheduled_trips":"381"},{"service_date":"2026-11-07T00:00:00.000Z","route_id":"9","total_scheduled_trips":"305"},{"service_date":"2026-11-07T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"284"},{"service_date":"2026-11-07T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"349"},{"service_date":"2026-11-08T00:00:00.000Z","route_id":"22","total_scheduled_trips":"193"},{"service_date":"2026-11-08T00:00:00.000Z","route_id":"49","total_scheduled_trips":"227"},{"service_date":"2026-11-08T00:00:00.000Z","route_id":"79","total_scheduled_trips":"283"},{"service_date":"2026-11-08T00:00:00.000Z","route_id":"9","total_scheduled_trips":"276"},{"service_date":"2026-11-08T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"258"},{"service_date":"2026-11-08T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"317"},{"service_date":"2026-11-09T00:00:00.000Z","route_id":"22","total_scheduled_trips":"240"},{"service_date":"2026-11-09T00:00:00.000Z","route_id":"49","total_scheduled_trips":"271"},{"service_date":"2026-11-09T00:00:00.000Z","route_id":"79","total_scheduled_trips":"446"},{"service_date":"2026-11-09T00:00:00.000Z","route_id":"9","total_scheduled_trips":"363"},{"service_date":"2026-11-09T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"354"},{"service_date":"2026-11-09T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"422"},{"service_date":"2026-11-10T00:00:00.000Z","route_id":"22","total_scheduled_trips":"239"},{"service_date":"2026-11-10T00:00:00.000Z","route_id":"49","total_scheduled_trips":"271"},{"service_date":"2026-11-10T00:00:00.000Z","route_id":"79","total_scheduled_trips":"450"},{"service_date":"2026-11-10T00:00:00.000Z","route_id":"9","total_scheduled_trips":"365"},{"service_date":"2026-11-10T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"356"},{"service_date":"2026-11-10T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"424"},{"service_date":"2026-11-11T00:00:00.000Z","route_id":"22","total_scheduled_trips":"239"},{"service_date":"2026-11-11T00:00:00.000Z","route_id":"49","total_scheduled_trips":"271"},{"service_date":"2026-11-11T00:00:00.000Z","route_id":"79","total_scheduled_trips":"450"},{"service_date":"2026-11-11T00:00:00.000Z","route_id":"9","total_scheduled_trips":"365"},{"service_date":"2026-11-11T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"356"},{"service_date":"2026-11-11T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"424"},{"service_date":"2026-11-12T00:00:00.000Z","route_id":"22","total_scheduled_trips":"239"},{"service_date":"2026-11-12T00:00:00.000Z","route_id":"49","total_scheduled_trips":"271"},{"service_date":"2026-11-12T00:00:00.000Z","route_id":"79","total_scheduled_trips":"450"},{"service_date":"2026-11-12T00:00:00.000Z","route_id":"9","total_scheduled_trips":"365"},{"service_date":"2026-11-12T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"356"},{"service_date":"2026-11-12T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"424"},{"service_date":"2026-11-13T00:00:00.000Z","route_id":"22","total_scheduled_trips":"239"},{"service_date":"2026-11-13T00:00:00.000Z","route_id":"49","total_scheduled_trips":"271"},{"service_date":"2026-11-13T00:00:00.000Z","route_id":"79","total_scheduled_trips":"450"},{"service_date":"2026-11-13T00:00:00.000Z","route_id":"9","total_scheduled_trips":"365"},{"service_date":"2026-11-13T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"356"},{"service_date":"2026-11-13T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"424"},{"service_date":"2026-11-14T00:00:00.000Z","route_id":"22","total_scheduled_trips":"224"},{"service_date":"2026-11-14T00:00:00.000Z","route_id":"49","total_scheduled_trips":"256"},{"service_date":"2026-11-14T00:00:00.000Z","route_id":"79","total_scheduled_trips":"381"},{"service_date":"2026-11-14T00:00:00.000Z","route_id":"9","total_scheduled_trips":"305"},{"service_date":"2026-11-14T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"284"},{"service_date":"2026-11-14T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"349"},{"service_date":"2026-11-15T00:00:00.000Z","route_id":"22","total_scheduled_trips":"193"},{"service_date":"2026-11-15T00:00:00.000Z","route_id":"49","total_scheduled_trips":"227"},{"service_date":"2026-11-15T00:00:00.000Z","route_id":"79","total_scheduled_trips":"283"},{"service_date":"2026-11-15T00:00:00.000Z","route_id":"9","total_scheduled_trips":"276"},{"service_date":"2026-11-15T00:00:00.000Z","route_id":"Blue","total_scheduled_trips":"328"},{"service_date":"2026-11-15T00:00:00.000Z","route_id":"Red","total_scheduled_trips":"317"}]},"queryInfo":{"headcount_by_department":{"model":"enterprise.malloy","query":"run: headcount_by_department","rows":7,"scanBytes":259},"workforce_cost_by_department":{"model":"enterprise.malloy","query":"run: workforce_cost_by_department","rows":7,"scanBytes":10046},"service_reliability_by_route":{"model":"enterprise.malloy","query":"run: service_reliability_by_route","rows":6,"scanBytes":3712},"fleet_risk_by_owner":{"model":"enterprise.malloy","query":"run: fleet_risk_by_owner","rows":2,"scanBytes":450},"budget_by_department":{"model":"enterprise.malloy","query":"run: budget_by_department","rows":7,"scanBytes":980},"vendor_approval_pipeline":{"model":"enterprise.malloy","query":"run: vendor_approval_pipeline","rows":4,"scanBytes":235},"executive_department_review":{"model":"enterprise.malloy","query":"run: executive_department_review","rows":7,"scanBytes":1160},"route_cost_review":{"model":"enterprise.malloy","query":"run: route_cost_review","rows":6,"scanBytes":2436},"integrity_and_risk_checks":{"model":"enterprise.malloy","query":"run: integrity_and_risk_checks","rows":2,"scanBytes":378},"route_daily":{"model":"enterprise.malloy","query":"run: service_reliability -> {\n    group_by: service_date, route_id, route_long_name\n    aggregate: trips_completed, trips_cancelled, trips_on_time,\n      trips_scheduled is scheduled_trips.sum(), delay_total is delay_minutes.sum()\n    order_by: service_date asc, route_id asc\n  }","rows":84,"scanBytes":5124},"fleet_detail":{"model":"enterprise.malloy","query":"run: fleet_readiness -> {\n    group_by: vehicle_id, vehicle_type, department_name is vehicle_owner.department_name\n    aggregate: open_orders, critical_orders, open_parts_cost\n    order_by: critical_orders desc, open_orders desc, vehicle_id asc\n  }","rows":10,"scanBytes":576},"workforce_daily":{"model":"enterprise.malloy","query":"run: workforce -> {\n    group_by: work_date is service_date, department_name is department.department_name\n    aggregate: total_productive_hours, total_scheduled_hours, total_absence_hours,\n      total_overtime_hours, total_labor_cost\n    order_by: work_date asc, department_name asc\n  }","rows":70,"scanBytes":14206},"budget_by_month":{"model":"enterprise.malloy","query":"run: financial_control -> {\n    group_by: report_month, department_name, budget_status\n    aggregate: budget_total, actual_cost_total, remaining_budget_total, pending_approval_total\n    order_by: report_month asc, remaining_budget_total asc\n  }","rows":14,"scanBytes":980},"vendor_by_month":{"model":"enterprise.malloy","query":"run: vendor_spend -> {\n    group_by: report_month, supplier_name, category\n    aggregate: approved_spend, pending_spend, invoices\n    order_by: report_month asc, pending_spend desc\n  }","rows":4,"scanBytes":267},"risk_detail":{"model":"enterprise.malloy","query":"run: organization_quality -> {\n    group_by: check_name, asset, check_kind, status, failed_rows, tested_rows\n    order_by: failed_rows desc, check_name asc\n  }","rows":13,"scanBytes":1163},"cta_schedule_reference":{"model":"cta.malloy","query":"run: scheduled_service -> {\n    where: service_date >= @2026-11-02, service_date \u003c= @2026-11-15\n    where: route_id = \"22\" or route_id = \"49\" or route_id = \"79\" or route_id = \"9\" or route_id = \"Blue\" or route_id = \"Red\"\n    group_by: service_date, route_id\n    aggregate: total_scheduled_trips\n    order_by: service_date asc, route_id asc\n  }","rows":84,"scanBytes":48341607}}};</script>
+<script>
+(function () {
+  'use strict';
+
+  const numberFormat = new Intl.NumberFormat('en-US');
+  const rateFormat = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
+  const costFormat = new Intl.NumberFormat('en-US', {
+    style: 'currency', currency: 'USD', maximumFractionDigits: 0,
+  });
+  const perTripCostFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+  const dateFormat = new Intl.DateTimeFormat('en-US', {
+    month: 'short', day: 'numeric', timeZone: 'UTC',
+  });
+  const fullDateFormat = new Intl.DateTimeFormat('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC',
+  });
+  const serviceFields = ['trips_completed', 'trips_cancelled', 'trips_on_time'];
+  const fleetFields = ['open_orders', 'critical_orders', 'open_parts_cost'];
+  const missing = '—';
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    })[character]);
+  }
+
+  function numeric(value) {
+    const raw = value?.value ?? value;
+    if (typeof raw !== 'number' && (typeof raw !== 'string' || !raw.trim())) return null;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function format(value, formatter = numberFormat) {
+    const parsed = numeric(value);
+    return parsed === null ? missing : formatter.format(parsed);
+  }
+
+  function label(value) {
+    return String(value?.value ?? value ?? '').trim();
+  }
+
+  function dateKey(value) {
+    const raw = value?.value ?? value;
+    if (raw instanceof Date) return Number.isFinite(raw.getTime()) ? raw.toISOString().slice(0, 10) : '';
+    const key = typeof raw === 'string' ? raw.match(/^\d{4}-\d{2}-\d{2}/)?.[0] : '';
+    return key && Number.isFinite(Date.parse(key)) ? key : '';
+  }
+
+  function dateLabel(key, formatter = dateFormat) {
+    return formatter.format(new Date(`${key}T00:00:00Z`));
+  }
+
+  function loadedWindow(dates) {
+    const first = dates[0];
+    const last = dates[dates.length - 1];
+    if (!first) return 'Service dates unavailable';
+    if (first === last) return dateLabel(first, fullDateFormat);
+    const startFormat = first.slice(0, 4) === last.slice(0, 4) ? dateFormat : fullDateFormat;
+    return `${dateLabel(first, startFormat)} – ${dateLabel(last, fullDateFormat)}`;
+  }
+
+  function rows(data, key) {
+    return Array.isArray(data?.[key]) ? data[key].filter(row => row && typeof row === 'object') : [];
+  }
+
+  function totals(input, fields) {
+    return Object.fromEntries(fields.map(field => {
+      let total = null;
+      for (const row of input) {
+        const value = numeric(row[field]);
+        if (value !== null) total = (total ?? 0) + value;
+      }
+      return [field, total];
+    }));
+  }
+
+  function groupBy(input, keyFor) {
+    const groups = new Map();
+    for (const row of input) {
+      const key = keyFor(row);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(row);
+    }
+    return groups;
+  }
+
+  function ratio(numerator, denominator) {
+    const n = numeric(numerator);
+    const d = numeric(denominator);
+    return n !== null && d > 0 ? n / d : null;
+  }
+
+  function byDescending(left, right, field) {
+    return (numeric(right[field]) ?? -Infinity) - (numeric(left[field]) ?? -Infinity);
+  }
+
+  function routeSummaries(service, daily) {
+    return Array.from(groupBy(service.length ? service : daily, row => label(row.route_id)), ([id, group]) => ({
+      id,
+      name: group.map(row => label(row.route_long_name)).find(Boolean) || '',
+      owners: [...new Set(group.map(row => label(row.department_name)).filter(Boolean))].sort(),
+      ...totals(group, serviceFields),
+    })).sort((left, right) => byDescending(left, right, 'trips_cancelled') ||
+      (ratio(left.trips_on_time, left.trips_completed) ?? Infinity) -
+      (ratio(right.trips_on_time, right.trips_completed) ?? Infinity) || routeOrder(left, right));
+  }
+
+  function routeOrder(left, right) {
+    return left.id.localeCompare(right.id, 'en-US', { numeric: true });
+  }
+
+  function kpi(title, value, detail, attention = false) {
+    return `<div class="kpi ops-kpi${attention ? ' ops-kpi-attention' : ''}">
+      <dt>${title}</dt><dd class="ops-kpi-value">${value}</dd><dd class="ops-kpi-detail">${detail}</dd>
+    </div>`;
+  }
+
+  function routeTable(routes, costByRoute, dailyByRoute) {
+    if (!routes.length) return '<p class="ops-empty">No route service results are available.</p>';
+    const rates = routes.map(route => ratio(route.trips_on_time, route.trips_completed)).filter(rate => rate !== null);
+    const lowestRate = Math.min(...rates);
+    const hasRateDifference = Math.max(...rates) > lowestRate;
+    return `<div class="ops-table-wrap" role="region" aria-label="Service exceptions" tabindex="0">
+      <table class="ops-table">
+        <thead><tr><th scope="col">Route</th><th scope="col" aria-sort="descending">Cancelled</th>
+          <th scope="col">Completed</th><th scope="col">On time</th><th scope="col">Cost / trip</th></tr></thead>
+        <tbody>${routes.map(route => {
+          const id = escapeHtml(route.id);
+          const name = escapeHtml(route.name);
+          const routeMark = dailyByRoute.has(route.id) && id
+            ? `<button class="ops-route-tag ops-route-button" data-route="${id}" type="button"
+                aria-label="Show daily service for route ${id}" aria-pressed="false">${id}</button>`
+            : `<span class="ops-route-tag">${id || missing}</span>`;
+          const cost = costByRoute.get(route.id);
+          const rate = ratio(route.trips_on_time, route.trips_completed);
+          const isLowest = hasRateDifference && rate === lowestRate;
+          return `<tr><th scope="row"><div class="ops-route-cell">${routeMark}
+            <div>${name || (id ? '' : 'Unspecified route')}
+              ${route.owners.length ? `<small>${escapeHtml(route.owners.join(', '))}</small>` : ''}</div></div></th>
+            <td${route.trips_cancelled > 0 ? ' class="ops-count-warning"' : ''}>${format(route.trips_cancelled)}</td>
+            <td>${format(route.trips_completed)}</td>
+            <td${isLowest ? ' class="ops-count-warning"' : ''}>${format(rate, rateFormat)}${isLowest ? '<small class="ops-rank-note">Lowest</small>' : ''}</td>
+            <td>${format(ratio(cost?.modeled_cost, cost?.completed_service), perTripCostFormat)}</td></tr>`;
+        }).join('')}</tbody>
+      </table></div>`;
+  }
+
+  function fleetQueue(vehicles, owners) {
+    const critical = vehicles.filter(vehicle => numeric(vehicle.critical_orders) > 0)
+      .sort((left, right) => byDescending(left, right, 'critical_orders') ||
+        byDescending(left, right, 'open_orders') || label(left.vehicle_id).localeCompare(label(right.vehicle_id), 'en-US', { numeric: true }));
+    const firstVehicles = critical.slice(0, 6);
+    const vehicleCount = `${numberFormat.format(critical.length)} ${critical.length === 1 ? 'vehicle' : 'vehicles'}`;
+    const queue = critical.length ? `<p class="ops-panel-detail">${firstVehicles.length < critical.length
+      ? `Showing ${firstVehicles.length} of ${vehicleCount} with critical open orders.`
+      : `${vehicleCount} with critical open orders.`}</p>
+      <ul class="ops-vehicle-list">${firstVehicles.map(vehicle => `<li>
+        <div><strong>${escapeHtml(label(vehicle.vehicle_id) || 'Unknown vehicle')}</strong>
+          <small>${escapeHtml(label(vehicle.department_name) || 'Owner unspecified')}</small></div>
+        <div class="ops-vehicle-count"><strong>${format(vehicle.critical_orders)} critical</strong>
+          <small>${format(vehicle.open_orders)} open</small></div>
+        <div class="ops-vehicle-cost">${format(vehicle.open_parts_cost, costFormat)}<small>open parts</small></div>
+      </li>`).join('')}</ul>` : `<p class="ops-empty">${vehicles.some(vehicle => numeric(vehicle.critical_orders) !== null)
+      ? 'No vehicles in the loaded detail have critical open orders.' : 'Vehicle-level repair results are unavailable.'}</p>`;
+    const orderedOwners = owners.slice().sort((left, right) => byDescending(left, right, 'critical_orders') ||
+      byDescending(left, right, 'open_orders') || label(left.department_name).localeCompare(label(right.department_name)));
+    const ownerTable = orderedOwners.length ? `<div class="ops-table-wrap" role="region" aria-label="Open work by fleet owner" tabindex="0">
+      <table class="ops-table ops-owner-table">
+        <thead><tr><th scope="col">Owner</th><th scope="col" aria-sort="descending">Critical</th>
+          <th scope="col">Open</th><th scope="col">Parts</th></tr></thead>
+        <tbody>${orderedOwners.map(owner => `<tr>
+          <th scope="row">${escapeHtml(label(owner.department_name) || 'Owner unspecified')}</th>
+          <td${numeric(owner.critical_orders) > 0 ? ' class="ops-count-critical"' : ''}>${format(owner.critical_orders)}</td>
+          <td>${format(owner.open_orders)}</td><td>${format(owner.open_parts_cost, costFormat)}</td></tr>`).join('')}
+        </tbody>
+      </table></div>` : '<p class="ops-empty">No owner totals are available.</p>';
+    return `<section class="panel ops-panel ops-fleet" id="fleet-queue" tabindex="-1" aria-label="Fleet repair queue">
+      <h2 class="panel-title ops-panel-title">Critical repair queue</h2>
+      ${queue}
+      <div class="ops-owner-section"><h3>Open work by fleet owner</h3>${ownerTable}</div>
+      <p class="ops-note">Critical orders are included in the open count. Parts values cover all open orders in the fleet snapshot.</p>
+    </section>`;
+  }
+
+  function chartCeiling(peak) {
+    if (peak <= 0) return 0;
+    const scale = 10 ** Math.floor(Math.log10(peak));
+    return Math.ceil(peak / scale * 2) * scale / 2;
+  }
+
+  function chartView(input, routeName) {
+    const days = Array.from(groupBy(input, row => row.day), ([day, group]) => ({ day, ...totals(group, serviceFields) }))
+      .sort((left, right) => left.day.localeCompare(right.day));
+    if (!days.length) return '<p class="ops-empty">No daily service results are available for this selection.</p>';
+    const counts = totals(days, serviceFields);
+    const max = chartCeiling(Math.max(0, ...days.map(day => day.trips_completed ?? 0)));
+    const dates = days.map(day => day.day);
+    return `<p class="ops-trend-summary"><strong>${escapeHtml(routeName)}</strong>
+      <span>${format(counts.trips_completed)} completed</span>
+      <span>${format(ratio(counts.trips_on_time, counts.trips_completed), rateFormat)} on time</span>
+      <span>${format(counts.trips_cancelled)} cancelled</span></p>
+      <figure class="ops-chart">
+        <figcaption class="ops-chart-caption">
+          <span class="ops-legend-item"><i class="ops-legend-swatch ops-legend-ontime" aria-hidden="true"></i>On time</span>
+          <span class="ops-legend-item"><i class="ops-legend-swatch ops-legend-completed" aria-hidden="true"></i>Other completed</span>
+          <span class="ops-legend-item"><i class="ops-legend-swatch ops-legend-cancelled" aria-hidden="true"></i>Cancelled count below</span>
+        </figcaption>
+        <div class="ops-chart-scroll" role="region" aria-label="Daily service chart" tabindex="0">
+          <div class="ops-chart-inner" style="--ops-days: ${days.length}">
+            <div class="ops-chart-axis" aria-hidden="true"><span>${format(max)}</span><span>${max ? '0' : ''}</span></div>
+            <ul class="ops-chart-days" aria-label="${escapeHtml(routeName)} daily service counts">
+              ${days.map(day => {
+                const bar = max ? Math.max(0, day.trips_completed / max) * 100 : 0;
+                const onTime = Math.min(1, Math.max(0, ratio(day.trips_on_time, day.trips_completed) ?? 0)) * 100;
+                const tooltip = `${dateLabel(day.day, fullDateFormat)} · ${format(day.trips_completed)} completed · ` +
+                  `${format(day.trips_on_time)} on time · ${format(day.trips_cancelled)} cancelled`;
+                return `<li class="ops-chart-day" title="${escapeHtml(tooltip)}"><span class="ops-visually-hidden">${escapeHtml(tooltip)}</span>
+                  <span class="ops-chart-track" aria-hidden="true"><span class="ops-chart-bar" style="height: ${bar}%">
+                    <span class="ops-chart-bar-ontime" style="height: ${onTime}%"></span></span></span>
+                  <time datetime="${day.day}" aria-hidden="true">${dateLabel(day.day)}</time>
+                  <span class="ops-chart-cancelled${day.trips_cancelled > 0 ? ' ops-count-warning' : ''}" aria-hidden="true">${format(day.trips_cancelled)}</span></li>`;
+              }).join('')}
+            </ul>
+          </div>
+        </div>
+        <p class="ops-note">${loadedWindow(dates)} · ${numberFormat.format(days.length)} ${days.length === 1 ? 'loaded service date' : 'loaded service dates'}</p>
+      </figure>`;
+  }
+
+  function renderOperations(root, data, context) {
+    const service = rows(data, 'service_reliability_by_route');
+    const daily = rows(data, 'route_daily').map(row => ({ ...row, day: dateKey(row.service_date) })).filter(row => row.day);
+    const dailyByRoute = groupBy(daily, row => label(row.route_id));
+    const owners = rows(data, 'fleet_risk_by_owner');
+    const vehicles = rows(data, 'fleet_detail');
+    const costs = rows(data, 'route_cost_review');
+    const costByRoute = new Map(Array.from(groupBy(costs, row => label(row.route_id)), ([id, group]) => [
+      id, totals(group, ['modeled_cost', 'completed_service']),
+    ]));
+    const routes = routeSummaries(service, daily);
+    const routesById = new Map(routes.map(route => [route.id, route]));
+    const dailyRoutes = [...dailyByRoute.keys()].filter(Boolean).map(id => ({
+      id, name: routesById.get(id)?.name || dailyByRoute.get(id).map(row => label(row.route_long_name)).find(Boolean) || '',
+    })).sort(routeOrder);
+    const serviceTotal = totals(routes, serviceFields);
+    const fleetTotal = totals(owners.length ? owners : vehicles, fleetFields);
+    const cancelledRoutes = routes.filter(route => route.trips_cancelled > 0).length;
+    const loadedDates = [...new Set(daily.map(row => row.day))].sort();
+    const knownRoutes = routes.filter(route => route.id).length;
+
+    root.innerHTML = `<header class="ops-header">
+      <div><h1 class="ops-title">Dispatch &amp; Fleet</h1>
+        <p>Route exceptions and repair priorities for the fictional MonoRail sample.</p></div>
+      <div class="ops-window"><span>Loaded service window</span><strong>${loadedWindow(loadedDates)}</strong></div>
+    </header>
+    <dl class="kpi-grid ops-kpis" aria-label="Dispatch and fleet totals">
+      ${kpi('Completed trips', format(serviceTotal.trips_completed),
+        knownRoutes ? `${format(knownRoutes)} ${knownRoutes === 1 ? 'route' : 'routes'} with loaded results` : 'Loaded service')}
+      ${kpi('On-time completion', format(ratio(serviceTotal.trips_on_time, serviceTotal.trips_completed), rateFormat),
+        `${format(serviceTotal.trips_on_time)} on-time trips of ${format(serviceTotal.trips_completed)} completed`)}
+      ${kpi('Cancelled trips', format(serviceTotal.trips_cancelled),
+        serviceTotal.trips_cancelled === null ? 'Loaded service' : `${format(cancelledRoutes)} ${cancelledRoutes === 1 ? 'route' : 'routes'} with cancellations`, serviceTotal.trips_cancelled > 0)}
+      ${kpi('Critical open orders', format(fleetTotal.critical_orders),
+        `${format(fleetTotal.open_orders)} open work orders in the fleet snapshot`, fleetTotal.critical_orders > 0)}
+    </dl>
+    <div class="dashboard-grid ops-layout">
+        <section class="panel ops-panel" aria-label="Service exceptions">
+          <h2 class="panel-title ops-panel-title">Service exceptions</h2>
+          <p class="ops-panel-detail">Routes ranked by cancellations during the loaded period.</p>
+          ${routeTable(routes, costByRoute, dailyByRoute)}
+          <p class="ops-note">On time = on-time trips ÷ completed trips. Cost per trip uses modeled labor and allocated approved non-labor costs per completed trip from the cost model.</p>
+        </section>
+        ${fleetQueue(vehicles, owners)}
+        <section class="panel ops-panel ops-trend" id="daily-service" tabindex="-1" aria-label="Daily service">
+          <div class="ops-trend-head"><h2 class="panel-title ops-panel-title">Daily service</h2>
+            <label class="ops-route-filter">Route
+              <select${dailyRoutes.length ? '' : ' disabled'}><option value="">All routes</option>
+                ${dailyRoutes.map(route => `<option value="${escapeHtml(route.id)}">${escapeHtml(route.name ? `${route.id} · ${route.name}` : route.id)}</option>`).join('')}
+              </select>
+            </label></div>
+          <div class="ops-trend-content">${chartView(daily, 'All routes')}</div>
+          <span class="ops-trend-status ops-visually-hidden" role="status"></span>
+        </section>
+    </div>
+    <p class="ops-provenance">November service actuals cover a partial sample period. Service outcomes, fleet records and modeled costs are fictional.</p>`;
+
+    const select = root.querySelector('.ops-route-filter select');
+    const trend = root.querySelector('.ops-trend-content');
+    const status = root.querySelector('.ops-trend-status');
+    const routeButtons = [...root.querySelectorAll('.ops-route-button')];
+    function selectRoute(id) {
+      const route = dailyRoutes.find(entry => entry.id === id);
+      const name = route ? `${route.id}${route.name ? ` · ${route.name}` : ''}` : 'All routes';
+      select.value = route?.id ?? '';
+      trend.innerHTML = chartView(route ? dailyByRoute.get(route.id) : daily, name);
+      for (const button of routeButtons) button.setAttribute('aria-pressed', String(button.dataset.route === id));
+      status.textContent = `Daily service updated for ${name}.`;
+    }
+    select.addEventListener('change', () => selectRoute(select.value));
+    for (const button of routeButtons) button.addEventListener('click', () => {
+      selectRoute(button.dataset.route);
+      select.focus();
+    });
+    if (context?.has('route')) selectRoute(context.get('route'));
+  }
+
+  window.sampleDashboards = window.sampleDashboards || {};
+  window.sampleDashboards.operations = renderOperations;
+})();
+
+</script>
+<script>
+(function () {
+  const number = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
+  const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+  const compact = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
+  const percent = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
+  const shortDate = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+  const weekdayDate = new Intl.DateTimeFormat('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC'
+  });
+  const fullDate = new Intl.DateTimeFormat('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC'
+  });
+
+  const metrics = {
+    scheduled: { field: 'total_scheduled_hours', label: 'Scheduled', color: 'scheduled' },
+    productive: { field: 'total_productive_hours', label: 'Productive', color: 'productive' },
+    absence: { field: 'total_absence_hours', label: 'Absence', color: 'absence' },
+    overtime: { field: 'total_overtime_hours', label: 'Overtime', color: 'overtime' },
+    cost: { field: 'total_labor_cost', label: 'Labor cost', color: 'cost' }
+  };
+
+  const chartModes = {
+    staffing: { label: 'Staffing', metrics: ['scheduled', 'productive'], unit: 'Hours' },
+    exceptions: { label: 'Exceptions', metrics: ['absence', 'overtime'], unit: 'Hours' },
+    cost: { label: 'Labor cost', metrics: ['cost'], unit: 'USD' }
+  };
+
+  function escape(value) {
+    const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    return String(value).replace(/[&<>"']/g, character => entities[character]);
+  }
+
+  function unwrap(value) {
+    return value && typeof value === 'object' && 'value' in value ? value.value : value;
+  }
+
+  function numeric(value) {
+    const raw = unwrap(value);
+    if (typeof raw !== 'number' && !(typeof raw === 'string' && raw.trim())) return null;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function dateKey(value) {
+    const raw = unwrap(value);
+    if (raw instanceof Date && Number.isFinite(raw.getTime())) return raw.toISOString().slice(0, 10);
+    const key = typeof raw === 'string' && raw.match(/^\d{4}-\d{2}-\d{2}(?=$|T| )/)?.[0];
+    if (!key) return '';
+    const date = utcDate(key);
+    return Number.isFinite(date.getTime()) && date.toISOString().startsWith(key) ? key : '';
+  }
+
+  function utcDate(key) {
+    return new Date(`${key}T00:00:00Z`);
+  }
+
+  function rows(data, query) {
+    return Array.isArray(data?.[query]) ? data[query].filter(row => row && typeof row === 'object') : [];
+  }
+
+  function departmentName(row) {
+    const name = unwrap(row.department_name);
+    return typeof name === 'string' && name.trim() ? name.trim() : 'Unassigned department';
+  }
+
+  function totals(reportRows) {
+    const result = {};
+    for (const [key, metric] of Object.entries(metrics)) {
+      const values = reportRows.map(row => numeric(row[metric.field])).filter(value => value !== null);
+      result[key] = values.length ? values.reduce((sum, value) => sum + value, 0) : null;
+    }
+    return result;
+  }
+
+  function format(value, formatter = number) {
+    return value === null ? '—' : formatter.format(value);
+  }
+
+  function ratio(value, base) {
+    return value !== null && base > 0 ? percent.format(value / base) : '';
+  }
+
+  function metricValue(key, value) {
+    if (value === null) return '—';
+    return key === 'cost' ? format(value, money) : `${format(value)} h`;
+  }
+
+  function countLabel(value, singular, plural = `${singular}s`) {
+    return `${format(value)} ${value === 1 ? singular : plural}`;
+  }
+
+  function scaleFor(largest) {
+    if (largest <= 0) return 4;
+    const step = largest / 4;
+    const magnitude = 10 ** Math.floor(Math.log10(step));
+    const factor = [1, 2, 2.5, 5, 10].find(candidate => candidate * magnitude >= step);
+    return 4 * (factor ?? 10) * magnitude;
+  }
+
+  function renderKpis(department, roster, rosterCount, activeStaff, report, hasRows) {
+    const rate = ratio(report.productive, report.scheduled);
+    let rosterNote = department ? 'Manager unavailable' : countLabel(rosterCount, 'roster department');
+    if (department) rosterNote = roster?.manager || (roster ? 'Manager unavailable' : 'No roster record');
+    if (!department && !rosterCount) rosterNote = 'Roster unavailable';
+    const noHours = hasRows ? 'Hours unavailable' : 'No time records in scope';
+    const cards = [
+      ['roster', 'Active roster', format(activeStaff), rosterNote],
+      ['productive', 'Productive hours', metricValue('productive', report.productive),
+        rate ? `${rate} of ${metricValue('scheduled', report.scheduled)} scheduled` :
+          report.scheduled === null ? (hasRows ? 'Scheduled hours unavailable' : noHours) :
+            `${metricValue('scheduled', report.scheduled)} scheduled`],
+      ['overtime', 'Overtime', metricValue('overtime', report.overtime),
+        report.absence === null ? noHours : `${metricValue('absence', report.absence)} of absence also logged`],
+      ['cost', 'Labor cost', metricValue('cost', report.cost), report.cost === null ?
+        (hasRows ? 'Cost unavailable' : 'No time records in scope') : 'Reported labor cost in USD']
+    ];
+    return cards.map(([kind, label, value, note]) => `
+      <div class="kpi wf-kpi wf-kpi--${kind}">
+        <div class="wf-kpi-label">${label}</div>
+        <strong class="wf-kpi-value">${escape(value)}</strong>
+        <div class="wf-kpi-note">${escape(note)}</div>
+      </div>`).join('');
+  }
+
+  function renderChart({ dates, dailyTotals, department, selectedDate, mode }) {
+    const { metrics: keys, unit } = chartModes[mode];
+    const max = scaleFor(Math.max(0, ...dates.flatMap(date => keys.map(key => dailyTotals.get(date)[key] ?? 0))));
+    const modeButtons = Object.entries(chartModes).map(([id, item]) => `
+      <button type="button" data-wf-mode="${id}" aria-pressed="${mode === id}">${item.label}</button>`).join('');
+    const legend = keys.map(key => `
+      <span class="wf-legend-item"><span class="wf-swatch wf-color-${metrics[key].color}" aria-hidden="true"></span>${metrics[key].label}</span>`).join('');
+    const tickLabels = [1, 0.75, 0.5, 0.25, 0].map(fraction => {
+      const value = max * fraction;
+      return `<span>${unit === 'USD' ? '$' : ''}${compact.format(value)}</span>`;
+    }).join('');
+    const days = dates.map(date => {
+      const day = dailyTotals.get(date);
+      const caption = `${weekdayDate.format(utcDate(date))}, ${date.slice(0, 4)}`;
+      const quantities = keys.map(key => `${metrics[key].label} ${metricValue(key, day[key])}`);
+      const description = `${caption}. ${day.hasRows ? quantities.join('. ') : 'No time records.'}`;
+      const bars = keys.map(key => {
+        const value = day[key];
+        const height = Math.max(0, (value ?? 0) / max * 100);
+        const dataState = value === null ? 'missing' : value === 0 ? 'zero' : 'present';
+        return `<span class="wf-bar wf-color-${metrics[key].color}" data-value="${dataState}" style="--wf-height:${height}%"></span>`;
+      }).join('');
+      return `
+        <button class="wf-day${selectedDate && selectedDate !== date ? ' wf-day--muted' : ''}"
+          type="button" data-wf-day="${date}" aria-label="${escape(description)}" aria-pressed="${selectedDate === date}">
+          <span class="wf-day-bars" aria-hidden="true">${bars}</span>
+          <span class="wf-day-date" aria-hidden="true">${escape(shortDate.format(utcDate(date)))}</span>
+          <span class="wf-tooltip" aria-hidden="true">${escape(description)}</span>
+        </button>`;
+    }).join('');
+    let chart = '<div class="wf-empty">Daily time entries are unavailable for this reporting period.</div>';
+    if (dates.length) {
+      const hasDailyRows = [...dailyTotals.values()].some(day => day.hasRows);
+      chart = `
+        <div class="wf-chart-meta"><span>${unit}</span><div class="wf-legend">${legend}</div></div>
+        <div class="wf-chart-body">
+          <div class="wf-axis" aria-hidden="true">${tickLabels}</div>
+          <div class="wf-plot-scroll">
+            <div class="wf-plot" style="--wf-days:${dates.length}">
+              <div class="wf-gridlines" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+              <div class="wf-days">${days}</div>
+            </div>
+          </div>
+        </div>
+        <div class="wf-chart-note">${hasDailyRows ? 'Select a day to view its staffing report.' : `No daily time entries for ${escape(department || 'this scope')}.`}</div>`;
+    }
+    return `
+      <div class="wf-panel-head">
+        <div><h2 class="panel-title">Daily time report</h2><p>${escape(department || 'All departments')}</p></div>
+        ${dates.length ? `<div class="wf-modes" role="group" aria-label="Chart metric">${modeButtons}</div>` : ''}
+      </div>
+      ${chart}`;
+  }
+
+  function renderBrief({ report, leader, selectedDate, hasRows }) {
+    const base = Math.max(report.absence ?? 0, report.overtime ?? 0, 1);
+    const comparisons = ['absence', 'overtime'].map(key => {
+      const value = report[key];
+      const share = ratio(value, report.scheduled);
+      return `
+        <div class="wf-exception">
+          <div class="wf-exception-label"><span>${metrics[key].label}</span><strong>${metricValue(key, value)}</strong></div>
+          <div class="wf-meter" aria-hidden="true"><span class="wf-color-${metrics[key].color}" style="width:${Math.max(0, (value ?? 0) / base * 100)}%"></span></div>
+          ${share ? `<span class="wf-exception-share">${share} of scheduled hours</span>` : ''}
+        </div>`;
+    }).join('');
+    let finding = '';
+    if (leader) {
+      finding = `
+        <div class="wf-finding">
+          <span>${escape(leader.label)}</span>
+          <strong>${escape(leader.name)}</strong>
+          <p>${escape(leader.detail)}</p>
+        </div>`;
+    }
+    return `
+      <div class="wf-panel-head">
+        <div><h2 class="panel-title">Shift exceptions</h2><p>${selectedDate ? 'Selected reporting day' : 'Loaded reporting period'}</p></div>
+      </div>
+      ${hasRows ? comparisons + finding : '<div class="wf-empty">No time entries in this selection.</div>'}`;
+  }
+
+  function renderRoster({ names, roster, reports, selectedDate, dates, department }) {
+    const reported = [...reports.values()].filter(report => report.hasRows).length;
+    const rosterSummary = `${countLabel(roster.size, 'department')} on the roster · ${countLabel(reported, 'department')} reporting`;
+    const body = names.map(name => {
+      const record = roster.get(name);
+      const report = reports.get(name);
+      const active = department === name;
+      let reporting = 'No rows';
+      if (report.hasRows) {
+        reporting = !selectedDate && dates.length ? `${report.days} / ${dates.length} days` : 'Reported';
+      }
+      return `
+        <tr${active ? ' class="wf-selected-row"' : ''}>
+          <th scope="row">
+            <button type="button" class="wf-department" data-wf-department="${escape(name)}" aria-pressed="${active}">${escape(name)}</button>
+            <span class="wf-manager">${escape(record?.manager || (record ? 'Manager unavailable' : 'No roster record'))}</span>
+          </th>
+          <td>${format(record?.headcount ?? null)}</td>
+          <td><span class="wf-coverage${report.hasRows ? ' wf-coverage--recorded' : ''}">${reporting}</span></td>
+          <td>${metricValue('productive', report.productive)}</td>
+          <td>${metricValue('absence', report.absence)}</td>
+          <td>${metricValue('overtime', report.overtime)}</td>
+          <td>${metricValue('cost', report.cost)}</td>
+        </tr>`;
+    }).join('');
+    return `
+      <div class="wf-panel-head">
+        <div><h2 class="panel-title">Department roster</h2><p>${escape(rosterSummary)}</p></div>
+      </div>
+      ${names.length ? `
+        <div class="wf-table-scroll" tabindex="0" role="region" aria-label="Department roster and time reporting">
+          <table class="wf-table">
+            <thead><tr>
+              <th scope="col">Department / manager</th><th scope="col">Active staff</th><th scope="col">Reporting</th>
+              <th scope="col">Productive</th><th scope="col">Absence</th><th scope="col">Overtime</th><th scope="col">Labor cost</th>
+            </tr></thead>
+            <tbody>${body}</tbody>
+          </table>
+        </div>
+        <p class="wf-source-note">Active staff and managers come from the current roster. Reporting reflects time entries ${dates.length ? 'for the selected dates' : 'in the loaded period'}.</p>` :
+        '<div class="wf-empty">Roster and department time reports are unavailable.</div>'}`;
+  }
+
+  function workforce(root, data, context) {
+    const roster = new Map(rows(data, 'headcount_by_department').map(row => [departmentName(row), {
+      manager: unwrap(row.manager_name), headcount: numeric(row.headcount)
+    }]));
+    const daily = rows(data, 'workforce_daily').map(row => ({
+      ...row, date: dateKey(row.work_date), name: departmentName(row)
+    })).filter(row => row.date);
+    const summary = rows(data, 'workforce_cost_by_department').map(row => ({ ...row, name: departmentName(row) }));
+    const dates = [...new Set(daily.map(row => row.date))].sort();
+    const names = [...new Set([...roster.keys(), ...daily.map(row => row.name), ...summary.map(row => row.name)])].sort((a, b) =>
+      (roster.get(b)?.headcount ?? -1) - (roster.get(a)?.headcount ?? -1) || a.localeCompare(b));
+    const rosterValues = [...roster.values()].flatMap(record => record.headcount === null ? [] : [record.headcount]);
+    const totalHeadcount = rosterValues.length ? rosterValues.reduce((sum, value) => sum + value, 0) : null;
+    const first = dates[0];
+    const last = dates[dates.length - 1];
+    const dateRange = !first ? 'Dates unavailable' : first === last ? fullDate.format(utcDate(first)) :
+      fullDate.formatRange(utcDate(first), utcDate(last));
+
+    const initialDepartment = context?.get('department');
+    let department = names.includes(initialDepartment) ? initialDepartment : '';
+    let selectedDate = '';
+    let mode = 'staffing';
+
+    root.innerHTML = `
+      <div class="wf-desk">
+        <header class="wf-header">
+          <div class="wf-heading">
+            <p class="wf-eyebrow">People operations</p>
+            <h1>Workforce Desk</h1>
+            <p class="wf-period">${escape(dateRange)}${dates.length ? `<span>${countLabel(dates.length, 'business day')}</span>` : ''}</p>
+          </div>
+          <div class="wf-filters">
+            <label><span>Department</span><select data-wf-filter="department">
+              <option value="">All departments</option>
+              ${names.map(name => `<option value="${escape(name)}">${escape(name)}</option>`).join('')}
+            </select></label>
+            <label><span>Reporting dates</span><select data-wf-filter="date"${dates.length ? '' : ' disabled'}>
+              <option value="">${dates.length ? `All ${countLabel(dates.length, 'reporting day')}` : 'Loaded period'}</option>
+              ${dates.map(date => `<option value="${date}">${escape(weekdayDate.format(utcDate(date)))}</option>`).join('')}
+            </select></label>
+          </div>
+        </header>
+        <div class="wf-sr-only" aria-live="polite" data-wf-status></div>
+        <section class="kpi-grid wf-kpis" aria-label="Workforce figures"></section>
+        <div class="dashboard-grid wf-grid">
+          <section class="panel wf-panel wf-chart" aria-label="Daily time report"></section>
+          <section class="panel wf-panel wf-brief" aria-label="Shift exceptions"></section>
+        </div>
+        <section class="panel wf-panel wf-roster" aria-label="Department roster"></section>
+      </div>`;
+
+    const desk = root.querySelector('.wf-desk');
+    const kpis = desk.querySelector('.wf-kpis');
+    const chart = desk.querySelector('.wf-chart');
+    const brief = desk.querySelector('.wf-brief');
+    const rosterPanel = desk.querySelector('.wf-roster');
+    const departmentFilter = desk.querySelector('[data-wf-filter="department"]');
+    const dateFilter = desk.querySelector('[data-wf-filter="date"]');
+    const status = desk.querySelector('[data-wf-status]');
+
+    function update(focus) {
+      const chartScroll = chart.querySelector('.wf-plot-scroll')?.scrollLeft ?? 0;
+      const tableScroll = rosterPanel.querySelector('.wf-table-scroll')?.scrollLeft ?? 0;
+      const periodRows = dates.length ? daily.filter(row => !selectedDate || row.date === selectedDate) : summary;
+      const scopeRows = periodRows.filter(row => !department || row.name === department);
+      const report = totals(scopeRows);
+      const reports = new Map(names.map(name => {
+        const departmentRows = periodRows.filter(row => row.name === name);
+        return [name, { ...totals(departmentRows), hasRows: departmentRows.length > 0, days: new Set(departmentRows.map(row => row.date)).size }];
+      }));
+      const dailyTotals = new Map(dates.map(date => {
+        const day = daily.filter(row => row.date === date && (!department || row.name === department));
+        return [date, { ...totals(day), hasRows: day.length > 0 }];
+      }));
+
+      let leader;
+      if (!department) {
+        const top = [...reports].reduce((highest, entry) => (entry[1].overtime ?? 0) > (highest?.[1].overtime ?? 0) ? entry : highest, null);
+        if (top) {
+          const share = ratio(top[1].overtime, report.overtime);
+          leader = { label: 'Most overtime', name: top[0], detail: `${metricValue('overtime', top[1].overtime)} · ${share} of reported overtime` };
+        }
+      } else if (selectedDate) {
+        const period = totals(daily.filter(row => row.name === department));
+        const share = ratio(report.overtime, period.overtime);
+        if (share) {
+          leader = { label: 'Share of department overtime', name: share, detail: `${metricValue('overtime', report.overtime)} on this day of ${metricValue('overtime', period.overtime)} in the loaded period` };
+        }
+      } else if (dates.length) {
+        const top = [...dailyTotals].reduce((highest, entry) => (entry[1].overtime ?? 0) > (highest?.[1].overtime ?? 0) ? entry : highest, null);
+        if (top) {
+          leader = { label: 'Highest-overtime day', name: weekdayDate.format(utcDate(top[0])), detail: `${metricValue('overtime', top[1].overtime)} overtime in ${department}` };
+        }
+      }
+
+      const activeStaff = department ? roster.get(department)?.headcount ?? null : totalHeadcount;
+      departmentFilter.value = department;
+      dateFilter.value = selectedDate;
+      kpis.innerHTML = renderKpis(department, roster.get(department), roster.size, activeStaff, report, scopeRows.length > 0);
+      chart.innerHTML = renderChart({ dates, dailyTotals, department, selectedDate, mode });
+      brief.innerHTML = renderBrief({ report, leader, selectedDate, hasRows: scopeRows.length > 0 });
+      rosterPanel.innerHTML = renderRoster({ names, roster, reports, selectedDate, dates, department });
+      const chartViewport = chart.querySelector('.wf-plot-scroll');
+      const tableViewport = rosterPanel.querySelector('.wf-table-scroll');
+      if (chartViewport) chartViewport.scrollLeft = chartScroll;
+      if (tableViewport) tableViewport.scrollLeft = tableScroll;
+      if (focus) {
+        const button = [...desk.querySelectorAll(`button[${focus.attribute}]`)].find(item => item.getAttribute(focus.attribute) === focus.value);
+        button?.focus({ preventScroll: true });
+      }
+      status.textContent = `${department || 'All departments'}. ${selectedDate ? fullDate.format(utcDate(selectedDate)) : dates.length ? 'All reporting dates' : 'Loaded period'}.`;
+    }
+
+    departmentFilter.addEventListener('change', () => {
+      department = departmentFilter.value;
+      update();
+    });
+    dateFilter.addEventListener('change', () => {
+      selectedDate = dateFilter.value;
+      update();
+    });
+    desk.addEventListener('click', event => {
+      const button = event.target.closest('button[data-wf-day], button[data-wf-mode], button[data-wf-department]');
+      if (!button) return;
+      if (button.hasAttribute('data-wf-day')) {
+        const value = button.dataset.wfDay;
+        selectedDate = selectedDate === value ? '' : value;
+        update({ attribute: 'data-wf-day', value });
+      } else if (button.hasAttribute('data-wf-mode')) {
+        mode = button.dataset.wfMode;
+        update({ attribute: 'data-wf-mode', value: mode });
+      } else {
+        const value = button.dataset.wfDepartment;
+        department = department === value ? '' : value;
+        update({ attribute: 'data-wf-department', value });
+      }
+    });
+
+    update();
+  }
+
+  window.sampleDashboards = window.sampleDashboards || {};
+  window.sampleDashboards.workforce = workforce;
+}());
+
+</script>
+<script>
+(function () {
+  'use strict';
+
+  const november = '2026-11';
+  const december = '2026-12';
+  const currency = new Intl.NumberFormat('en-US', {
+    style: 'currency', currency: 'USD', trailingZeroDisplay: 'stripIfInteger',
+  });
+  const rateCurrency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+  const count = new Intl.NumberFormat('en-US');
+  const percent = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
+  const monthName = new Intl.DateTimeFormat('en-US', {
+    month: 'long', year: 'numeric', timeZone: 'UTC',
+  });
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    })[char]);
+  }
+
+  function scalar(value) {
+    return value && typeof value === 'object' && 'value' in value ? value.value : value;
+  }
+
+  function number(value) {
+    const raw = scalar(value);
+    if (typeof raw !== 'number' && typeof raw !== 'bigint' && typeof raw !== 'string') return null;
+    if (typeof raw === 'string' && !raw.trim()) return null;
+    const result = Number(raw);
+    return Number.isFinite(result) ? result : null;
+  }
+
+  function display(value, formatter = currency) {
+    return value === null ? '<span class="finance-missing" aria-label="Unavailable">—</span>' : formatter.format(value);
+  }
+
+  function rows(data, key) {
+    return Array.isArray(data?.[key]) ? data[key].filter((row) => row && typeof row === 'object') : [];
+  }
+
+  function monthKey(value) {
+    const raw = scalar(value);
+    if (raw instanceof Date) return Number.isFinite(raw.getTime()) ? raw.toISOString().slice(0, 7) : null;
+    if (typeof raw !== 'string') return null;
+    return /^(\d{4}-(?:0[1-9]|1[0-2]))(?:$|-\d{2}(?:$|[T ]))/.exec(raw)?.[1] ?? null;
+  }
+
+  function groupMonths(result) {
+    const periods = new Map();
+    for (const row of result) {
+      const month = monthKey(row.report_month);
+      if (!month) continue;
+      if (!periods.has(month)) periods.set(month, []);
+      periods.get(month).push(row);
+    }
+    return periods;
+  }
+
+  function sum(result, key) {
+    const amounts = result.map((row) => number(row[key]));
+    return amounts.length && amounts.every((value) => value !== null)
+      ? amounts.reduce((total, value) => total + value, 0)
+      : null;
+  }
+
+  function descending(key) {
+    return (a, b) => (number(b[key]) ?? -Infinity) - (number(a[key]) ?? -Infinity);
+  }
+
+  function statusLabel(value) {
+    const status = String(scalar(value) ?? '').trim()
+      .replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ');
+    return status ? status[0].toUpperCase() + status.slice(1).toLowerCase() : '';
+  }
+
+  function departmentName(row) {
+    return String(scalar(row.department_name) ?? 'Unnamed department');
+  }
+
+  function ledgerRows(result, managers, budgetOnly, ordering, pendingOnly) {
+    const visible = result.filter((row) => !pendingOnly || (number(row.pending_approval_total) ?? 0) > 0);
+    if (!visible.length) {
+      const message = result.length && pendingOnly
+        ? 'No departments have a reported pending amount above zero.'
+        : 'Department budget results are unavailable for this period.';
+      return `<p class="finance-empty">${message}</p>`;
+    }
+
+    const byName = (a, b) => departmentName(a).localeCompare(departmentName(b));
+    const leastRemaining = (a, b) => (number(a.remaining_budget_total) ?? Infinity)
+      - (number(b.remaining_budget_total) ?? Infinity);
+    const order = { remaining: leastRemaining, pending: descending('pending_approval_total'), name: byName }[ordering];
+    visible.sort((a, b) => order(a, b) || byName(a, b));
+
+    return `<table class="finance-table finance-ledger-table" role="table" aria-label="Department budget ledger">
+      <thead role="rowgroup"><tr role="row">
+        <th role="columnheader" scope="col">Department</th>
+        <th role="columnheader" scope="col">${budgetOnly ? 'Budget' : 'Actuals / budget'}</th>
+        <th role="columnheader" scope="col">Remaining</th>
+        <th role="columnheader" scope="col">Pending</th>
+      </tr></thead>
+      <tbody role="rowgroup">${visible.map((row) => {
+        const department = departmentName(row);
+        const manager = managers.get(department);
+        const budget = number(row.budget_total);
+        const actual = budgetOnly ? null : number(row.actual_cost_total);
+        const remaining = number(row.remaining_budget_total);
+        const pending = number(row.pending_approval_total);
+        const status = budgetOnly ? '' : statusLabel(row.budget_status);
+        const used = actual !== null && budget > 0 ? actual / budget : null;
+        const fill = Math.min(100, Math.max(0, (used ?? 0) * 100));
+
+        return `<tr role="row">
+          <th role="rowheader" scope="row">
+            <span class="finance-department">${escapeHtml(department)}</span>
+            ${manager ? `<span class="finance-secondary">${escapeHtml(manager)}</span>` : ''}
+          </th>
+          <td role="cell">
+            <span class="finance-mobile-label" aria-hidden="true">${budgetOnly ? 'Budget' : 'Actuals / budget'}</span>
+            <span class="finance-budget-amounts">${budgetOnly ? display(budget) : `${display(actual)} <span class="finance-secondary">/ ${display(budget)}</span>`}</span>
+            ${used === null ? '' : `<span class="finance-budget-use${used > 1 ? ' finance-over' : ''}">
+              <span class="finance-bar" aria-hidden="true"><span style="width:${fill}%"></span></span>
+              <span>${percent.format(used)}</span>
+            </span>`}
+          </td>
+          <td role="cell" class="finance-amount-cell${remaining < 0 ? ' finance-negative' : ''}">
+            <span class="finance-mobile-label" aria-hidden="true">Remaining</span>
+            <span>${display(remaining)}</span>
+            ${status ? `<span class="finance-status">${escapeHtml(status)}</span>` : ''}
+          </td>
+          <td role="cell" class="finance-amount-cell${pending > 0 ? ' finance-pending' : ''}">
+            <span class="finance-mobile-label" aria-hidden="true">Pending</span>
+            <span>${display(pending)}</span>
+          </td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
+
+  function supplierRows(result, scope, budgetOnly) {
+    if (!result.length) {
+      return `<p class="finance-empty">${budgetOnly
+        ? 'Supplier invoice results are unavailable for this budget-only period.'
+        : 'Supplier invoice results are unavailable for this period.'}</p>`;
+    }
+
+    const byPending = descending('pending_spend');
+    const byApproved = descending('approved_spend');
+    const ranked = [...result].sort((a, b) => byPending(a, b) || byApproved(a, b));
+    const scale = Math.max(0, ...ranked.flatMap((row) => [number(row.approved_spend), number(row.pending_spend)]));
+    const pendingTotal = sum(result, 'pending_spend');
+
+    function lane(label, value, className) {
+      const width = value > 0 && scale > 0 ? 100 * value / scale : 0;
+      return `<div class="finance-supplier-lane ${className}">
+        <span>${label}</span><span class="finance-bar" aria-hidden="true"><span style="width:${width}%"></span></span>
+        <strong>${display(value)}</strong>
+      </div>`;
+    }
+
+    return `<div class="finance-supplier-summary">
+      <p>${escapeHtml(scope)}</p><p><strong>${display(pendingTotal)}</strong> pending</p>
+    </div>
+    <ul class="finance-supplier-list" aria-label="Supplier invoices by category">
+      ${ranked.map((row) => {
+        const invoices = number(row.invoices);
+        const category = scalar(row.category);
+        return `<li>
+          <div class="finance-supplier-name">
+            <div><strong>${escapeHtml(scalar(row.supplier_name) ?? 'Unnamed supplier')}</strong>
+              ${category ? `<span class="finance-secondary">${escapeHtml(category)}</span>` : ''}</div>
+            ${invoices === null ? '' : `<span class="finance-secondary">${count.format(invoices)} ${invoices === 1 ? 'invoice' : 'invoices'}</span>`}
+          </div>
+          ${lane('Pending', number(row.pending_spend), 'finance-supplier-pending')}
+          ${lane('Approved', number(row.approved_spend), 'finance-supplier-approved')}
+        </li>`;
+      }).join('')}
+    </ul>`;
+  }
+
+  function routeTable(result) {
+    if (!result.length) return '<p class="finance-empty">Modeled route cost results are unavailable.</p>';
+
+    return `<div class="finance-route-scroll" tabindex="0" role="region" aria-label="Modeled route costs table">
+    <table class="finance-table finance-route-table">
+      <thead><tr><th scope="col">Route</th><th scope="col">Modeled cost</th>
+        <th scope="col">Completed trips</th><th scope="col">Cost / trip</th></tr></thead>
+      <tbody>${[...result].sort(descending('modeled_cost')).map((row) => {
+        const routeId = scalar(row.route_id);
+        const name = scalar(row.route_long_name);
+        const cost = number(row.modeled_cost);
+        const trips = number(row.completed_service);
+        const costPerTrip = cost !== null && trips > 0 ? cost / trips : null;
+        return `<tr>
+          <th scope="row"><span class="finance-route-name">
+            ${routeId == null ? '' : `<span class="finance-route-id">${escapeHtml(routeId)}</span>`}
+            ${name ? `<span>${escapeHtml(name)}</span>` : routeId == null ? 'Unnamed route' : ''}
+          </span></th>
+          <td>${display(cost)}</td><td>${display(trips, count)}</td><td>${display(costPerTrip, rateCurrency)}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+  }
+
+  function metric(label, amount, note, spotlight = false, unavailableLabel) {
+    return `<div class="kpi finance-kpi${spotlight ? ' finance-kpi-review' : ''}">
+      <span class="finance-kpi-label">${label}</span>
+      <strong class="finance-kpi-value${amount < 0 && !spotlight ? ' finance-negative' : ''}">
+        ${amount === null && unavailableLabel
+          ? `<span class="finance-kpi-unavailable">${unavailableLabel}</span>`
+          : display(amount)}
+      </strong>
+      ${note ? `<p>${note}</p>` : ''}
+    </div>`;
+  }
+
+  function monthLabel(month) {
+    return monthName.format(new Date(`${month}-01T00:00:00Z`));
+  }
+
+  window.sampleDashboards ??= {};
+  window.sampleDashboards.finance = function renderFinance(root, data) {
+    const budgetPeriods = groupMonths(rows(data, 'budget_by_month'));
+    const vendorPeriods = groupMonths(rows(data, 'vendor_by_month'));
+    const novemberBudget = rows(data, 'budget_by_department');
+    if (!budgetPeriods.has(november) && novemberBudget.length) budgetPeriods.set(november, novemberBudget);
+
+    const managers = new Map(rows(data, 'executive_department_review')
+      .map((row) => [departmentName(row), scalar(row.manager_name)]));
+    const vendorRollup = rows(data, 'vendor_approval_pipeline');
+    const months = [...new Set([...budgetPeriods.keys(), ...vendorPeriods.keys()])].sort().reverse();
+    if (!months.length) months.push(november);
+    let month = months.includes(november) ? november : months[0];
+
+    root.innerHTML = `<div class="finance-desk">
+      <header class="finance-header">
+        <div><h1>Financial Control</h1><p class="finance-period-note" data-finance-period-note></p></div>
+        <label class="finance-period">
+          <span>Reporting month</span>
+          <select data-finance-month${months.length === 1 ? ' disabled' : ''}>
+            ${months.map((value) => `<option value="${value}"${value === month ? ' selected' : ''}>${escapeHtml(monthLabel(value))}</option>`).join('')}
+          </select>
+        </label>
+      </header>
+
+      <div class="kpi-grid finance-kpis" data-finance-kpis role="group" aria-label="Budget summary"></div>
+
+      <div class="dashboard-grid finance-grid">
+        <section class="panel finance-panel finance-ledger" id="department-ledger" tabindex="-1" aria-label="Department budget ledger">
+          <div class="finance-panel-heading">
+            <h2 class="panel-title">Department ledger</h2>
+            <div class="finance-ledger-tools">
+              <button type="button" aria-pressed="false" data-finance-pending>Pending only</button>
+              <label class="finance-order"><span>Sort by</span>
+                <select data-finance-order>
+                  <option value="remaining">Least remaining</option>
+                  <option value="pending">Most pending</option>
+                  <option value="name">Department A–Z</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div data-finance-ledger></div>
+        </section>
+
+        <section class="panel finance-panel finance-suppliers" aria-label="Supplier approval pipeline">
+          <div class="finance-panel-heading"><h2 class="panel-title">Supplier approvals</h2></div>
+          <div data-finance-suppliers></div>
+        </section>
+
+        <section class="panel finance-panel finance-routes" aria-label="Modeled route costs">
+          <div class="finance-panel-heading">
+            <div><h2 class="panel-title">Route cost reference</h2>
+              <p>All reported route rows. Costs model labor and allocated approved non-labor expenses.</p></div>
+          </div>
+          ${routeTable(rows(data, 'route_cost_review'))}
+        </section>
+      </div>
+    </div>`;
+
+    const picker = root.querySelector('[data-finance-month]');
+    const periodNote = root.querySelector('[data-finance-period-note]');
+    const summary = root.querySelector('[data-finance-kpis]');
+    const order = root.querySelector('[data-finance-order]');
+    const pending = root.querySelector('[data-finance-pending]');
+    const ledger = root.querySelector('[data-finance-ledger]');
+    const suppliers = root.querySelector('[data-finance-suppliers]');
+
+    function renderLedger() {
+      ledger.innerHTML = ledgerRows(
+        budgetPeriods.get(month) ?? [], month === november ? managers : new Map(), month === december,
+        order.value, pending.getAttribute('aria-pressed') === 'true',
+      );
+    }
+
+    function renderPeriod() {
+      const budget = budgetPeriods.get(month) ?? [];
+      const budgetOnly = month === december;
+      const pendingTotal = sum(budget, 'pending_approval_total');
+      const pendingDepartments = budget.filter((row) => number(row.pending_approval_total) > 0).length;
+      const overBudget = budgetOnly ? 0 : budget.filter((row) => number(row.remaining_budget_total) < 0).length;
+      const pendingCaption = pendingDepartments
+        ? `${count.format(pendingDepartments)} ${pendingDepartments === 1 ? 'department' : 'departments'} with pending invoices`
+        : pendingTotal === 0 ? 'No pending department invoices reported' : 'Department approval totals unavailable';
+      const varianceCaption = overBudget
+        ? `${count.format(overBudget)} ${overBudget === 1 ? 'department' : 'departments'} over budget` : '';
+
+      periodNote.textContent = budgetOnly ? 'December is a budget-only period.'
+        : month === november ? 'November actuals cover a partial reporting period.'
+          : 'Pending invoice approvals are tracked separately from actuals.';
+      summary.innerHTML = [
+        metric('Awaiting invoice review', pendingTotal, pendingCaption, true),
+        metric('Department budget', sum(budget, 'budget_total')),
+        metric('Loaded actuals', budgetOnly ? null : sum(budget, 'actual_cost_total'),
+          budgetOnly ? '' : 'Pending invoices shown separately', false, budgetOnly ? 'No actuals loaded' : undefined),
+        metric('Budget remaining', sum(budget, 'remaining_budget_total'), varianceCaption),
+      ].join('');
+
+      pending.disabled = !budget.length;
+      order.disabled = !budget.length;
+      renderLedger();
+
+      const useRollup = !vendorPeriods.size && !budgetOnly;
+      const vendorResult = useRollup ? vendorRollup : vendorPeriods.get(month) ?? [];
+      suppliers.innerHTML = supplierRows(vendorResult,
+        useRollup ? 'All reported supplier months' : monthLabel(month), budgetOnly);
+    }
+
+    picker.addEventListener('change', () => {
+      month = picker.value;
+      pending.setAttribute('aria-pressed', 'false');
+      renderPeriod();
+    });
+    order.addEventListener('change', renderLedger);
+    pending.addEventListener('click', () => {
+      pending.setAttribute('aria-pressed', String(pending.getAttribute('aria-pressed') !== 'true'));
+      renderLedger();
+    });
+
+    renderPeriod();
+  };
+})();
+
+</script>
+<script>
+(() => {
+  const { data, queryInfo, project, models, exportedAt } = window.sampleSnapshot
+  const root = document.getElementById('workspace')
+  const nav = document.querySelector('.desk-nav')
+  const escape = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[character])
+  const count = new Intl.NumberFormat('en-US')
+  const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', trailingZeroDisplay: 'stripIfInteger' })
+  const percent = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 })
+  const calendar = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
+  const calendarYear = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+  const localCalendar = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' })
+  const month = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+  const day = (date) => calendar.format(new Date(date))
+  const rows = (query) => data[query] || []
+  const sum = (list, field) => list.reduce((total, row) => total + Number(row[field] ?? 0), 0)
+  const service = rows('service_reliability_by_route')
+  const staff = rows('headcount_by_department')
+  const budget = rows('budget_by_department')
+  const checks = rows('risk_detail')
+  const routeDays = rows('route_daily')
+  const schedule = rows('cta_schedule_reference')
+  const routeDayKey = (row) => JSON.stringify([row.service_date, row.route_id])
+  const plannedByRouteDay = new Map(schedule.map((row) => [routeDayKey(row), Number(row.total_scheduled_trips)]))
+  const reconciledDays = routeDays.filter((row) => plannedByRouteDay.get(routeDayKey(row)) === Number(row.trips_scheduled)).length
+  const scheduleMatches = schedule.length > 0 && plannedByRouteDay.size === routeDays.length && reconciledDays === routeDays.length
+  const dates = [...new Set(routeDays.map((row) => row.service_date))].sort()
+  const workforceDates = new Set(rows('workforce_daily').map((row) => row.work_date))
+  const servicePeriod = dates.length ? calendarYear.formatRange(new Date(dates[0]), new Date(dates.at(-1))) : 'Service period unavailable'
+
+  const navItems = [
+    ['briefing', 'Shift briefing', '<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V2h6v2m-6 5h6m-6 4h6m-6 4h4"/>'],
+    ['operations', 'Dispatch & Fleet', '<path d="M3 12h4l3-7 4 14 3-7h4"/>'],
+    ['workforce', 'Workforce', '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/><circle cx="9" cy="7" r="4"/>'],
+    ['finance', 'Financial Control', '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18m-14 6h4m3 0h2"/>'],
+    ['sources', 'Data & Queries', '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14a8 3 0 0 0 16 0V5m-16 7a8 3 0 0 0 16 0"/>'],
+  ]
+
+  nav.innerHTML = navItems.map(([key, label, icon]) => `
+    <a href="#${key}" ${key === 'sources' ? 'class="sources-link"' : ''}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon}</svg>
+      ${escape(label)}
+    </a>
+  `).join('')
+
+  function kpi(label, value, note, state = '') {
+    return `<div class="kpi"><div class="label">${label}</div><div class="value ${state}">${value}</div><small>${note}</small></div>`
+  }
+
+  function review(key, title, detail, severity) {
+    return `<li class="review-item"><a href="#${escape(key)}">
+      <span class="review-dot ${severity}" aria-hidden="true"></span>
+      <div><strong>${escape(title)}</strong><p>${escape(detail)}</p></div>
+      <span class="review-arrow" aria-hidden="true">↗</span>
+    </a></li>`
+  }
+
+  function cancellationsChart() {
+    if (!dates.length) return ''
+    const series = dates.map((date) => [date, sum(routeDays.filter((row) => row.service_date === date), 'trips_cancelled')])
+    const peak = Math.max(...series.map(([, value]) => value))
+    const label = series.map(([date, value]) => `${day(date)}: ${count.format(value)}`).join(', ')
+    return `<figure class="mini-chart">
+      <figcaption>Daily trip cancellations</figcaption>
+      <div class="chart-columns" role="img" aria-label="${escape(label)}" style="--points:${series.length}">
+        ${series.map(([date, value]) => `<span class="chart-bar" style="--height:${100 * value / (peak || 1)}%" ${value === peak ? 'data-peak' : ''} title="${escape(`${day(date)} · ${count.format(value)} cancellations`)}"></span>`).join('')}
+      </div>
+      <div class="chart-dates"><span>${day(dates[0])}</span><span>Peak ${count.format(peak)}</span><span>${day(dates.at(-1))}</span></div>
+    </figure>`
+  }
+
+  function briefing() {
+    const completed = sum(service, 'trips_completed')
+    const critical = rows('fleet_detail').filter((row) => Number(row.critical_orders) > 0)
+    const over = budget.filter((row) => Number(row.remaining_budget_total) < 0)
+    const pending = sum(budget, 'pending_approval_total')
+    const lowest = service.filter((row) => Number(row.trips_completed) > 0).sort((a, b) =>
+      a.trips_on_time / a.trips_completed - b.trips_on_time / b.trips_completed)[0]
+    const highOvertime = [...rows('workforce_cost_by_department')].sort((a, b) => b.total_overtime_hours - a.total_overtime_hours)[0]
+    const directory = [...staff].sort((a, b) => a.department_name.localeCompare(b.department_name))
+    root.innerHTML = `<div class="briefing">
+      <section class="briefing-hero" aria-labelledby="briefing-title">
+        <div class="desk-heading">
+          <h1 id="briefing-title">Shift briefing</h1>
+          <p>Chicago · ${escape(servicePeriod)}</p>
+        </div>
+        ${cancellationsChart()}
+      </section>
+      <section class="kpi-grid briefing-kpis" aria-label="Enterprise at a glance">
+        ${kpi('Completed trips', count.format(completed), scheduleMatches ?
+          `${count.format(sum(schedule, 'total_scheduled_trips'))} scheduled · ${count.format(sum(service, 'trips_cancelled'))} cancelled` :
+          `${count.format(sum(service, 'trips_cancelled'))} cancellations across ${service.length} routes`)}
+        ${kpi('On-time rate', completed ? percent.format(sum(service, 'trips_on_time') / completed) : '—', 'Share of completed trips')}
+        ${kpi('Active staff', count.format(sum(staff, 'headcount')), `${staff.length} departments · ${workforceDates.size} days of time entries`)}
+        ${kpi('Pending invoice approvals', money.format(pending), 'November reporting period')}
+      </section>
+      <div class="review-grid">
+        <section class="panel" aria-labelledby="review-title">
+          <h2 id="review-title" class="panel-title">Items for review</h2>
+          <ul class="review-list">
+            ${critical.map((row) => review('operations?focus=fleet-queue', `${row.vehicle_id} has critical work open`, `${row.department_name} owns this ${row.vehicle_type.toLowerCase()}. ${count.format(row.critical_orders)} critical ${Number(row.critical_orders) === 1 ? 'order' : 'orders'} open.`, 'critical')).join('')}
+            ${over.map((row) => review('finance?focus=department-ledger', `${row.department_name} is over budget`, `${money.format(Math.abs(row.remaining_budget_total))} over its November allocation on partial actuals. ${money.format(row.pending_approval_total)} also awaiting invoice approval.`, 'critical')).join('')}
+            ${lowest ? review(`operations?focus=daily-service&route=${encodeURIComponent(lowest.route_id)}`, `${lowest.route_id} ${lowest.route_long_name} had the lowest on-time rate`, `${percent.format(lowest.trips_on_time / lowest.trips_completed)} of ${count.format(lowest.trips_completed)} completed trips ran on time.`, 'service') : ''}
+            ${highOvertime && Number(highOvertime.total_overtime_hours) > 0 ? review(`workforce?department=${encodeURIComponent(highOvertime.department_name)}`, `${highOvertime.department_name} logged the most overtime`, `${count.format(highOvertime.total_overtime_hours)} hours across the loaded time-entry days.`, 'staffing') : ''}
+          </ul>
+        </section>
+        <section class="panel" aria-labelledby="directory-title">
+          <h2 id="directory-title" class="panel-title">Department leads</h2>
+          <ul class="directory">${directory.map((row) => `<li><strong>${escape(row.department_name)}</strong><span class="manager">${escape(row.manager_name)}</span></li>`).join('')}</ul>
+        </section>
+      </div>
+    </div>`
+  }
+
+  function sources() {
+    const budgetMonths = [...new Set(rows('budget_by_month').map((row) => row.report_month))].sort()
+    const latestBudget = budgetMonths.at(-1)
+    const budgetCoverage = latestBudget ? `${month.format(new Date(latestBudget))} is budget-only in this snapshot.` : ''
+    const exported = localCalendar.format(new Date(exportedAt))
+    root.innerHTML = `<div class="sources">
+      <header class="desk-heading"><h1>Data &amp; Queries</h1><p>Coverage, check outcomes and the Malloy expressions behind the dashboards.</p></header>
+      <section class="panel" aria-labelledby="cover-title">
+        <h2 id="cover-title" class="panel-title">Snapshot coverage</h2>
+        <p>Exported ${escape(exported)} from BigQuery project <strong>${escape(project)}</strong> using MonoRail’s installed ${models.map((name) => `<code>${escape(name)}</code>`).join(' and ')} models.</p>
+        <p>Service covers ${escape(servicePeriod)}. Workforce time entries cover ${workforceDates.size} business days. November financial actuals cover a partial period. ${escape(budgetCoverage)}</p>
+        <p>The enterprise, its staff, delivered service and financial amounts are fictional. The six route IDs and GTFS schedules come from CTA reference data.</p>
+        ${schedule.length ? `<p>${count.format(reconciledDays)} of ${count.format(routeDays.length)} route-days match the planned trip count in <code>cta.malloy</code>. The reference query returned ${count.format(sum(schedule, 'total_scheduled_trips'))} scheduled trips.</p>` : ''}
+      </section>
+      <section class="panel" aria-labelledby="checks-title">
+        <h2 id="checks-title" class="panel-title">Integrity and business risk checks</h2>
+        <div class="checks-wrap"><table class="checks-table"><thead><tr><th scope="col">Check</th><th scope="col">Kind</th><th scope="col">Outcome</th><th scope="col">Rows flagged</th></tr></thead>
+        <tbody>${checks.map((row) => `<tr><td><code>${escape(row.check_name)}</code></td><td>${row.check_kind === 'DemonstrationRisk' ? 'Seeded business risk' : escape(row.check_kind)}</td><td class="${Number(row.failed_rows) ? 'flag' : 'pass'}">${escape(row.status)}</td><td>${count.format(row.failed_rows)} / ${count.format(row.tested_rows)}</td></tr>`).join('')}</tbody>
+        </table></div>
+      </section>
+      <section class="panel" aria-labelledby="query-title">
+        <h2 id="query-title" class="panel-title">Malloy expressions</h2>
+        <div class="source-list">${Object.entries(queryInfo).map(([name, info]) => `<details><summary><code>${escape(name)}</code> <span>· ${escape(info.model)} · ${count.format(info.rows)} rows</span></summary><pre><code>${escape(info.query)}</code></pre></details>`).join('')}</div>
+      </section>
+    </div>`
+  }
+
+  function render() {
+    const [key, search] = location.hash.slice(1).split('?')
+    const context = new URLSearchParams(search)
+    const [active, title] = navItems.find(([id]) => id === key) || navItems[0]
+    document.title = `${title} · MonoRail Operations`
+    document.getElementById('current-desk').textContent = title
+    document.getElementById('coverage').textContent = `Sample data · Exported ${localCalendar.format(new Date(exportedAt))}`
+    for (const link of nav.querySelectorAll('a')) {
+      if (link.hash === `#${active}`) link.setAttribute('aria-current', 'page')
+      else link.removeAttribute('aria-current')
+    }
+    root.replaceChildren()
+    root.dataset.dashboard = active
+    if (active === 'briefing') briefing()
+    else if (active === 'sources') sources()
+    else window.sampleDashboards[active](root, data, context)
+    const sectionId = context.get('focus')
+    const section = sectionId ? document.getElementById(sectionId) : null
+    return root.contains(section) ? section : root
+  }
+
+  document.querySelector('.skip-link').addEventListener('click', (event) => {
+    event.preventDefault()
+    root.focus()
+    root.scrollIntoView()
+  })
+  window.addEventListener('hashchange', () => {
+    const destination = render()
+    if (destination === root) window.scrollTo(0, 0)
+    else destination.scrollIntoView({ block: 'start' })
+    destination.focus({ preventScroll: true })
+  })
+  const initialDestination = render()
+  if (initialDestination !== root) initialDestination.scrollIntoView({ block: 'start' })
+})()
+
+</script>
+</body>
+</html>

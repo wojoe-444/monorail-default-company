@@ -1,0 +1,75 @@
+config {
+  type: "table",
+  schema: "finance_reporting",
+  name: "department_cost_monthly",
+  tags: ["enterprise","finance_monthly"],
+  description: "One row per department and budget month. November actuals are partial-period synthetic costs; December has budget only. Approved spend is separate from pending approval. Fictional demonstration outputs, not official CTA personnel, service or financial records.",
+  columns: {
+    "report_month": "First day of the budget/report month. November actuals cover only the loaded demonstration period.",
+    "department_id": "Synthetic department key; joins org.departments.",
+    "department_name": "Department display name.",
+    "cost_center_id": "Cost center id.",
+    "budget_usd": "Budget usd.",
+    "labor_cost_usd": "Synthetic cost: regular and training hours at the role rate, overtime at 1.5 times that rate.",
+    "approved_invoice_usd": "Approved synthetic supplier-invoice value in USD; excludes invoices awaiting approval.",
+    "pending_invoice_usd": "Synthetic invoices awaiting approval, excluded from actual cost.",
+    "approved_expense_usd": "Approved synthetic staff expenses in USD.",
+    "total_actual_cost_usd": "Modeled labor plus approved invoices plus approved expenses. November is partial-period; pending invoices are excluded.",
+    "observed_workdays": "Distinct staff time-entry dates loaded for this department and month; not all dates in the month."
+  }
+}
+
+WITH
+  labor AS (
+    SELECT
+      DATE_TRUNC(service_date, MONTH) AS report_month,
+      department_id,
+      SUM(labor_cost_usd) AS labor_cost_usd,
+      COUNT(DISTINCT service_date) AS observed_workdays
+    FROM
+      ${ref("org_reporting", "staff_utilization_daily")}
+    GROUP BY
+      1,
+      2
+  ),
+  invoices AS (
+    SELECT
+      DATE_TRUNC(invoice_date, MONTH) AS report_month,
+      department_id,
+      SUM(IF(status = 'Approved', amount_usd, 0)) AS approved_invoice_usd,
+      SUM(IF(status != 'Approved', amount_usd, 0)) AS pending_invoice_usd
+    FROM
+      ${ref("finance", "supplier_invoices")}
+    GROUP BY
+      1,
+      2
+  ),
+  expenses AS (
+    SELECT
+      DATE_TRUNC(claim_date, MONTH) AS report_month,
+      department_id,
+      SUM(IF(status = 'Approved', amount_usd, 0)) AS approved_expense_usd
+    FROM
+      ${ref("finance", "expense_claims")}
+    GROUP BY
+      1,
+      2
+  )
+SELECT
+  b.report_month,
+  b.department_id,
+  d.department_name,
+  d.cost_center_id,
+  b.budget_usd,
+  COALESCE(l.labor_cost_usd, 0) AS labor_cost_usd,
+  COALESCE(i.approved_invoice_usd, 0) AS approved_invoice_usd,
+  COALESCE(i.pending_invoice_usd, 0) AS pending_invoice_usd,
+  COALESCE(e.approved_expense_usd, 0) AS approved_expense_usd,
+  COALESCE(l.labor_cost_usd, 0) + COALESCE(i.approved_invoice_usd, 0) + COALESCE(e.approved_expense_usd, 0) AS total_actual_cost_usd,
+  COALESCE(l.observed_workdays, 0) AS observed_workdays
+FROM
+  ${ref("finance", "monthly_budgets")} b
+  JOIN ${ref("org", "departments")} d USING (department_id)
+  LEFT JOIN labor l USING (report_month, department_id)
+  LEFT JOIN invoices i USING (report_month, department_id)
+  LEFT JOIN expenses e USING (report_month, department_id)

@@ -1,0 +1,102 @@
+// Public CTA sample project. Historical ridership and the current GTFS feed
+// cover different dates. Boardings count rides rather than distinct people.
+
+# "Official CTA monthly totals, with detail reconciliation and known station-day conflicts. Counts rides, not unique people."
+source: system_monthly is bigquery.table('monorail-sample.cta_analytics.system_ridership_monthly') extend {
+  primary_key: month_start
+  measure:
+    # "Official bus boardings plus rail station entries."
+    system_boardings is system_total_rides.sum()
+    bus_boardings is system_bus_rides.sum()
+    rail_entries is system_rail_boardings.sum()
+    station_day_conflicts is conflicting_station_days.sum()
+}
+
+# "Official boarding totals by month and transportation mode."
+source: ridership_by_mode is bigquery.table('monorail-sample.cta_analytics.ridership_monthly_by_mode') extend {
+  measure: total_boardings is boardings.sum()
+}
+
+# "Historical bus route boardings by month; current names are attached only when a route still exists in the GTFS snapshot."
+source: bus_routes_monthly is bigquery.table('monorail-sample.cta_analytics.bus_route_ridership_monthly') extend {
+  measure: total_bus_boardings is bus_boardings.sum()
+}
+
+# "One row per current rail station, combining direction-specific platforms."
+source: station_directory is bigquery.table('monorail-sample.cta_staging.dim_rail_station') extend {
+  primary_key: station_id
+}
+
+# "Monthly rail station entries. Conflicting station-days are excluded; join the station directory for current attributes."
+source: rail_stations_monthly is bigquery.table('monorail-sample.cta_analytics.rail_station_ridership_monthly') extend {
+  join_one: station is station_directory on station_id = station.station_id
+  measure:
+    total_station_entries is station_entries.sum()
+    total_conflicting_days is conflicting_days.sum()
+}
+
+# "Current GTFS bus and rail routes. This directory is a snapshot, not a history of every route."
+source: route_directory is bigquery.table('monorail-sample.cta_gtfs.routes') extend {
+  primary_key: route_id
+}
+
+# "Planned service by route and active date, including GTFS calendar exceptions. These are scheduled trips, not observed journeys."
+source: scheduled_service is bigquery.table('monorail-sample.cta_analytics.route_scheduled_service_daily') extend {
+  join_one: route is route_directory on route_id = route.route_id
+  measure:
+    total_scheduled_trips is scheduled_trips.sum()
+    total_scheduled_stop_calls is scheduled_stop_calls.sum()
+}
+
+# "Live quality checks: keys, references, system reconciliation and actual source conflicts. Failed checks are retained for investigation."
+source: source_quality is bigquery.table('monorail-sample.cta_analytics.sample_quality_checks') extend {
+  primary_key: check_name
+  measure:
+    check_count is count()
+    violations is failed_rows.sum()
+}
+
+query: ridership_trend is system_monthly -> {
+  group_by: month_start
+  aggregate: system_boardings, bus_boardings, rail_entries
+  order_by: month_start desc
+  limit: 24
+}
+
+query: boardings_by_mode is ridership_by_mode -> {
+  group_by: mode
+  aggregate: total_boardings
+}
+
+query: top_bus_routes_2026 is bus_routes_monthly -> {
+  where: month_start >= @2026-01-01
+  group_by: route_id, current_route_name
+  aggregate: total_bus_boardings
+  order_by: total_bus_boardings desc
+  limit: 10
+}
+
+query: top_rail_stations_2026 is rail_stations_monthly -> {
+  where: month_start >= @2026-01-01
+  group_by: station_id, station_name
+  aggregate: total_station_entries, total_conflicting_days
+  order_by: total_station_entries desc
+  limit: 10
+}
+
+query: scheduled_service_by_type is scheduled_service -> {
+  group_by: route_type
+  aggregate: total_scheduled_trips, total_scheduled_stop_calls
+}
+
+query: quality_status is source_quality -> {
+  group_by: status
+  aggregate: check_count, violations
+}
+
+query: scheduled_trips_by_route_name is scheduled_service -> {
+  group_by: route.route_long_name
+  aggregate: total_scheduled_trips
+  order_by: total_scheduled_trips desc
+  limit: 10
+}

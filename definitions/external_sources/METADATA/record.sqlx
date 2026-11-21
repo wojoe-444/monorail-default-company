@@ -1,0 +1,14 @@
+config {
+  type: "declaration",
+  schema: "METADATA",
+  name: "record",
+  database: "monorail-sample",
+  description: "MonoRail record metadata store. Catalogs the real BigQuery sample project.",
+  columns: {
+    "kind": "Record kind, such as tableProfile.",
+    "owner": "UUID of the entity the record describes.",
+    "key": "Metadata key or record key.",
+    "at": "UTC time of this record.",
+    "json": "Full OpenMetadata-shaped JSON entity or record document."
+  }
+}

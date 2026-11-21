@@ -1,0 +1,12 @@
+config {
+  type: "declaration",
+  schema: "org",
+  name: "job_roles",
+  database: "monorail-sample",
+  description: "Synthetic job roles and demonstration hourly cost rates. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "role_id": "Job-role primary key.",
+    "role_name": "Role display name.",
+    "hourly_rate_usd": "Synthetic employer labor-cost rate in USD per hour; not actual compensation."
+  }
+}

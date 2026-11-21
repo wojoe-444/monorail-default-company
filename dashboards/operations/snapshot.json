@@ -1,0 +1,2711 @@
+{
+  "project": "monorail-sample",
+  "models": [
+    "enterprise.malloy",
+    "cta.malloy"
+  ],
+  "exportedAt": "2026-11-21T05:38:28.938Z",
+  "data": {
+    "headcount_by_department": [
+      {
+        "department_name": "Bus Operations",
+        "manager_name": "Morgan Reed",
+        "headcount": "6"
+      },
+      {
+        "department_name": "Fleet Maintenance",
+        "manager_name": "Drew Bennett",
+        "headcount": "4"
+      },
+      {
+        "department_name": "Rail Operations",
+        "manager_name": "Riley Shah",
+        "headcount": "4"
+      },
+      {
+        "department_name": "People Operations",
+        "manager_name": "Dakota Hayes",
+        "headcount": "3"
+      },
+      {
+        "department_name": "Data Platform",
+        "manager_name": "Remy Cole",
+        "headcount": "3"
+      },
+      {
+        "department_name": "Finance",
+        "manager_name": "Rowan Blake",
+        "headcount": "3"
+      },
+      {
+        "department_name": "Service Planning",
+        "manager_name": "Logan Wells",
+        "headcount": "3"
+      }
+    ],
+    "workforce_cost_by_department": [
+      {
+        "department_name": "Bus Operations",
+        "total_productive_hours": 480,
+        "total_absence_hours": 8,
+        "total_overtime_hours": 8,
+        "total_labor_cost": 16988
+      },
+      {
+        "department_name": "Fleet Maintenance",
+        "total_productive_hours": 324,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 4,
+        "total_labor_cost": 13550
+      },
+      {
+        "department_name": "Rail Operations",
+        "total_productive_hours": 334,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 14,
+        "total_labor_cost": 13346
+      },
+      {
+        "department_name": "Data Platform",
+        "total_productive_hours": 240,
+        "total_absence_hours": 8,
+        "total_overtime_hours": 8,
+        "total_labor_cost": 12044
+      },
+      {
+        "department_name": "Finance",
+        "total_productive_hours": 248,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 8,
+        "total_labor_cost": 11076
+      },
+      {
+        "department_name": "People Operations",
+        "total_productive_hours": 234,
+        "total_absence_hours": 16,
+        "total_overtime_hours": 10,
+        "total_labor_cost": 9980
+      },
+      {
+        "department_name": "Service Planning",
+        "total_productive_hours": 218,
+        "total_absence_hours": 24,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 9948
+      }
+    ],
+    "service_reliability_by_route": [
+      {
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "department_name": "Bus Operations",
+        "trips_completed": "3200",
+        "trips_cancelled": "26",
+        "trips_on_time": "2963"
+      },
+      {
+        "route_id": "49",
+        "route_long_name": "Western",
+        "department_name": "Bus Operations",
+        "trips_completed": "3653",
+        "trips_cancelled": "23",
+        "trips_on_time": "2952"
+      },
+      {
+        "route_id": "79",
+        "route_long_name": "79th",
+        "department_name": "Bus Operations",
+        "trips_completed": "5797",
+        "trips_cancelled": "23",
+        "trips_on_time": "5390"
+      },
+      {
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "department_name": "Bus Operations",
+        "trips_completed": "4785",
+        "trips_cancelled": "23",
+        "trips_on_time": "4443"
+      },
+      {
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "department_name": "Rail Operations",
+        "trips_completed": "4687",
+        "trips_cancelled": "23",
+        "trips_on_time": "4350"
+      },
+      {
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "department_name": "Rail Operations",
+        "trips_completed": "5545",
+        "trips_cancelled": "23",
+        "trips_on_time": "5143"
+      }
+    ],
+    "fleet_risk_by_owner": [
+      {
+        "department_name": "Bus Operations",
+        "open_orders": "4",
+        "critical_orders": "1",
+        "open_parts_cost": 1350
+      },
+      {
+        "department_name": "Rail Operations",
+        "open_orders": "2",
+        "critical_orders": "0",
+        "open_parts_cost": 675
+      }
+    ],
+    "budget_by_department": [
+      {
+        "department_name": "Fleet Maintenance",
+        "budget_status": "OverBudget",
+        "budget_total": 10000,
+        "actual_cost_total": 23391.5,
+        "remaining_budget_total": -13391.5,
+        "pending_approval_total": 5800
+      },
+      {
+        "department_name": "People Operations",
+        "budget_status": "WithinBudget",
+        "budget_total": 14000,
+        "actual_cost_total": 12171,
+        "remaining_budget_total": 1829,
+        "pending_approval_total": 1210
+      },
+      {
+        "department_name": "Finance",
+        "budget_status": "WithinBudget",
+        "budget_total": 16000,
+        "actual_cost_total": 13235,
+        "remaining_budget_total": 2765,
+        "pending_approval_total": 1120
+      },
+      {
+        "department_name": "Data Platform",
+        "budget_status": "WithinBudget",
+        "budget_total": 19000,
+        "actual_cost_total": 14981.5,
+        "remaining_budget_total": 4018.5,
+        "pending_approval_total": 1390
+      },
+      {
+        "department_name": "Service Planning",
+        "budget_status": "WithinBudget",
+        "budget_total": 17000,
+        "actual_cost_total": 12668.5,
+        "remaining_budget_total": 4331.5,
+        "pending_approval_total": 1300
+      },
+      {
+        "department_name": "Bus Operations",
+        "budget_status": "WithinBudget",
+        "budget_total": 26000,
+        "actual_cost_total": 18568,
+        "remaining_budget_total": 7432,
+        "pending_approval_total": 850
+      },
+      {
+        "department_name": "Rail Operations",
+        "budget_status": "WithinBudget",
+        "budget_total": 23000,
+        "actual_cost_total": 15252,
+        "remaining_budget_total": 7748,
+        "pending_approval_total": 940
+      }
+    ],
+    "vendor_approval_pipeline": [
+      {
+        "supplier_name": "Northline Systems",
+        "category": "Software",
+        "approved_spend": 7330,
+        "pending_spend": 2060,
+        "invoices": "6"
+      },
+      {
+        "supplier_name": "Harbor Training Studio",
+        "category": "Training",
+        "approved_spend": 7135,
+        "pending_spend": 2240,
+        "invoices": "5"
+      },
+      {
+        "supplier_name": "Prairie Office Supply",
+        "category": "Office supplies",
+        "approved_spend": 3550,
+        "pending_spend": 1120,
+        "invoices": "5"
+      },
+      {
+        "supplier_name": "Lakefront Fleet Parts",
+        "category": "Fleet parts",
+        "approved_spend": 2555,
+        "pending_spend": 7190,
+        "invoices": "5"
+      }
+    ],
+    "executive_department_review": [
+      {
+        "department_name": "Fleet Maintenance",
+        "manager_name": "Drew Bennett",
+        "budget_status": "OverBudget",
+        "actual_cost": 23391.5,
+        "budget_remaining": -13391.5,
+        "completed_service": "0",
+        "critical_repairs": "1"
+      },
+      {
+        "department_name": "People Operations",
+        "manager_name": "Dakota Hayes",
+        "budget_status": "WithinBudget",
+        "actual_cost": 12171,
+        "budget_remaining": 1829,
+        "completed_service": "0",
+        "critical_repairs": "0"
+      },
+      {
+        "department_name": "Finance",
+        "manager_name": "Rowan Blake",
+        "budget_status": "WithinBudget",
+        "actual_cost": 13235,
+        "budget_remaining": 2765,
+        "completed_service": "0",
+        "critical_repairs": "0"
+      },
+      {
+        "department_name": "Data Platform",
+        "manager_name": "Remy Cole",
+        "budget_status": "WithinBudget",
+        "actual_cost": 14981.5,
+        "budget_remaining": 4018.5,
+        "completed_service": "0",
+        "critical_repairs": "0"
+      },
+      {
+        "department_name": "Service Planning",
+        "manager_name": "Logan Wells",
+        "budget_status": "WithinBudget",
+        "actual_cost": 12668.5,
+        "budget_remaining": 4331.5,
+        "completed_service": "0",
+        "critical_repairs": "0"
+      },
+      {
+        "department_name": "Bus Operations",
+        "manager_name": "Morgan Reed",
+        "budget_status": "WithinBudget",
+        "actual_cost": 18568,
+        "budget_remaining": 7432,
+        "completed_service": "17435",
+        "critical_repairs": "0"
+      },
+      {
+        "department_name": "Rail Operations",
+        "manager_name": "Riley Shah",
+        "budget_status": "WithinBudget",
+        "actual_cost": 15252,
+        "budget_remaining": 7748,
+        "completed_service": "10232",
+        "critical_repairs": "0"
+      }
+    ],
+    "route_cost_review": [
+      {
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "modeled_cost": 7783.920000000001,
+        "completed_service": "5545"
+      },
+      {
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "modeled_cost": 7468.110000000001,
+        "completed_service": "4687"
+      },
+      {
+        "route_id": "49",
+        "route_long_name": "Western",
+        "modeled_cost": 4935.060000000001,
+        "completed_service": "3653"
+      },
+      {
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "modeled_cost": 4753.669999999998,
+        "completed_service": "4785"
+      },
+      {
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "modeled_cost": 4450.02,
+        "completed_service": "3200"
+      },
+      {
+        "route_id": "79",
+        "route_long_name": "79th",
+        "modeled_cost": 4429.370000000001,
+        "completed_service": "5797"
+      }
+    ],
+    "integrity_and_risk_checks": [
+      {
+        "check_kind": "Integrity",
+        "status": "Success",
+        "checks": 11,
+        "violations": "0"
+      },
+      {
+        "check_kind": "DemonstrationRisk",
+        "status": "Failed",
+        "checks": 2,
+        "violations": "2"
+      }
+    ],
+    "route_daily": [
+      {
+        "service_date": "2026-11-02T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "234",
+        "trips_cancelled": "6",
+        "trips_on_time": "212",
+        "trips_scheduled": "240",
+        "delay_total": "14"
+      },
+      {
+        "service_date": "2026-11-02T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "270",
+        "trips_cancelled": "1",
+        "trips_on_time": "218",
+        "trips_scheduled": "271",
+        "delay_total": "28"
+      },
+      {
+        "service_date": "2026-11-02T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "445",
+        "trips_cancelled": "1",
+        "trips_on_time": "413",
+        "trips_scheduled": "446",
+        "delay_total": "42"
+      },
+      {
+        "service_date": "2026-11-02T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "362",
+        "trips_cancelled": "1",
+        "trips_on_time": "340",
+        "trips_scheduled": "363",
+        "delay_total": "56"
+      },
+      {
+        "service_date": "2026-11-02T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "353",
+        "trips_cancelled": "1",
+        "trips_on_time": "335",
+        "trips_scheduled": "354",
+        "delay_total": "70"
+      },
+      {
+        "service_date": "2026-11-02T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "421",
+        "trips_cancelled": "1",
+        "trips_on_time": "383",
+        "trips_scheduled": "422",
+        "delay_total": "84"
+      },
+      {
+        "service_date": "2026-11-03T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "238",
+        "trips_cancelled": "1",
+        "trips_on_time": "218",
+        "trips_scheduled": "239",
+        "delay_total": "98"
+      },
+      {
+        "service_date": "2026-11-03T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "268",
+        "trips_cancelled": "3",
+        "trips_on_time": "217",
+        "trips_scheduled": "271",
+        "delay_total": "112"
+      },
+      {
+        "service_date": "2026-11-03T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "449",
+        "trips_cancelled": "1",
+        "trips_on_time": "422",
+        "trips_scheduled": "450",
+        "delay_total": "126"
+      },
+      {
+        "service_date": "2026-11-03T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "364",
+        "trips_cancelled": "1",
+        "trips_on_time": "345",
+        "trips_scheduled": "365",
+        "delay_total": "14"
+      },
+      {
+        "service_date": "2026-11-03T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "355",
+        "trips_cancelled": "1",
+        "trips_on_time": "323",
+        "trips_scheduled": "356",
+        "delay_total": "28"
+      },
+      {
+        "service_date": "2026-11-03T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "423",
+        "trips_cancelled": "1",
+        "trips_on_time": "389",
+        "trips_scheduled": "424",
+        "delay_total": "42"
+      },
+      {
+        "service_date": "2026-11-04T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "238",
+        "trips_cancelled": "1",
+        "trips_on_time": "221",
+        "trips_scheduled": "239",
+        "delay_total": "56"
+      },
+      {
+        "service_date": "2026-11-04T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "265",
+        "trips_cancelled": "6",
+        "trips_on_time": "214",
+        "trips_scheduled": "271",
+        "delay_total": "70"
+      },
+      {
+        "service_date": "2026-11-04T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "447",
+        "trips_cancelled": "3",
+        "trips_on_time": "424",
+        "trips_scheduled": "450",
+        "delay_total": "84"
+      },
+      {
+        "service_date": "2026-11-04T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "364",
+        "trips_cancelled": "1",
+        "trips_on_time": "331",
+        "trips_scheduled": "365",
+        "delay_total": "98"
+      },
+      {
+        "service_date": "2026-11-04T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "355",
+        "trips_cancelled": "1",
+        "trips_on_time": "326",
+        "trips_scheduled": "356",
+        "delay_total": "112"
+      },
+      {
+        "service_date": "2026-11-04T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "423",
+        "trips_cancelled": "1",
+        "trips_on_time": "393",
+        "trips_scheduled": "424",
+        "delay_total": "126"
+      },
+      {
+        "service_date": "2026-11-05T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "238",
+        "trips_cancelled": "1",
+        "trips_on_time": "223",
+        "trips_scheduled": "239",
+        "delay_total": "14"
+      },
+      {
+        "service_date": "2026-11-05T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "270",
+        "trips_cancelled": "1",
+        "trips_on_time": "218",
+        "trips_scheduled": "271",
+        "delay_total": "28"
+      },
+      {
+        "service_date": "2026-11-05T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "449",
+        "trips_cancelled": "1",
+        "trips_on_time": "408",
+        "trips_scheduled": "450",
+        "delay_total": "42"
+      },
+      {
+        "service_date": "2026-11-05T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "362",
+        "trips_cancelled": "3",
+        "trips_on_time": "333",
+        "trips_scheduled": "365",
+        "delay_total": "56"
+      },
+      {
+        "service_date": "2026-11-05T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "355",
+        "trips_cancelled": "1",
+        "trips_on_time": "330",
+        "trips_scheduled": "356",
+        "delay_total": "70"
+      },
+      {
+        "service_date": "2026-11-05T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "423",
+        "trips_cancelled": "1",
+        "trips_on_time": "397",
+        "trips_scheduled": "424",
+        "delay_total": "84"
+      },
+      {
+        "service_date": "2026-11-06T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "238",
+        "trips_cancelled": "1",
+        "trips_on_time": "226",
+        "trips_scheduled": "239",
+        "delay_total": "98"
+      },
+      {
+        "service_date": "2026-11-06T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "270",
+        "trips_cancelled": "1",
+        "trips_on_time": "218",
+        "trips_scheduled": "271",
+        "delay_total": "112"
+      },
+      {
+        "service_date": "2026-11-06T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "444",
+        "trips_cancelled": "6",
+        "trips_on_time": "408",
+        "trips_scheduled": "450",
+        "delay_total": "126"
+      },
+      {
+        "service_date": "2026-11-06T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "364",
+        "trips_cancelled": "1",
+        "trips_on_time": "338",
+        "trips_scheduled": "365",
+        "delay_total": "14"
+      },
+      {
+        "service_date": "2026-11-06T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "353",
+        "trips_cancelled": "3",
+        "trips_on_time": "331",
+        "trips_scheduled": "356",
+        "delay_total": "28"
+      },
+      {
+        "service_date": "2026-11-06T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "423",
+        "trips_cancelled": "1",
+        "trips_on_time": "401",
+        "trips_scheduled": "424",
+        "delay_total": "42"
+      },
+      {
+        "service_date": "2026-11-07T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "223",
+        "trips_cancelled": "1",
+        "trips_on_time": "202",
+        "trips_scheduled": "224",
+        "delay_total": "56"
+      },
+      {
+        "service_date": "2026-11-07T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "255",
+        "trips_cancelled": "1",
+        "trips_on_time": "206",
+        "trips_scheduled": "256",
+        "delay_total": "70"
+      },
+      {
+        "service_date": "2026-11-07T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "380",
+        "trips_cancelled": "1",
+        "trips_on_time": "353",
+        "trips_scheduled": "381",
+        "delay_total": "84"
+      },
+      {
+        "service_date": "2026-11-07T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "304",
+        "trips_cancelled": "1",
+        "trips_on_time": "285",
+        "trips_scheduled": "305",
+        "delay_total": "98"
+      },
+      {
+        "service_date": "2026-11-07T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "283",
+        "trips_cancelled": "1",
+        "trips_on_time": "268",
+        "trips_scheduled": "284",
+        "delay_total": "112"
+      },
+      {
+        "service_date": "2026-11-07T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "346",
+        "trips_cancelled": "3",
+        "trips_on_time": "314",
+        "trips_scheduled": "349",
+        "delay_total": "126"
+      },
+      {
+        "service_date": "2026-11-08T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "192",
+        "trips_cancelled": "1",
+        "trips_on_time": "176",
+        "trips_scheduled": "193",
+        "delay_total": "14"
+      },
+      {
+        "service_date": "2026-11-08T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "226",
+        "trips_cancelled": "1",
+        "trips_on_time": "183",
+        "trips_scheduled": "227",
+        "delay_total": "28"
+      },
+      {
+        "service_date": "2026-11-08T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "282",
+        "trips_cancelled": "1",
+        "trips_on_time": "265",
+        "trips_scheduled": "283",
+        "delay_total": "42"
+      },
+      {
+        "service_date": "2026-11-08T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "270",
+        "trips_cancelled": "6",
+        "trips_on_time": "256",
+        "trips_scheduled": "276",
+        "delay_total": "56"
+      },
+      {
+        "service_date": "2026-11-08T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "257",
+        "trips_cancelled": "1",
+        "trips_on_time": "233",
+        "trips_scheduled": "258",
+        "delay_total": "70"
+      },
+      {
+        "service_date": "2026-11-08T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "316",
+        "trips_cancelled": "1",
+        "trips_on_time": "290",
+        "trips_scheduled": "317",
+        "delay_total": "84"
+      },
+      {
+        "service_date": "2026-11-09T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "237",
+        "trips_cancelled": "3",
+        "trips_on_time": "220",
+        "trips_scheduled": "240",
+        "delay_total": "98"
+      },
+      {
+        "service_date": "2026-11-09T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "270",
+        "trips_cancelled": "1",
+        "trips_on_time": "218",
+        "trips_scheduled": "271",
+        "delay_total": "112"
+      },
+      {
+        "service_date": "2026-11-09T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "445",
+        "trips_cancelled": "1",
+        "trips_on_time": "422",
+        "trips_scheduled": "446",
+        "delay_total": "126"
+      },
+      {
+        "service_date": "2026-11-09T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "362",
+        "trips_cancelled": "1",
+        "trips_on_time": "329",
+        "trips_scheduled": "363",
+        "delay_total": "14"
+      },
+      {
+        "service_date": "2026-11-09T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "353",
+        "trips_cancelled": "1",
+        "trips_on_time": "324",
+        "trips_scheduled": "354",
+        "delay_total": "28"
+      },
+      {
+        "service_date": "2026-11-09T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "421",
+        "trips_cancelled": "1",
+        "trips_on_time": "391",
+        "trips_scheduled": "422",
+        "delay_total": "42"
+      },
+      {
+        "service_date": "2026-11-10T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "238",
+        "trips_cancelled": "1",
+        "trips_on_time": "223",
+        "trips_scheduled": "239",
+        "delay_total": "56"
+      },
+      {
+        "service_date": "2026-11-10T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "268",
+        "trips_cancelled": "3",
+        "trips_on_time": "217",
+        "trips_scheduled": "271",
+        "delay_total": "70"
+      },
+      {
+        "service_date": "2026-11-10T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "449",
+        "trips_cancelled": "1",
+        "trips_on_time": "408",
+        "trips_scheduled": "450",
+        "delay_total": "84"
+      },
+      {
+        "service_date": "2026-11-10T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "364",
+        "trips_cancelled": "1",
+        "trips_on_time": "334",
+        "trips_scheduled": "365",
+        "delay_total": "98"
+      },
+      {
+        "service_date": "2026-11-10T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "350",
+        "trips_cancelled": "6",
+        "trips_on_time": "325",
+        "trips_scheduled": "356",
+        "delay_total": "112"
+      },
+      {
+        "service_date": "2026-11-10T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "423",
+        "trips_cancelled": "1",
+        "trips_on_time": "397",
+        "trips_scheduled": "424",
+        "delay_total": "126"
+      },
+      {
+        "service_date": "2026-11-11T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "238",
+        "trips_cancelled": "1",
+        "trips_on_time": "226",
+        "trips_scheduled": "239",
+        "delay_total": "14"
+      },
+      {
+        "service_date": "2026-11-11T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "270",
+        "trips_cancelled": "1",
+        "trips_on_time": "218",
+        "trips_scheduled": "271",
+        "delay_total": "28"
+      },
+      {
+        "service_date": "2026-11-11T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "447",
+        "trips_cancelled": "3",
+        "trips_on_time": "411",
+        "trips_scheduled": "450",
+        "delay_total": "42"
+      },
+      {
+        "service_date": "2026-11-11T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "364",
+        "trips_cancelled": "1",
+        "trips_on_time": "338",
+        "trips_scheduled": "365",
+        "delay_total": "56"
+      },
+      {
+        "service_date": "2026-11-11T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "355",
+        "trips_cancelled": "1",
+        "trips_on_time": "333",
+        "trips_scheduled": "356",
+        "delay_total": "70"
+      },
+      {
+        "service_date": "2026-11-11T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "423",
+        "trips_cancelled": "1",
+        "trips_on_time": "401",
+        "trips_scheduled": "424",
+        "delay_total": "84"
+      },
+      {
+        "service_date": "2026-11-12T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "238",
+        "trips_cancelled": "1",
+        "trips_on_time": "216",
+        "trips_scheduled": "239",
+        "delay_total": "98"
+      },
+      {
+        "service_date": "2026-11-12T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "270",
+        "trips_cancelled": "1",
+        "trips_on_time": "218",
+        "trips_scheduled": "271",
+        "delay_total": "112"
+      },
+      {
+        "service_date": "2026-11-12T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "449",
+        "trips_cancelled": "1",
+        "trips_on_time": "417",
+        "trips_scheduled": "450",
+        "delay_total": "126"
+      },
+      {
+        "service_date": "2026-11-12T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "362",
+        "trips_cancelled": "3",
+        "trips_on_time": "340",
+        "trips_scheduled": "365",
+        "delay_total": "14"
+      },
+      {
+        "service_date": "2026-11-12T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "355",
+        "trips_cancelled": "1",
+        "trips_on_time": "337",
+        "trips_scheduled": "356",
+        "delay_total": "28"
+      },
+      {
+        "service_date": "2026-11-12T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "418",
+        "trips_cancelled": "6",
+        "trips_on_time": "380",
+        "trips_scheduled": "424",
+        "delay_total": "42"
+      },
+      {
+        "service_date": "2026-11-13T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "238",
+        "trips_cancelled": "1",
+        "trips_on_time": "218",
+        "trips_scheduled": "239",
+        "delay_total": "56"
+      },
+      {
+        "service_date": "2026-11-13T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "270",
+        "trips_cancelled": "1",
+        "trips_on_time": "218",
+        "trips_scheduled": "271",
+        "delay_total": "70"
+      },
+      {
+        "service_date": "2026-11-13T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "449",
+        "trips_cancelled": "1",
+        "trips_on_time": "422",
+        "trips_scheduled": "450",
+        "delay_total": "84"
+      },
+      {
+        "service_date": "2026-11-13T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "364",
+        "trips_cancelled": "1",
+        "trips_on_time": "345",
+        "trips_scheduled": "365",
+        "delay_total": "98"
+      },
+      {
+        "service_date": "2026-11-13T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "353",
+        "trips_cancelled": "3",
+        "trips_on_time": "321",
+        "trips_scheduled": "356",
+        "delay_total": "112"
+      },
+      {
+        "service_date": "2026-11-13T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "423",
+        "trips_cancelled": "1",
+        "trips_on_time": "389",
+        "trips_scheduled": "424",
+        "delay_total": "126"
+      },
+      {
+        "service_date": "2026-11-14T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "223",
+        "trips_cancelled": "1",
+        "trips_on_time": "207",
+        "trips_scheduled": "224",
+        "delay_total": "14"
+      },
+      {
+        "service_date": "2026-11-14T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "255",
+        "trips_cancelled": "1",
+        "trips_on_time": "206",
+        "trips_scheduled": "256",
+        "delay_total": "28"
+      },
+      {
+        "service_date": "2026-11-14T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "380",
+        "trips_cancelled": "1",
+        "trips_on_time": "361",
+        "trips_scheduled": "381",
+        "delay_total": "42"
+      },
+      {
+        "service_date": "2026-11-14T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "304",
+        "trips_cancelled": "1",
+        "trips_on_time": "276",
+        "trips_scheduled": "305",
+        "delay_total": "56"
+      },
+      {
+        "service_date": "2026-11-14T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "283",
+        "trips_cancelled": "1",
+        "trips_on_time": "260",
+        "trips_scheduled": "284",
+        "delay_total": "70"
+      },
+      {
+        "service_date": "2026-11-14T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "346",
+        "trips_cancelled": "3",
+        "trips_on_time": "321",
+        "trips_scheduled": "349",
+        "delay_total": "84"
+      },
+      {
+        "service_date": "2026-11-15T00:00:00.000Z",
+        "route_id": "22",
+        "route_long_name": "Clark",
+        "trips_completed": "187",
+        "trips_cancelled": "6",
+        "trips_on_time": "175",
+        "trips_scheduled": "193",
+        "delay_total": "98"
+      },
+      {
+        "service_date": "2026-11-15T00:00:00.000Z",
+        "route_id": "49",
+        "route_long_name": "Western",
+        "trips_completed": "226",
+        "trips_cancelled": "1",
+        "trips_on_time": "183",
+        "trips_scheduled": "227",
+        "delay_total": "112"
+      },
+      {
+        "service_date": "2026-11-15T00:00:00.000Z",
+        "route_id": "79",
+        "route_long_name": "79th",
+        "trips_completed": "282",
+        "trips_cancelled": "1",
+        "trips_on_time": "256",
+        "trips_scheduled": "283",
+        "delay_total": "126"
+      },
+      {
+        "service_date": "2026-11-15T00:00:00.000Z",
+        "route_id": "9",
+        "route_long_name": "Ashland",
+        "trips_completed": "275",
+        "trips_cancelled": "1",
+        "trips_on_time": "253",
+        "trips_scheduled": "276",
+        "delay_total": "14"
+      },
+      {
+        "service_date": "2026-11-15T00:00:00.000Z",
+        "route_id": "Blue",
+        "route_long_name": "Blue Line",
+        "trips_completed": "327",
+        "trips_cancelled": "1",
+        "trips_on_time": "304",
+        "trips_scheduled": "328",
+        "delay_total": "28"
+      },
+      {
+        "service_date": "2026-11-15T00:00:00.000Z",
+        "route_id": "Red",
+        "route_long_name": "Red Line",
+        "trips_completed": "316",
+        "trips_cancelled": "1",
+        "trips_on_time": "297",
+        "trips_scheduled": "317",
+        "delay_total": "42"
+      }
+    ],
+    "fleet_detail": [
+      {
+        "vehicle_id": "V001",
+        "vehicle_type": "Bus",
+        "department_name": "Bus Operations",
+        "open_orders": "1",
+        "critical_orders": "1",
+        "open_parts_cost": 150
+      },
+      {
+        "vehicle_id": "V003",
+        "vehicle_type": "Bus",
+        "department_name": "Bus Operations",
+        "open_orders": "1",
+        "critical_orders": "0",
+        "open_parts_cost": 150
+      },
+      {
+        "vehicle_id": "V004",
+        "vehicle_type": "Bus",
+        "department_name": "Bus Operations",
+        "open_orders": "1",
+        "critical_orders": "0",
+        "open_parts_cost": 525
+      },
+      {
+        "vehicle_id": "V006",
+        "vehicle_type": "Bus",
+        "department_name": "Bus Operations",
+        "open_orders": "1",
+        "critical_orders": "0",
+        "open_parts_cost": 525
+      },
+      {
+        "vehicle_id": "V007",
+        "vehicle_type": "RailCar",
+        "department_name": "Rail Operations",
+        "open_orders": "1",
+        "critical_orders": "0",
+        "open_parts_cost": 150
+      },
+      {
+        "vehicle_id": "V010",
+        "vehicle_type": "RailCar",
+        "department_name": "Rail Operations",
+        "open_orders": "1",
+        "critical_orders": "0",
+        "open_parts_cost": 525
+      },
+      {
+        "vehicle_id": "V002",
+        "vehicle_type": "Bus",
+        "department_name": "Bus Operations",
+        "open_orders": "0",
+        "critical_orders": "0",
+        "open_parts_cost": 0
+      },
+      {
+        "vehicle_id": "V005",
+        "vehicle_type": "Bus",
+        "department_name": "Bus Operations",
+        "open_orders": "0",
+        "critical_orders": "0",
+        "open_parts_cost": 0
+      },
+      {
+        "vehicle_id": "V008",
+        "vehicle_type": "RailCar",
+        "department_name": "Rail Operations",
+        "open_orders": "0",
+        "critical_orders": "0",
+        "open_parts_cost": 0
+      },
+      {
+        "vehicle_id": "V009",
+        "vehicle_type": "RailCar",
+        "department_name": "Rail Operations",
+        "open_orders": "0",
+        "critical_orders": "0",
+        "open_parts_cost": 0
+      }
+    ],
+    "workforce_daily": [
+      {
+        "work_date": "2026-11-02T00:00:00.000Z",
+        "department_name": "Bus Operations",
+        "total_productive_hours": 40,
+        "total_scheduled_hours": 48,
+        "total_absence_hours": 8,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1280
+      },
+      {
+        "work_date": "2026-11-02T00:00:00.000Z",
+        "department_name": "Data Platform",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1184
+      },
+      {
+        "work_date": "2026-11-02T00:00:00.000Z",
+        "department_name": "Finance",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1056
+      },
+      {
+        "work_date": "2026-11-02T00:00:00.000Z",
+        "department_name": "Fleet Maintenance",
+        "total_productive_hours": 32,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1328
+      },
+      {
+        "work_date": "2026-11-02T00:00:00.000Z",
+        "department_name": "People Operations",
+        "total_productive_hours": 26,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1100
+      },
+      {
+        "work_date": "2026-11-02T00:00:00.000Z",
+        "department_name": "Rail Operations",
+        "total_productive_hours": 34,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1361
+      },
+      {
+        "work_date": "2026-11-02T00:00:00.000Z",
+        "department_name": "Service Planning",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1088
+      },
+      {
+        "work_date": "2026-11-03T00:00:00.000Z",
+        "department_name": "Bus Operations",
+        "total_productive_hours": 48,
+        "total_scheduled_hours": 48,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1696
+      },
+      {
+        "work_date": "2026-11-03T00:00:00.000Z",
+        "department_name": "Data Platform",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1184
+      },
+      {
+        "work_date": "2026-11-03T00:00:00.000Z",
+        "department_name": "Finance",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1056
+      },
+      {
+        "work_date": "2026-11-03T00:00:00.000Z",
+        "department_name": "Fleet Maintenance",
+        "total_productive_hours": 32,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1328
+      },
+      {
+        "work_date": "2026-11-03T00:00:00.000Z",
+        "department_name": "People Operations",
+        "total_productive_hours": 26,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1148
+      },
+      {
+        "work_date": "2026-11-03T00:00:00.000Z",
+        "department_name": "Rail Operations",
+        "total_productive_hours": 34,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1361
+      },
+      {
+        "work_date": "2026-11-03T00:00:00.000Z",
+        "department_name": "Service Planning",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1088
+      },
+      {
+        "work_date": "2026-11-04T00:00:00.000Z",
+        "department_name": "Bus Operations",
+        "total_productive_hours": 48,
+        "total_scheduled_hours": 48,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1696
+      },
+      {
+        "work_date": "2026-11-04T00:00:00.000Z",
+        "department_name": "Data Platform",
+        "total_productive_hours": 26,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1328
+      },
+      {
+        "work_date": "2026-11-04T00:00:00.000Z",
+        "department_name": "Finance",
+        "total_productive_hours": 26,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1176
+      },
+      {
+        "work_date": "2026-11-04T00:00:00.000Z",
+        "department_name": "Fleet Maintenance",
+        "total_productive_hours": 32,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1328
+      },
+      {
+        "work_date": "2026-11-04T00:00:00.000Z",
+        "department_name": "People Operations",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 992
+      },
+      {
+        "work_date": "2026-11-04T00:00:00.000Z",
+        "department_name": "Rail Operations",
+        "total_productive_hours": 34,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1361
+      },
+      {
+        "work_date": "2026-11-04T00:00:00.000Z",
+        "department_name": "Service Planning",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1088
+      },
+      {
+        "work_date": "2026-11-05T00:00:00.000Z",
+        "department_name": "Bus Operations",
+        "total_productive_hours": 48,
+        "total_scheduled_hours": 48,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1696
+      },
+      {
+        "work_date": "2026-11-05T00:00:00.000Z",
+        "department_name": "Data Platform",
+        "total_productive_hours": 26,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1328
+      },
+      {
+        "work_date": "2026-11-05T00:00:00.000Z",
+        "department_name": "Finance",
+        "total_productive_hours": 26,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1176
+      },
+      {
+        "work_date": "2026-11-05T00:00:00.000Z",
+        "department_name": "Fleet Maintenance",
+        "total_productive_hours": 32,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1328
+      },
+      {
+        "work_date": "2026-11-05T00:00:00.000Z",
+        "department_name": "People Operations",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 992
+      },
+      {
+        "work_date": "2026-11-05T00:00:00.000Z",
+        "department_name": "Rail Operations",
+        "total_productive_hours": 34,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1412
+      },
+      {
+        "work_date": "2026-11-05T00:00:00.000Z",
+        "department_name": "Service Planning",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1088
+      },
+      {
+        "work_date": "2026-11-06T00:00:00.000Z",
+        "department_name": "Bus Operations",
+        "total_productive_hours": 50,
+        "total_scheduled_hours": 48,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1792
+      },
+      {
+        "work_date": "2026-11-06T00:00:00.000Z",
+        "department_name": "Data Platform",
+        "total_productive_hours": 18,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 8,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 956
+      },
+      {
+        "work_date": "2026-11-06T00:00:00.000Z",
+        "department_name": "Finance",
+        "total_productive_hours": 26,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1212
+      },
+      {
+        "work_date": "2026-11-06T00:00:00.000Z",
+        "department_name": "Fleet Maintenance",
+        "total_productive_hours": 32,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1328
+      },
+      {
+        "work_date": "2026-11-06T00:00:00.000Z",
+        "department_name": "People Operations",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 992
+      },
+      {
+        "work_date": "2026-11-06T00:00:00.000Z",
+        "department_name": "Rail Operations",
+        "total_productive_hours": 32,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1256
+      },
+      {
+        "work_date": "2026-11-06T00:00:00.000Z",
+        "department_name": "Service Planning",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1088
+      },
+      {
+        "work_date": "2026-11-09T00:00:00.000Z",
+        "department_name": "Bus Operations",
+        "total_productive_hours": 50,
+        "total_scheduled_hours": 48,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1792
+      },
+      {
+        "work_date": "2026-11-09T00:00:00.000Z",
+        "department_name": "Data Platform",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1184
+      },
+      {
+        "work_date": "2026-11-09T00:00:00.000Z",
+        "department_name": "Finance",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1056
+      },
+      {
+        "work_date": "2026-11-09T00:00:00.000Z",
+        "department_name": "Fleet Maintenance",
+        "total_productive_hours": 34,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1442
+      },
+      {
+        "work_date": "2026-11-09T00:00:00.000Z",
+        "department_name": "People Operations",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 992
+      },
+      {
+        "work_date": "2026-11-09T00:00:00.000Z",
+        "department_name": "Rail Operations",
+        "total_productive_hours": 32,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1256
+      },
+      {
+        "work_date": "2026-11-09T00:00:00.000Z",
+        "department_name": "Service Planning",
+        "total_productive_hours": 18,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 8,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 908
+      },
+      {
+        "work_date": "2026-11-10T00:00:00.000Z",
+        "department_name": "Bus Operations",
+        "total_productive_hours": 50,
+        "total_scheduled_hours": 48,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1792
+      },
+      {
+        "work_date": "2026-11-10T00:00:00.000Z",
+        "department_name": "Data Platform",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1184
+      },
+      {
+        "work_date": "2026-11-10T00:00:00.000Z",
+        "department_name": "Finance",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1056
+      },
+      {
+        "work_date": "2026-11-10T00:00:00.000Z",
+        "department_name": "Fleet Maintenance",
+        "total_productive_hours": 34,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1484
+      },
+      {
+        "work_date": "2026-11-10T00:00:00.000Z",
+        "department_name": "People Operations",
+        "total_productive_hours": 26,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1100
+      },
+      {
+        "work_date": "2026-11-10T00:00:00.000Z",
+        "department_name": "Rail Operations",
+        "total_productive_hours": 32,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1256
+      },
+      {
+        "work_date": "2026-11-10T00:00:00.000Z",
+        "department_name": "Service Planning",
+        "total_productive_hours": 16,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 8,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 752
+      },
+      {
+        "work_date": "2026-11-11T00:00:00.000Z",
+        "department_name": "Bus Operations",
+        "total_productive_hours": 50,
+        "total_scheduled_hours": 48,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1852
+      },
+      {
+        "work_date": "2026-11-11T00:00:00.000Z",
+        "department_name": "Data Platform",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1184
+      },
+      {
+        "work_date": "2026-11-11T00:00:00.000Z",
+        "department_name": "Finance",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1056
+      },
+      {
+        "work_date": "2026-11-11T00:00:00.000Z",
+        "department_name": "Fleet Maintenance",
+        "total_productive_hours": 32,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1328
+      },
+      {
+        "work_date": "2026-11-11T00:00:00.000Z",
+        "department_name": "People Operations",
+        "total_productive_hours": 26,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1100
+      },
+      {
+        "work_date": "2026-11-11T00:00:00.000Z",
+        "department_name": "Rail Operations",
+        "total_productive_hours": 34,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1361
+      },
+      {
+        "work_date": "2026-11-11T00:00:00.000Z",
+        "department_name": "Service Planning",
+        "total_productive_hours": 16,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 8,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 672
+      },
+      {
+        "work_date": "2026-11-12T00:00:00.000Z",
+        "department_name": "Bus Operations",
+        "total_productive_hours": 48,
+        "total_scheduled_hours": 48,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1696
+      },
+      {
+        "work_date": "2026-11-12T00:00:00.000Z",
+        "department_name": "Data Platform",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1184
+      },
+      {
+        "work_date": "2026-11-12T00:00:00.000Z",
+        "department_name": "Finance",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1056
+      },
+      {
+        "work_date": "2026-11-12T00:00:00.000Z",
+        "department_name": "Fleet Maintenance",
+        "total_productive_hours": 32,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1328
+      },
+      {
+        "work_date": "2026-11-12T00:00:00.000Z",
+        "department_name": "People Operations",
+        "total_productive_hours": 18,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 8,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 860
+      },
+      {
+        "work_date": "2026-11-12T00:00:00.000Z",
+        "department_name": "Rail Operations",
+        "total_productive_hours": 34,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1361
+      },
+      {
+        "work_date": "2026-11-12T00:00:00.000Z",
+        "department_name": "Service Planning",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1088
+      },
+      {
+        "work_date": "2026-11-13T00:00:00.000Z",
+        "department_name": "Bus Operations",
+        "total_productive_hours": 48,
+        "total_scheduled_hours": 48,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1696
+      },
+      {
+        "work_date": "2026-11-13T00:00:00.000Z",
+        "department_name": "Data Platform",
+        "total_productive_hours": 26,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1328
+      },
+      {
+        "work_date": "2026-11-13T00:00:00.000Z",
+        "department_name": "Finance",
+        "total_productive_hours": 26,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1176
+      },
+      {
+        "work_date": "2026-11-13T00:00:00.000Z",
+        "department_name": "Fleet Maintenance",
+        "total_productive_hours": 32,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1328
+      },
+      {
+        "work_date": "2026-11-13T00:00:00.000Z",
+        "department_name": "People Operations",
+        "total_productive_hours": 16,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 8,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 704
+      },
+      {
+        "work_date": "2026-11-13T00:00:00.000Z",
+        "department_name": "Rail Operations",
+        "total_productive_hours": 34,
+        "total_scheduled_hours": 32,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 2,
+        "total_labor_cost": 1361
+      },
+      {
+        "work_date": "2026-11-13T00:00:00.000Z",
+        "department_name": "Service Planning",
+        "total_productive_hours": 24,
+        "total_scheduled_hours": 24,
+        "total_absence_hours": 0,
+        "total_overtime_hours": 0,
+        "total_labor_cost": 1088
+      }
+    ],
+    "budget_by_month": [
+      {
+        "report_month": "2026-11-01T00:00:00.000Z",
+        "department_name": "Fleet Maintenance",
+        "budget_status": "OverBudget",
+        "budget_total": 10000,
+        "actual_cost_total": 23391.5,
+        "remaining_budget_total": -13391.5,
+        "pending_approval_total": 5800
+      },
+      {
+        "report_month": "2026-11-01T00:00:00.000Z",
+        "department_name": "People Operations",
+        "budget_status": "WithinBudget",
+        "budget_total": 14000,
+        "actual_cost_total": 12171,
+        "remaining_budget_total": 1829,
+        "pending_approval_total": 1210
+      },
+      {
+        "report_month": "2026-11-01T00:00:00.000Z",
+        "department_name": "Finance",
+        "budget_status": "WithinBudget",
+        "budget_total": 16000,
+        "actual_cost_total": 13235,
+        "remaining_budget_total": 2765,
+        "pending_approval_total": 1120
+      },
+      {
+        "report_month": "2026-11-01T00:00:00.000Z",
+        "department_name": "Data Platform",
+        "budget_status": "WithinBudget",
+        "budget_total": 19000,
+        "actual_cost_total": 14981.5,
+        "remaining_budget_total": 4018.5,
+        "pending_approval_total": 1390
+      },
+      {
+        "report_month": "2026-11-01T00:00:00.000Z",
+        "department_name": "Service Planning",
+        "budget_status": "WithinBudget",
+        "budget_total": 17000,
+        "actual_cost_total": 12668.5,
+        "remaining_budget_total": 4331.5,
+        "pending_approval_total": 1300
+      },
+      {
+        "report_month": "2026-11-01T00:00:00.000Z",
+        "department_name": "Bus Operations",
+        "budget_status": "WithinBudget",
+        "budget_total": 26000,
+        "actual_cost_total": 18568,
+        "remaining_budget_total": 7432,
+        "pending_approval_total": 850
+      },
+      {
+        "report_month": "2026-11-01T00:00:00.000Z",
+        "department_name": "Rail Operations",
+        "budget_status": "WithinBudget",
+        "budget_total": 23000,
+        "actual_cost_total": 15252,
+        "remaining_budget_total": 7748,
+        "pending_approval_total": 940
+      },
+      {
+        "report_month": "2026-12-01T00:00:00.000Z",
+        "department_name": "Fleet Maintenance",
+        "budget_status": "WithinBudget",
+        "budget_total": 10300,
+        "actual_cost_total": 0,
+        "remaining_budget_total": 10300,
+        "pending_approval_total": 0
+      },
+      {
+        "report_month": "2026-12-01T00:00:00.000Z",
+        "department_name": "People Operations",
+        "budget_status": "WithinBudget",
+        "budget_total": 14420,
+        "actual_cost_total": 0,
+        "remaining_budget_total": 14420,
+        "pending_approval_total": 0
+      },
+      {
+        "report_month": "2026-12-01T00:00:00.000Z",
+        "department_name": "Finance",
+        "budget_status": "WithinBudget",
+        "budget_total": 16480,
+        "actual_cost_total": 0,
+        "remaining_budget_total": 16480,
+        "pending_approval_total": 0
+      },
+      {
+        "report_month": "2026-12-01T00:00:00.000Z",
+        "department_name": "Service Planning",
+        "budget_status": "WithinBudget",
+        "budget_total": 17510,
+        "actual_cost_total": 0,
+        "remaining_budget_total": 17510,
+        "pending_approval_total": 0
+      },
+      {
+        "report_month": "2026-12-01T00:00:00.000Z",
+        "department_name": "Data Platform",
+        "budget_status": "WithinBudget",
+        "budget_total": 19570,
+        "actual_cost_total": 0,
+        "remaining_budget_total": 19570,
+        "pending_approval_total": 0
+      },
+      {
+        "report_month": "2026-12-01T00:00:00.000Z",
+        "department_name": "Rail Operations",
+        "budget_status": "WithinBudget",
+        "budget_total": 23690,
+        "actual_cost_total": 0,
+        "remaining_budget_total": 23690,
+        "pending_approval_total": 0
+      },
+      {
+        "report_month": "2026-12-01T00:00:00.000Z",
+        "department_name": "Bus Operations",
+        "budget_status": "WithinBudget",
+        "budget_total": 26780,
+        "actual_cost_total": 0,
+        "remaining_budget_total": 26780,
+        "pending_approval_total": 0
+      }
+    ],
+    "vendor_by_month": [
+      {
+        "report_month": "2026-11-01T00:00:00.000Z",
+        "supplier_name": "Lakefront Fleet Parts",
+        "category": "Fleet parts",
+        "approved_spend": 2555,
+        "pending_spend": 7190,
+        "invoices": "5"
+      },
+      {
+        "report_month": "2026-11-01T00:00:00.000Z",
+        "supplier_name": "Harbor Training Studio",
+        "category": "Training",
+        "approved_spend": 7135,
+        "pending_spend": 2240,
+        "invoices": "5"
+      },
+      {
+        "report_month": "2026-11-01T00:00:00.000Z",
+        "supplier_name": "Northline Systems",
+        "category": "Software",
+        "approved_spend": 7330,
+        "pending_spend": 2060,
+        "invoices": "6"
+      },
+      {
+        "report_month": "2026-11-01T00:00:00.000Z",
+        "supplier_name": "Prairie Office Supply",
+        "category": "Office supplies",
+        "approved_spend": 3550,
+        "pending_spend": 1120,
+        "invoices": "5"
+      }
+    ],
+    "risk_detail": [
+      {
+        "check_name": "no_critical_open_maintenance",
+        "asset": "ops_reporting.maintenance_backlog",
+        "check_kind": "DemonstrationRisk",
+        "status": "Failed",
+        "failed_rows": "1",
+        "tested_rows": "18"
+      },
+      {
+        "check_name": "no_overbudget_departments",
+        "asset": "finance_reporting.budget_variance",
+        "check_kind": "DemonstrationRisk",
+        "status": "Failed",
+        "failed_rows": "1",
+        "tested_rows": "14"
+      },
+      {
+        "check_name": "expense_department_matches_staff",
+        "asset": "finance.expense_claims",
+        "check_kind": "Integrity",
+        "status": "Success",
+        "failed_rows": "0",
+        "tested_rows": "18"
+      },
+      {
+        "check_name": "finance_cost_components_reconcile",
+        "asset": "finance_reporting.department_cost_monthly",
+        "check_kind": "Integrity",
+        "status": "Success",
+        "failed_rows": "0",
+        "tested_rows": "14"
+      },
+      {
+        "check_name": "invoice_supplier_reference",
+        "asset": "finance.supplier_invoices",
+        "check_kind": "Integrity",
+        "status": "Success",
+        "failed_rows": "0",
+        "tested_rows": "21"
+      },
+      {
+        "check_name": "positive_department_budgets",
+        "asset": "finance.monthly_budgets",
+        "check_kind": "Integrity",
+        "status": "Success",
+        "failed_rows": "0",
+        "tested_rows": "14"
+      },
+      {
+        "check_name": "scheduled_trip_balance",
+        "asset": "service_ops.route_performance",
+        "check_kind": "Integrity",
+        "status": "Success",
+        "failed_rows": "0",
+        "tested_rows": "84"
+      },
+      {
+        "check_name": "staff_department_reference",
+        "asset": "org.staff",
+        "check_kind": "Integrity",
+        "status": "Success",
+        "failed_rows": "0",
+        "tested_rows": "26"
+      },
+      {
+        "check_name": "staff_manager_reference",
+        "asset": "org.staff",
+        "check_kind": "Integrity",
+        "status": "Success",
+        "failed_rows": "0",
+        "tested_rows": "26"
+      },
+      {
+        "check_name": "staff_role_reference",
+        "asset": "org.staff",
+        "check_kind": "Integrity",
+        "status": "Success",
+        "failed_rows": "0",
+        "tested_rows": "26"
+      },
+      {
+        "check_name": "time_entry_staff_reference",
+        "asset": "service_ops.time_entries",
+        "check_kind": "Integrity",
+        "status": "Success",
+        "failed_rows": "0",
+        "tested_rows": "260"
+      },
+      {
+        "check_name": "unique_staff_ids",
+        "asset": "org.staff",
+        "check_kind": "Integrity",
+        "status": "Success",
+        "failed_rows": "0",
+        "tested_rows": "26"
+      },
+      {
+        "check_name": "workforce_headcount_rollup",
+        "asset": "org_reporting.department_staffing",
+        "check_kind": "Integrity",
+        "status": "Success",
+        "failed_rows": "0",
+        "tested_rows": "26"
+      }
+    ],
+    "cta_schedule_reference": [
+      {
+        "service_date": "2026-11-02T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "240"
+      },
+      {
+        "service_date": "2026-11-02T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "271"
+      },
+      {
+        "service_date": "2026-11-02T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "446"
+      },
+      {
+        "service_date": "2026-11-02T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "363"
+      },
+      {
+        "service_date": "2026-11-02T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "354"
+      },
+      {
+        "service_date": "2026-11-02T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "422"
+      },
+      {
+        "service_date": "2026-11-03T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "239"
+      },
+      {
+        "service_date": "2026-11-03T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "271"
+      },
+      {
+        "service_date": "2026-11-03T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "450"
+      },
+      {
+        "service_date": "2026-11-03T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "365"
+      },
+      {
+        "service_date": "2026-11-03T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "356"
+      },
+      {
+        "service_date": "2026-11-03T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "424"
+      },
+      {
+        "service_date": "2026-11-04T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "239"
+      },
+      {
+        "service_date": "2026-11-04T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "271"
+      },
+      {
+        "service_date": "2026-11-04T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "450"
+      },
+      {
+        "service_date": "2026-11-04T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "365"
+      },
+      {
+        "service_date": "2026-11-04T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "356"
+      },
+      {
+        "service_date": "2026-11-04T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "424"
+      },
+      {
+        "service_date": "2026-11-05T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "239"
+      },
+      {
+        "service_date": "2026-11-05T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "271"
+      },
+      {
+        "service_date": "2026-11-05T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "450"
+      },
+      {
+        "service_date": "2026-11-05T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "365"
+      },
+      {
+        "service_date": "2026-11-05T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "356"
+      },
+      {
+        "service_date": "2026-11-05T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "424"
+      },
+      {
+        "service_date": "2026-11-06T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "239"
+      },
+      {
+        "service_date": "2026-11-06T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "271"
+      },
+      {
+        "service_date": "2026-11-06T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "450"
+      },
+      {
+        "service_date": "2026-11-06T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "365"
+      },
+      {
+        "service_date": "2026-11-06T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "356"
+      },
+      {
+        "service_date": "2026-11-06T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "424"
+      },
+      {
+        "service_date": "2026-11-07T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "224"
+      },
+      {
+        "service_date": "2026-11-07T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "256"
+      },
+      {
+        "service_date": "2026-11-07T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "381"
+      },
+      {
+        "service_date": "2026-11-07T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "305"
+      },
+      {
+        "service_date": "2026-11-07T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "284"
+      },
+      {
+        "service_date": "2026-11-07T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "349"
+      },
+      {
+        "service_date": "2026-11-08T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "193"
+      },
+      {
+        "service_date": "2026-11-08T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "227"
+      },
+      {
+        "service_date": "2026-11-08T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "283"
+      },
+      {
+        "service_date": "2026-11-08T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "276"
+      },
+      {
+        "service_date": "2026-11-08T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "258"
+      },
+      {
+        "service_date": "2026-11-08T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "317"
+      },
+      {
+        "service_date": "2026-11-09T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "240"
+      },
+      {
+        "service_date": "2026-11-09T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "271"
+      },
+      {
+        "service_date": "2026-11-09T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "446"
+      },
+      {
+        "service_date": "2026-11-09T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "363"
+      },
+      {
+        "service_date": "2026-11-09T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "354"
+      },
+      {
+        "service_date": "2026-11-09T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "422"
+      },
+      {
+        "service_date": "2026-11-10T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "239"
+      },
+      {
+        "service_date": "2026-11-10T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "271"
+      },
+      {
+        "service_date": "2026-11-10T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "450"
+      },
+      {
+        "service_date": "2026-11-10T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "365"
+      },
+      {
+        "service_date": "2026-11-10T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "356"
+      },
+      {
+        "service_date": "2026-11-10T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "424"
+      },
+      {
+        "service_date": "2026-11-11T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "239"
+      },
+      {
+        "service_date": "2026-11-11T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "271"
+      },
+      {
+        "service_date": "2026-11-11T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "450"
+      },
+      {
+        "service_date": "2026-11-11T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "365"
+      },
+      {
+        "service_date": "2026-11-11T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "356"
+      },
+      {
+        "service_date": "2026-11-11T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "424"
+      },
+      {
+        "service_date": "2026-11-12T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "239"
+      },
+      {
+        "service_date": "2026-11-12T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "271"
+      },
+      {
+        "service_date": "2026-11-12T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "450"
+      },
+      {
+        "service_date": "2026-11-12T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "365"
+      },
+      {
+        "service_date": "2026-11-12T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "356"
+      },
+      {
+        "service_date": "2026-11-12T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "424"
+      },
+      {
+        "service_date": "2026-11-13T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "239"
+      },
+      {
+        "service_date": "2026-11-13T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "271"
+      },
+      {
+        "service_date": "2026-11-13T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "450"
+      },
+      {
+        "service_date": "2026-11-13T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "365"
+      },
+      {
+        "service_date": "2026-11-13T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "356"
+      },
+      {
+        "service_date": "2026-11-13T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "424"
+      },
+      {
+        "service_date": "2026-11-14T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "224"
+      },
+      {
+        "service_date": "2026-11-14T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "256"
+      },
+      {
+        "service_date": "2026-11-14T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "381"
+      },
+      {
+        "service_date": "2026-11-14T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "305"
+      },
+      {
+        "service_date": "2026-11-14T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "284"
+      },
+      {
+        "service_date": "2026-11-14T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "349"
+      },
+      {
+        "service_date": "2026-11-15T00:00:00.000Z",
+        "route_id": "22",
+        "total_scheduled_trips": "193"
+      },
+      {
+        "service_date": "2026-11-15T00:00:00.000Z",
+        "route_id": "49",
+        "total_scheduled_trips": "227"
+      },
+      {
+        "service_date": "2026-11-15T00:00:00.000Z",
+        "route_id": "79",
+        "total_scheduled_trips": "283"
+      },
+      {
+        "service_date": "2026-11-15T00:00:00.000Z",
+        "route_id": "9",
+        "total_scheduled_trips": "276"
+      },
+      {
+        "service_date": "2026-11-15T00:00:00.000Z",
+        "route_id": "Blue",
+        "total_scheduled_trips": "328"
+      },
+      {
+        "service_date": "2026-11-15T00:00:00.000Z",
+        "route_id": "Red",
+        "total_scheduled_trips": "317"
+      }
+    ]
+  },
+  "queryInfo": {
+    "headcount_by_department": {
+      "model": "enterprise.malloy",
+      "query": "run: headcount_by_department",
+      "rows": 7,
+      "scanBytes": 259
+    },
+    "workforce_cost_by_department": {
+      "model": "enterprise.malloy",
+      "query": "run: workforce_cost_by_department",
+      "rows": 7,
+      "scanBytes": 10046
+    },
+    "service_reliability_by_route": {
+      "model": "enterprise.malloy",
+      "query": "run: service_reliability_by_route",
+      "rows": 6,
+      "scanBytes": 3712
+    },
+    "fleet_risk_by_owner": {
+      "model": "enterprise.malloy",
+      "query": "run: fleet_risk_by_owner",
+      "rows": 2,
+      "scanBytes": 450
+    },
+    "budget_by_department": {
+      "model": "enterprise.malloy",
+      "query": "run: budget_by_department",
+      "rows": 7,
+      "scanBytes": 980
+    },
+    "vendor_approval_pipeline": {
+      "model": "enterprise.malloy",
+      "query": "run: vendor_approval_pipeline",
+      "rows": 4,
+      "scanBytes": 235
+    },
+    "executive_department_review": {
+      "model": "enterprise.malloy",
+      "query": "run: executive_department_review",
+      "rows": 7,
+      "scanBytes": 1160
+    },
+    "route_cost_review": {
+      "model": "enterprise.malloy",
+      "query": "run: route_cost_review",
+      "rows": 6,
+      "scanBytes": 2436
+    },
+    "integrity_and_risk_checks": {
+      "model": "enterprise.malloy",
+      "query": "run: integrity_and_risk_checks",
+      "rows": 2,
+      "scanBytes": 378
+    },
+    "route_daily": {
+      "model": "enterprise.malloy",
+      "query": "run: service_reliability -> {\n    group_by: service_date, route_id, route_long_name\n    aggregate: trips_completed, trips_cancelled, trips_on_time,\n      trips_scheduled is scheduled_trips.sum(), delay_total is delay_minutes.sum()\n    order_by: service_date asc, route_id asc\n  }",
+      "rows": 84,
+      "scanBytes": 5124
+    },
+    "fleet_detail": {
+      "model": "enterprise.malloy",
+      "query": "run: fleet_readiness -> {\n    group_by: vehicle_id, vehicle_type, department_name is vehicle_owner.department_name\n    aggregate: open_orders, critical_orders, open_parts_cost\n    order_by: critical_orders desc, open_orders desc, vehicle_id asc\n  }",
+      "rows": 10,
+      "scanBytes": 576
+    },
+    "workforce_daily": {
+      "model": "enterprise.malloy",
+      "query": "run: workforce -> {\n    group_by: work_date is service_date, department_name is department.department_name\n    aggregate: total_productive_hours, total_scheduled_hours, total_absence_hours,\n      total_overtime_hours, total_labor_cost\n    order_by: work_date asc, department_name asc\n  }",
+      "rows": 70,
+      "scanBytes": 14206
+    },
+    "budget_by_month": {
+      "model": "enterprise.malloy",
+      "query": "run: financial_control -> {\n    group_by: report_month, department_name, budget_status\n    aggregate: budget_total, actual_cost_total, remaining_budget_total, pending_approval_total\n    order_by: report_month asc, remaining_budget_total asc\n  }",
+      "rows": 14,
+      "scanBytes": 980
+    },
+    "vendor_by_month": {
+      "model": "enterprise.malloy",
+      "query": "run: vendor_spend -> {\n    group_by: report_month, supplier_name, category\n    aggregate: approved_spend, pending_spend, invoices\n    order_by: report_month asc, pending_spend desc\n  }",
+      "rows": 4,
+      "scanBytes": 267
+    },
+    "risk_detail": {
+      "model": "enterprise.malloy",
+      "query": "run: organization_quality -> {\n    group_by: check_name, asset, check_kind, status, failed_rows, tested_rows\n    order_by: failed_rows desc, check_name asc\n  }",
+      "rows": 13,
+      "scanBytes": 1163
+    },
+    "cta_schedule_reference": {
+      "model": "cta.malloy",
+      "query": "run: scheduled_service -> {\n    where: service_date >= @2026-11-02, service_date <= @2026-11-15\n    where: route_id = \"22\" or route_id = \"49\" or route_id = \"79\" or route_id = \"9\" or route_id = \"Blue\" or route_id = \"Red\"\n    group_by: service_date, route_id\n    aggregate: total_scheduled_trips\n    order_by: service_date asc, route_id asc\n  }",
+      "rows": 84,
+      "scanBytes": 48341607
+    }
+  }
+}

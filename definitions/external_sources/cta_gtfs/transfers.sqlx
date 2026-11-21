@@ -1,0 +1,12 @@
+config {
+  type: "declaration",
+  schema: "cta_gtfs",
+  name: "transfers",
+  database: "monorail-sample",
+  description: "CTA GTFS feed (transitchicago.com/downloads/sch_data/google_transit.zip), downloaded 2026-11-18.",
+  columns: {
+    "from_stop_id": "From stop id.",
+    "to_stop_id": "To stop id.",
+    "transfer_type": "Transfer type."
+  }
+}

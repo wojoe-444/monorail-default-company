@@ -1,0 +1,17 @@
+config {
+  type: "declaration",
+  schema: "demo_pipelines",
+  name: "run_log",
+  database: "monorail-sample",
+  description: "Actual BigQuery execution history for the four on-demand synthetic transit demo pipelines.",
+  columns: {
+    "run_id": "Identifier of an actual demo pipeline invocation.",
+    "pipeline_name": "Catalogued pipeline name.",
+    "procedure_name": "Executable BigQuery stored-procedure name.",
+    "started_at": "Actual UTC time the demo runner submitted the procedure call.",
+    "finished_at": "Actual UTC time the BigQuery call completed successfully.",
+    "status": "Measured result or recorded workflow status.",
+    "job_id": "Actual BigQuery job identifier for this invocation.",
+    "output_tables": "Tables produced by the successfully completed stored procedure."
+  }
+}

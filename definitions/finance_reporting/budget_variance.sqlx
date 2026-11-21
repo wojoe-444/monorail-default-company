@@ -1,0 +1,41 @@
+config {
+  type: "table",
+  schema: "finance_reporting",
+  name: "budget_variance",
+  tags: ["enterprise","finance_monthly"],
+  description: "Budget versus partial-period synthetic actuals. The fleet department intentionally demonstrates an over-budget investigation. Fictional demonstration outputs, not official CTA personnel, service or financial records.",
+  columns: {
+    "report_month": "First day of the budget/report month. November actuals cover only the loaded demonstration period.",
+    "department_id": "Synthetic department key; joins org.departments.",
+    "department_name": "Department display name.",
+    "cost_center_id": "Cost center id.",
+    "budget_usd": "Budget usd.",
+    "labor_cost_usd": "Synthetic cost: regular and training hours at the role rate, overtime at 1.5 times that rate.",
+    "approved_invoice_usd": "Approved synthetic supplier-invoice value in USD; excludes invoices awaiting approval.",
+    "pending_invoice_usd": "Synthetic invoices awaiting approval, excluded from actual cost.",
+    "approved_expense_usd": "Approved synthetic staff expenses in USD.",
+    "total_actual_cost_usd": "Modeled labor plus approved invoices plus approved expenses. November is partial-period; pending invoices are excluded.",
+    "observed_workdays": "Distinct staff time-entry dates loaded for this department and month; not all dates in the month.",
+    "remaining_budget_usd": "Full monthly synthetic budget minus loaded partial-period actual cost; negative indicates the seeded over-budget scenario.",
+    "budget_utilization_ratio": "Loaded actual cost divided by the full monthly budget, as a 0-to-1 fraction that can exceed 1.",
+    "budget_status": "OverBudget or WithinBudget based on the loaded synthetic actuals.",
+    "period_status": "PartialPeriodActuals when time entries exist; BudgetOnly otherwise."
+  }
+}
+
+SELECT
+  *,
+  budget_usd-total_actual_cost_usd AS remaining_budget_usd,
+  SAFE_DIVIDE(total_actual_cost_usd, budget_usd) AS budget_utilization_ratio,
+  IF(
+    total_actual_cost_usd > budget_usd,
+    'OverBudget',
+    'WithinBudget'
+  ) AS budget_status,
+  IF(
+    observed_workdays = 0,
+    'BudgetOnly',
+    'PartialPeriodActuals'
+  ) AS period_status
+FROM
+  ${ref("finance_reporting", "department_cost_monthly")}

@@ -1,0 +1,19 @@
+config {
+  type: "declaration",
+  schema: "service_ops",
+  name: "maintenance_work_orders",
+  database: "monorail-sample",
+  description: "Eighteen fictional repair orders, including a visible critical-open scenario. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "work_order_id": "Work-order primary key.",
+    "vehicle_id": "Fleet-asset foreign key.",
+    "department_id": "Stable synthetic department identifier. Join org.departments.department_id.",
+    "assigned_staff_id": "Assigned technician staff ID.",
+    "opened_date": "Synthetic date opened.",
+    "closed_date": "Synthetic completion date; NULL while open.",
+    "priority": "Critical, High or Normal.",
+    "status": "Open or Closed.",
+    "parts_cost_usd": "Synthetic parts estimate in USD.",
+    "labor_hours": "Synthetic technician hours."
+  }
+}

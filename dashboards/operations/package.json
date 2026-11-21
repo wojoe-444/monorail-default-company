@@ -1,0 +1,16 @@
+{
+  "name": "monorail-operations-dashboards",
+  "private": true,
+  "scripts": {
+    "build": "node build.cjs",
+    "refresh": "node refresh.cjs && node build.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@malloydata/db-bigquery": "0.0.438",
+    "@malloydata/malloy": "0.0.438",
+    "google-auth-library": "9.15.1"
+  }
+}

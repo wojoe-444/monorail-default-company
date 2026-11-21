@@ -1,0 +1,19 @@
+config {
+  type: "declaration",
+  schema: "cta_gtfs",
+  name: "stops",
+  database: "monorail-sample",
+  description: "CTA GTFS feed (transitchicago.com/downloads/sch_data/google_transit.zip), downloaded 2026-11-18.",
+  columns: {
+    "stop_id": "GTFS stop or platform identifier. Use parent_station or station map_id when aggregating platforms into stations.",
+    "stop_code": "Stop code.",
+    "stop_name": "Stop name.",
+    "stop_desc": "Stop desc.",
+    "stop_lat": "Stop lat.",
+    "stop_lon": "Stop lon.",
+    "location_type": "Location type.",
+    "parent_station": "Parent station.",
+    "wheelchair_boarding": "GTFS stop boarding accessibility code: 0=unknown, 1=accessible, 2=not accessible.",
+    "location": "Geographic point for the stop/station in WGS84."
+  }
+}

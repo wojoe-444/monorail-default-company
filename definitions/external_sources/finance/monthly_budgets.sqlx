@@ -1,0 +1,12 @@
+config {
+  type: "declaration",
+  schema: "finance",
+  name: "monthly_budgets",
+  database: "monorail-sample",
+  description: "Two monthly budget periods per department. November actuals contain only the ten business days loaded in the demo. Fictional transit-organization demonstration data. Staff, financial amounts, incidents and service outcomes are synthetic and are not CTA personnel or operational records.",
+  columns: {
+    "report_month": "First calendar date of the reporting month. November costs cover only the loaded demonstration period.",
+    "department_id": "Stable synthetic department identifier. Join org.departments.department_id.",
+    "budget_usd": "Full monthly synthetic budget in USD."
+  }
+}

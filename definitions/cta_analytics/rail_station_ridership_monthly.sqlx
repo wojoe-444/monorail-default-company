@@ -1,0 +1,63 @@
+config {
+  type: "view",
+  schema: "cta_analytics",
+  name: "rail_station_ridership_monthly",
+  tags: ["cta","analytics"],
+  description: "One row per rail station and month. Sums station entries across reported days and exposes the number of conflicting station-days excluded from the metrics. Station metadata comes from the current stop list.",
+  columns: {
+    "month_start": "First date of the reporting month.",
+    "station_id": "CTA rail station identifier at station grain; matches cta.l_stops.map_id.",
+    "station_name": "Station name.",
+    "station_entries": "Sum of non-conflicting rail station-day entry counts for this station and month.",
+    "reported_days": "Number of days with a non-NULL reported measure. Missing/conflicting days are excluded.",
+    "conflicting_days": "Station-days with conflicting source counts; excluded from entry totals.",
+    "avg_entries_per_reported_day": "Avg entries per reported day.",
+    "has_current_station_metadata": "True when this station ID is in the current station/platform list.",
+    "has_accessible_platform": "True when at least one listed platform is marked ADA accessible. Not a guarantee of current elevator availability.",
+    "lines": "Rail line names serving the station, stored as a repeated string field.",
+    "location": "Geographic point for the stop/station in WGS84."
+  }
+}
+
+WITH
+  monthly_ridership AS (
+    SELECT
+      DATE_TRUNC(service_date, MONTH) AS month_start,
+      station_id,
+      ARRAY_AGG(
+        STRUCT(
+          station_name,
+          has_current_station_metadata,
+          has_accessible_platform,
+          lines,
+          location
+        )
+        ORDER BY
+          service_date DESC
+        LIMIT
+          1
+      ) [OFFSET(0)] AS station,
+      SUM(entries) AS station_entries,
+      COUNT(entries) AS reported_days,
+      COUNTIF(has_conflicting_entries) AS conflicting_days,
+      AVG(entries) AS avg_entries_per_reported_day
+    FROM
+      ${ref("cta_staging", "rail_station_ridership_daily")}
+    GROUP BY
+      month_start,
+      station_id
+  )
+SELECT
+  month_start,
+  station_id,
+  station.station_name,
+  station_entries,
+  reported_days,
+  conflicting_days,
+  avg_entries_per_reported_day,
+  station.has_current_station_metadata,
+  station.has_accessible_platform,
+  station.lines,
+  station.location
+FROM
+  monthly_ridership

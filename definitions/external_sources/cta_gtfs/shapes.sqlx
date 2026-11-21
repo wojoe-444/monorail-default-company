@@ -1,0 +1,14 @@
+config {
+  type: "declaration",
+  schema: "cta_gtfs",
+  name: "shapes",
+  database: "monorail-sample",
+  description: "CTA GTFS feed (transitchicago.com/downloads/sch_data/google_transit.zip), downloaded 2026-11-18.",
+  columns: {
+    "shape_id": "Shape id.",
+    "shape_pt_lat": "Shape pt lat.",
+    "shape_pt_lon": "Shape pt lon.",
+    "shape_pt_sequence": "Shape pt sequence.",
+    "shape_dist_traveled": "Shape dist traveled."
+  }
+}

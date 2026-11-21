@@ -1,0 +1,16 @@
+config {
+  type: "declaration",
+  schema: "cta",
+  name: "bus_route_ridership_monthly",
+  database: "monorail-sample",
+  description: "Source: City of Chicago Data Portal (data.cityofchicago.org), CTA Bus Routes - Monthly Day-Type Averages & Totals (bynn-gwxy).",
+  columns: {
+    "route": "Historical CTA bus route identifier; corresponds to GTFS route_id when the route still exists.",
+    "route_name": "Route name.",
+    "month_beginning": "First date of the month in the published monthly source.",
+    "avg_weekday_rides": "Avg weekday rides.",
+    "avg_saturday_rides": "Avg saturday rides.",
+    "avg_sunday_holiday_rides": "Avg sunday holiday rides.",
+    "month_total": "Month total."
+  }
+}

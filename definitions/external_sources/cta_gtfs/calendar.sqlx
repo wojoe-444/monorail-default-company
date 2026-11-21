@@ -1,0 +1,19 @@
+config {
+  type: "declaration",
+  schema: "cta_gtfs",
+  name: "calendar",
+  database: "monorail-sample",
+  description: "CTA GTFS feed (transitchicago.com/downloads/sch_data/google_transit.zip), downloaded 2026-11-18.",
+  columns: {
+    "service_id": "GTFS weekly service pattern identifier; expand calendar and calendar_dates to obtain active dates.",
+    "monday": "Monday.",
+    "tuesday": "Tuesday.",
+    "wednesday": "Wednesday.",
+    "thursday": "Thursday.",
+    "friday": "Friday.",
+    "saturday": "Saturday.",
+    "sunday": "Sunday.",
+    "start_date": "Start date.",
+    "end_date": "End date."
+  }
+}

@@ -1,0 +1,6 @@
+defaultProject: monorail-sample
+defaultLocation: US
+defaultDataset: analytics
+defaultAssertionDataset: dataform_assertions
+datasetSuffix: company_dev
+dataformCoreVersion: 3.1.6

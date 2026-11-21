@@ -1,0 +1,13 @@
+config {
+  type: "declaration",
+  schema: "cta",
+  name: "bus_route_ridership_daily",
+  database: "monorail-sample",
+  description: "Source: City of Chicago Data Portal (data.cityofchicago.org), CTA Bus Routes - Daily Totals by Route (jyb9-n7fm). route = cta_gtfs.routes.route_id.",
+  columns: {
+    "route": "Historical CTA bus route identifier; corresponds to GTFS route_id when the route still exists.",
+    "date": "Calendar date in the source feed. Ridership dates represent reported service days.",
+    "day_type": "CTA day category: W=weekday, A=Saturday, U=Sunday or holiday.",
+    "rides": "Published boardings or station entries at the source grain. Does not count unique people."
+  }
+}
