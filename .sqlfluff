@@ -1,0 +1,40 @@
+[sqlfluff]
+dialect = bigquery
+templater = raw
+large_file_skip_byte_limit = 0
+max_parse_depth = 1000
+rules = AL01, AL02, AL05, CP01, CP03, CP04, CV01, CV03, CV06, LT01, LT02, LT04, LT08, LT09, LT10, LT13, LT14, LT15, ST02
+# Advisory rules (logged as warnings in CI, not failures): AL04, AM01, AM03, AM04, AM05, AM06, RF02, RF04, ST03, ST05, ST09, ST11
+exclude_rules = LT05, ST07, AL03, AL09, CV02, CV10, AM09, LT12
+
+[sqlfluff:indentation]
+indent_unit = space
+tab_space_size = 4
+
+[sqlfluff:rules:layout.commas]
+# trailing = comma at end of line; leading = comma at start of next line
+comma_style = trailing
+
+[sqlfluff:rules:capitalisation.keywords]
+# Enforce uppercase SQL keywords: SELECT, FROM, WHERE, CASE, WHEN, THEN, END, etc.
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.functions]
+# Enforce uppercase built-in functions: CAST, UPPER, MIN, MAX, DATE_ADD, etc.
+extended_capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.types]
+# Uppercase policy for CP05; CP05 is not currently in the selected rule lists
+extended_capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.identifiers]
+# Uppercase policy for CP02. CP02 is not in the selected rule lists: an output column's case is
+# part of the table schema and some BigQuery consumers are case-sensitive. The SQLX quality report
+# (the retired dbi_tools repo-health audit) ran CP02 with this policy as an informational check.
+extended_capitalisation_policy = upper
+
+[sqlfluff:rules:layout.newlines]
+# Allow at most one empty line between SQLX sections.
+maximum_empty_lines_between_statements = 1
+maximum_empty_lines_inside_statements = 1
+maximum_empty_lines_between_batches = 1
