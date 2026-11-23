@@ -285,7 +285,7 @@ jobs:
               `</details>`,
               ``,
               `<sub>Maintained automatically by \`pr-lifecycle-card.yml\` &amp; \`pr-chatops.yml\`</sub>`
-            ].filter(Boolean).join('\n');
+            ].filter(x => x !== null && x !== undefined).join('\n');
 
             if (process.env.CAN_WRITE === 'true') {
               if (existing) {
