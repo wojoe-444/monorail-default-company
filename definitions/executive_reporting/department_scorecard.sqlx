@@ -13,6 +13,7 @@ config {
     "budget_usd": "Budget usd.",
     "total_actual_cost_usd": "Modeled labor plus approved invoices plus approved expenses. November is partial-period; pending invoices are excluded.",
     "remaining_budget_usd": "Full monthly synthetic budget minus loaded partial-period actual cost; negative indicates the seeded over-budget scenario.",
+    "over_budget_usd": "Positive dollar overage above monthly synthetic budget (0 when within budget).",
     "budget_status": "OverBudget or WithinBudget based on the loaded synthetic actuals.",
     "period_status": "PartialPeriodActuals when time entries exist; BudgetOnly otherwise.",
     "completed_trips": "Completed trips.",
@@ -56,6 +57,7 @@ SELECT
   f.budget_usd,
   f.total_actual_cost_usd,
   f.remaining_budget_usd,
+  f.over_budget_usd,
   f.budget_status,
   f.period_status,
   COALESCE(o.completed_trips, 0) AS completed_trips,
@@ -65,6 +67,10 @@ SELECT
   COALESCE(m.critical_open_orders, 0) AS critical_open_orders
 FROM
   ${ref("finance_reporting", "budget_variance")} f
+  -- Join active department staffing & cross-domain telemetry
   JOIN ${ref("org_reporting", "department_staffing")} s USING (department_id)
   LEFT JOIN ops o USING (report_month, department_id)
   LEFT JOIN fleet m USING (department_id)
+ORDER BY
+  f.report_month,
+  f.department_id
