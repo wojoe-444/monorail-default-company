@@ -1,0 +1,665 @@
+name: Interactive PR ChatOps & Control Panel
+
+on:
+  issue_comment:
+    types: [created, edited]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: pr-chatops-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: >-
+      github.event.issue.pull_request &&
+      github.event.sender.type != 'Bot' &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse Slash Command or Control Panel Checkbox
+        id: parse
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.issue.number;
+            const comment = context.payload.comment;
+            const body = (comment.body || '').replace(/\r\n/g, '\n');
+            const cardMarker = '<!-- monorail-pr-lifecycle-card -->';
+
+            let triggerType = 'none';
+            let action = 'none';
+            let arg = '';
+
+            if (context.payload.action === 'created') {
+              const firstLine = body
+                .split('\n')
+                .map(l => l.trim())
+                .find(l => l.length > 0) || '';
+
+              if (firstLine.startsWith('/')) {
+                const [rawCmd, ...rest] = firstLine.split(/\s+/);
+                const cmd = rawCmd.toLowerCase();
+                arg = rest.join(' ').trim();
+                triggerType = 'command';
+
+                if (cmd === '/help') action = 'help';
+                else if (cmd === '/blast-radius' || cmd === '/lineage') action = 'lineage';
+                else if (cmd === '/compile') action = 'compile';
+                else if (cmd === '/lint') action = arg.includes('--fix') ? 'lint_fix' : 'lint';
+                else if (cmd === '/suggest') action = 'suggest';
+                else if (cmd === '/rebuild-dashboard') action = 'rebuild_dashboard';
+                else if (cmd === '/draft') action = 'set_draft';
+                else if (cmd === '/ready') action = 'set_ready';
+                else if (cmd === '/toggle-draft') action = 'toggle_draft';
+                else action = 'unknown';
+              }
+            } else if (context.payload.action === 'edited' && body.includes(cardMarker)) {
+              triggerType = 'checkbox';
+              if (/- \[[xX]\] \*\*🛠️ Auto-Fix SQLX/.test(body)) action = 'lint_fix';
+              else if (/- \[[xX]\] \*\*💡 Post Inline Advisory/.test(body)) action = 'suggest';
+              else if (/- \[[xX]\] \*\*📊 Rebuild & Commit Dashboard/.test(body)) action = 'rebuild_dashboard';
+              else if (/- \[[xX]\] \*\*🔄 Refresh Lineage/.test(body)) action = 'refresh_card';
+              else if (/- \[[xX]\] \*\*🚦 Toggle Draft/.test(body)) action = 'toggle_draft';
+            }
+
+            core.setOutput('trigger_type', triggerType);
+            core.setOutput('action', action);
+            core.setOutput('arg', arg);
+            core.setOutput('comment_id', String(comment.id));
+
+            if (action === 'none') {
+              core.info('No PR ChatOps command or checkbox action detected.');
+              return;
+            }
+
+            // Acknowledge immediately with 👀 reaction
+            try {
+              await github.rest.reactions.createForIssueComment({
+                owner,
+                repo,
+                comment_id: comment.id,
+                content: 'eyes'
+              });
+            } catch (e) {
+              core.info(`Could not add eyes reaction: ${e.message}`);
+            }
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: prNumber
+            });
+
+            const canPush =
+              Boolean(pr.head?.repo?.full_name) &&
+              pr.head.repo.full_name === `${owner}/${repo}`;
+
+            core.setOutput('pr_state', pr.state);
+            core.setOutput('pr_draft', pr.draft ? 'true' : 'false');
+            core.setOutput('pr_node_id', pr.node_id);
+            core.setOutput('head_ref', pr.head.ref);
+            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('base_ref', pr.base.ref);
+            core.setOutput('can_push', canPush ? 'true' : 'false');
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner,
+              repo,
+              pull_number: prNumber,
+              per_page: 100
+            });
+            const filenames = files.map(f => f.filename).sort();
+            const changedSqlx = files
+              .filter(f => f.status !== 'removed' && f.filename.endsWith('.sqlx'))
+              .map(f => f.filename)
+              .sort();
+
+            fs.writeFileSync(
+              path.join(process.env.RUNNER_TEMP, 'changed-files.txt'),
+              filenames.join('\n') + (filenames.length ? '\n' : ''),
+              'utf8'
+            );
+            fs.writeFileSync(
+              path.join(process.env.RUNNER_TEMP, 'changed-sqlx.txt'),
+              changedSqlx.join('\n') + (changedSqlx.length ? '\n' : ''),
+              'utf8'
+            );
+            fs.writeFileSync(
+              path.join(process.env.RUNNER_TEMP, 'pr-files.json'),
+              JSON.stringify(files),
+              'utf8'
+            );
+
+            core.setOutput('sqlx_count', String(changedSqlx.length));
+            core.info(`Dispatched ${triggerType}:${action} (arg="${arg}") on PR #${prNumber} (canPush=${canPush})`);
+
+      - name: Handle /help or unknown command or closed/fork guard
+        id: quick_reply
+        if: >-
+          steps.parse.outputs.action == 'help' ||
+          steps.parse.outputs.action == 'unknown' ||
+          (steps.parse.outputs.action != 'none' && steps.parse.outputs.pr_state != 'open') ||
+          (steps.parse.outputs.action != 'none' && steps.parse.outputs.action != 'toggle_draft' && steps.parse.outputs.action != 'set_draft' && steps.parse.outputs.action != 'set_ready' && steps.parse.outputs.can_push != 'true')
+        uses: actions/github-script@v7
+        env:
+          ACTION: ${{ steps.parse.outputs.action }}
+          PR_STATE: ${{ steps.parse.outputs.pr_state }}
+          CAN_PUSH: ${{ steps.parse.outputs.can_push }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.issue.number;
+            const action = process.env.ACTION;
+
+            let body;
+            if (action === 'help' || action === 'unknown') {
+              body = [
+                action === 'unknown'
+                  ? '> [!NOTE]\n> Unrecognized command. Here are the available interactive PR commands:\n'
+                  : '### ⌨️ MonoRail Interactive PR Commands',
+                '',
+                '| Command | Action |',
+                '| :--- | :--- |',
+                '| `/help` | Show this command cheat sheet |',
+                '| `/blast-radius` or `/lineage [model]` | Render a live Mermaid lineage DAG + downstream, Malloy & assertion impact |',
+                '| `/compile <model>` | Compile Dataform & display fully-resolved BigQuery SQL + schema contract |',
+                '| `/lint` | Run SQLFluff on changed `.sqlx` files (check-only) and refresh the lint report |',
+                '| `/lint --fix` | Run SQLFluff auto-fix and commit standard formatting fixes to this PR branch |',
+                '| `/suggest` | Post one-click inline ````suggestion```` review comments on the PR diff |',
+                '| `/rebuild-dashboard` | Run `node dashboards/operations/build.cjs` and commit `dashboards/operations/index.html` |',
+                '| `/draft` · `/ready` · `/toggle-draft` | Switch PR between Draft and Ready for Review via GraphQL |',
+                '',
+                '> [!TIP]',
+                '> You can also trigger actions with **zero typing** by ticking checkboxes inside the **🚝 MonoRail PR Mission Control** card above!'
+              ].join('\n');
+            } else if (process.env.PR_STATE !== 'open') {
+              body = '> [!WARNING]\n> Interactive PR commands can only run while the pull request is **open**.';
+            } else {
+              body = '> [!WARNING]\n> For repository security, code-executing PR ChatOps commands only run on same-repository branches (not external forks).';
+            }
+
+            await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
+            core.setOutput('handled', 'true');
+
+      - name: Toggle PR Draft / Ready via GitHub GraphQL
+        id: draft_toggle
+        if: >-
+          steps.quick_reply.outputs.handled != 'true' &&
+          (steps.parse.outputs.action == 'toggle_draft' || steps.parse.outputs.action == 'set_draft' || steps.parse.outputs.action == 'set_ready')
+        uses: actions/github-script@v7
+        env:
+          ACTION: ${{ steps.parse.outputs.action }}
+          IS_DRAFT: ${{ steps.parse.outputs.pr_draft }}
+          PR_NODE_ID: ${{ steps.parse.outputs.pr_node_id }}
+          TRIGGER_TYPE: ${{ steps.parse.outputs.trigger_type }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.issue.number;
+            const action = process.env.ACTION;
+            const isDraft = process.env.IS_DRAFT === 'true';
+            const nodeId = process.env.PR_NODE_ID;
+
+            let targetDraft = isDraft;
+            if (action === 'toggle_draft') targetDraft = !isDraft;
+            else if (action === 'set_draft') targetDraft = true;
+            else if (action === 'set_ready') targetDraft = false;
+
+            let summary;
+            if (targetDraft === isDraft) {
+              summary = `PR is already **${isDraft ? 'Draft' : 'Ready for Review'}**`;
+            } else if (targetDraft) {
+              await github.graphql(
+                `mutation($id: ID!) { convertPullRequestToDraft(input: { pullRequestId: $id }) { pullRequest { isDraft } } }`,
+                { id: nodeId }
+              );
+              summary = 'Converted PR to **🚧 Draft**';
+            } else {
+              await github.graphql(
+                `mutation($id: ID!) { markPullRequestReadyForReview(input: { pullRequestId: $id }) { pullRequest { isDraft } } }`,
+                { id: nodeId }
+              );
+              summary = 'Marked PR **🚀 Ready for Review**';
+            }
+
+            core.setOutput('summary', summary);
+            if (process.env.TRIGGER_TYPE === 'command') {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: `🚦 ${summary} (requested by @${context.actor}).`
+              });
+            }
+
+      - name: Checkout PR branch for code actions
+        if: >-
+          steps.quick_reply.outputs.handled != 'true' &&
+          steps.parse.outputs.can_push == 'true' &&
+          contains(fromJSON('["lineage","compile","lint","lint_fix","suggest","rebuild_dashboard","refresh_card"]'), steps.parse.outputs.action)
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.parse.outputs.head_ref }}
+          fetch-depth: 0
+
+      - name: Set up Node.js (Dataform / Dashboard / Suggestions)
+        if: >-
+          steps.quick_reply.outputs.handled != 'true' &&
+          steps.parse.outputs.can_push == 'true' &&
+          contains(fromJSON('["lineage","compile","suggest","rebuild_dashboard","refresh_card"]'), steps.parse.outputs.action)
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Set up Python & SQLFluff
+        if: >-
+          steps.quick_reply.outputs.handled != 'true' &&
+          steps.parse.outputs.can_push == 'true' &&
+          contains(fromJSON('["lint","lint_fix","suggest"]'), steps.parse.outputs.action)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install SQLFluff
+        if: >-
+          steps.quick_reply.outputs.handled != 'true' &&
+          steps.parse.outputs.can_push == 'true' &&
+          contains(fromJSON('["lint","lint_fix","suggest"]'), steps.parse.outputs.action)
+        run: python -m pip install --upgrade pip && pip install sqlfluff==4.5.0
+
+      # --- ACTION: /lineage, /blast-radius, /compile, or refresh_card ---
+      - name: Run Dataform lineage or compile inspector
+        id: dataform_cmd
+        if: >-
+          steps.quick_reply.outputs.handled != 'true' &&
+          steps.parse.outputs.can_push == 'true' &&
+          contains(fromJSON('["lineage","compile","refresh_card"]'), steps.parse.outputs.action)
+        env:
+          ACTION: ${{ steps.parse.outputs.action }}
+          ARG: ${{ steps.parse.outputs.arg }}
+          BASE_REF: ${{ steps.parse.outputs.base_ref }}
+          HEAD_SHA: ${{ steps.parse.outputs.head_sha }}
+        run: |
+          npx --yes --package @dataform/cli@3.1.6 -- dataform compile --json > "$RUNNER_TEMP/head-compiled.json"
+
+          base_arg=()
+          if [ "$ACTION" != "compile" ] && git rev-parse --verify "origin/${BASE_REF}" >/dev/null 2>&1; then
+            if git worktree add --detach "$RUNNER_TEMP/base-tree" "origin/${BASE_REF}" >/dev/null 2>&1; then
+              if (cd "$RUNNER_TEMP/base-tree" && npx --yes --package @dataform/cli@3.1.6 -- dataform compile --json > "$RUNNER_TEMP/base-compiled.json" 2>/dev/null); then
+                base_arg=(--base "$RUNNER_TEMP/base-compiled.json")
+              fi
+              git worktree remove --force "$RUNNER_TEMP/base-tree" >/dev/null 2>&1 || true
+            fi
+          fi
+
+          if [ "$ACTION" = "compile" ]; then
+            if [ -z "$ARG" ]; then
+              printf '> [!NOTE]\n> Usage: `/compile <model>` — for example `/compile budget_variance` or `/compile department_scorecard`.\n' > "$RUNNER_TEMP/chatops-reply.md"
+            else
+              node scripts/pr-blast-radius.cjs \
+                --head "$RUNNER_TEMP/head-compiled.json" \
+                --mode compile \
+                --inspect "$ARG" \
+                --repo "${{ github.repository }}" \
+                --sha "$HEAD_SHA" \
+                --md-out "$RUNNER_TEMP/chatops-reply.md"
+            fi
+          else
+            inspect_arg=()
+            if [ -n "$ARG" ]; then
+              inspect_arg=(--inspect "$ARG")
+            fi
+            node scripts/pr-blast-radius.cjs \
+              --head "$RUNNER_TEMP/head-compiled.json" \
+              "${base_arg[@]}" \
+              --changed-files "$RUNNER_TEMP/changed-files.txt" \
+              "${inspect_arg[@]}" \
+              --repo "${{ github.repository }}" \
+              --sha "$HEAD_SHA" \
+              --md-out "$RUNNER_TEMP/chatops-reply.md" \
+              --json-out "$RUNNER_TEMP/blast-radius.json"
+          fi
+
+      - name: Post Dataform reply comment
+        if: >-
+          steps.quick_reply.outputs.handled != 'true' &&
+          steps.parse.outputs.can_push == 'true' &&
+          contains(fromJSON('["lineage","compile","refresh_card"]'), steps.parse.outputs.action)
+        uses: actions/github-script@v7
+        env:
+          ACTION: ${{ steps.parse.outputs.action }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.issue.number;
+            const md = fs.readFileSync(path.join(process.env.RUNNER_TEMP, 'chatops-reply.md'), 'utf8');
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: prNumber,
+              body: `${md}\n\n<sub>Triggered by @${context.actor} via \`pr-chatops.yml\`</sub>`
+            });
+
+      # --- ACTION: /lint or /lint --fix ---
+      - name: Run SQLFluff lint or auto-fix
+        id: sqlfluff_cmd
+        if: >-
+          steps.quick_reply.outputs.handled != 'true' &&
+          steps.parse.outputs.can_push == 'true' &&
+          contains(fromJSON('["lint","lint_fix"]'), steps.parse.outputs.action)
+        env:
+          ACTION: ${{ steps.parse.outputs.action }}
+          HEAD_REF: ${{ steps.parse.outputs.head_ref }}
+          HEAD_SHA: ${{ steps.parse.outputs.head_sha }}
+          SQLX_COUNT: ${{ steps.parse.outputs.sqlx_count }}
+        run: |
+          if [ "$SQLX_COUNT" -eq 0 ]; then
+            echo "summary=No changed .sqlx files to lint" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          fix_flag=()
+          if [ "$ACTION" = "lint_fix" ]; then
+            fix_flag=(--fix)
+          fi
+
+          python scripts/lint-sqlx.py \
+            --files-from "$RUNNER_TEMP/changed-sqlx.txt" \
+            "${fix_flag[@]}" \
+            --report-json "$RUNNER_TEMP/sqlx-lint-report.json" \
+            --suggestions-json "$RUNNER_TEMP/sqlx-suggestions.json"
+
+          lint_sha=""
+          if [ "$ACTION" = "lint_fix" ]; then
+            mapfile -t modified_files < <(git diff --name-only -- '*.sqlx')
+            if [ "${#modified_files[@]}" -gt 0 ]; then
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git add -- "${modified_files[@]}"
+              git commit -m "style(sqlx): auto-lint changed SQLX files via PR ChatOps"
+              git push origin "HEAD:${HEAD_REF}"
+              lint_sha=$(git rev-parse HEAD)
+              echo "summary=Auto-fixed & pushed ${#modified_files[@]} .sqlx file(s) (${lint_sha:0:7})" >> "$GITHUB_OUTPUT"
+            else
+              echo "summary=SQLFluff ran — all changed .sqlx files already clean" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "summary=Refreshed SQLFluff lint report for ${SQLX_COUNT} .sqlx file(s)" >> "$GITHUB_OUTPUT"
+          fi
+
+          target_sha="${lint_sha:-$HEAD_SHA}"
+          python scripts/lint-sqlx.py \
+            --render-comment "$RUNNER_TEMP/sqlx-lint-report.json" \
+            --comment-md "$RUNNER_TEMP/sqlx-lint-comment.md" \
+            --repo "${{ github.repository }}" \
+            --head-sha "$target_sha" \
+            --lint-commit-sha "$lint_sha"
+
+      - name: Update sticky SQLFluff PR comment
+        if: >-
+          steps.quick_reply.outputs.handled != 'true' &&
+          steps.parse.outputs.can_push == 'true' &&
+          contains(fromJSON('["lint","lint_fix"]'), steps.parse.outputs.action)
+        env:
+          SQLX_COUNT: ${{ steps.parse.outputs.sqlx_count }}
+          SUMMARY: ${{ steps.sqlfluff_cmd.outputs.summary }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.issue.number;
+
+            if (Number(process.env.SQLX_COUNT) === 0) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: '> [!NOTE]\n> No `.sqlx` files are modified in this PR — nothing for SQLFluff to lint.'
+              });
+              return;
+            }
+
+            const marker = '<!-- monorail-sqlfluff-lint -->';
+            const commentBody = fs.readFileSync(
+              path.join(process.env.RUNNER_TEMP, 'sqlx-lint-comment.md'),
+              'utf8'
+            );
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100
+            });
+            const existing = comments.find(c => (c.body || '').includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body: commentBody });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body: commentBody });
+            }
+
+      # --- ACTION: /suggest (One-Click Inline GitHub Review Suggestions!) ---
+      - name: Generate SQLFluff inline suggestions
+        if: >-
+          steps.quick_reply.outputs.handled != 'true' &&
+          steps.parse.outputs.can_push == 'true' &&
+          steps.parse.outputs.action == 'suggest' &&
+          steps.parse.outputs.sqlx_count != '0'
+        run: |
+          python scripts/lint-sqlx.py \
+            --files-from "$RUNNER_TEMP/changed-sqlx.txt" \
+            --suggest-standard \
+            --suggestions-json "$RUNNER_TEMP/sqlx-suggestions.json"
+
+      - name: Post one-click GitHub inline suggestion review comments
+        id: suggest_cmd
+        if: >-
+          steps.quick_reply.outputs.handled != 'true' &&
+          steps.parse.outputs.can_push == 'true' &&
+          steps.parse.outputs.action == 'suggest'
+        env:
+          HEAD_SHA: ${{ steps.parse.outputs.head_sha }}
+          SQLX_COUNT: ${{ steps.parse.outputs.sqlx_count }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const { partitionSuggestions, buildReviewBody } = require('./scripts/post-pr-suggestions.cjs');
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.issue.number;
+
+            if (Number(process.env.SQLX_COUNT) === 0) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: '> [!NOTE]\n> No `.sqlx` files are modified in this PR — no inline suggestions to generate.'
+              });
+              core.setOutput('summary', 'No changed .sqlx files');
+              return;
+            }
+
+            const suggestions = JSON.parse(
+              fs.readFileSync(path.join(process.env.RUNNER_TEMP, 'sqlx-suggestions.json'), 'utf8')
+            );
+            const prFiles = JSON.parse(
+              fs.readFileSync(path.join(process.env.RUNNER_TEMP, 'pr-files.json'), 'utf8')
+            );
+
+            if (suggestions.length === 0) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: '> [!TIP]\n> ✨ Zero fixable standard or advisory (`AM03`, `AM05`, `ST09`) suggestions needed across the changed `.sqlx` files!'
+              });
+              core.setOutput('summary', 'Zero suggestions needed (clean!)');
+              return;
+            }
+
+            const { inlineComments, outOfDiff } = partitionSuggestions(suggestions, prFiles);
+            const reviewBody = buildReviewBody({
+              inlineComments,
+              outOfDiff,
+              modeLabel: 'SQLFluff One-Click Suggestions'
+            });
+
+            if (inlineComments.length > 0) {
+              await github.rest.pulls.createReview({
+                owner,
+                repo,
+                pull_number: prNumber,
+                commit_id: process.env.HEAD_SHA,
+                event: 'COMMENT',
+                body: reviewBody,
+                comments: inlineComments
+              });
+              core.setOutput('summary', `Posted ${inlineComments.length} inline suggestion(s) (+${outOfDiff.length} outside diff)`);
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: reviewBody
+              });
+              core.setOutput('summary', `${outOfDiff.length} suggestion(s) on untouched lines outside diff`);
+            }
+
+      # --- ACTION: /rebuild-dashboard ---
+      - name: Rebuild Operations Dashboard bundle & push if changed
+        id: rebuild_dash
+        if: >-
+          steps.quick_reply.outputs.handled != 'true' &&
+          steps.parse.outputs.can_push == 'true' &&
+          steps.parse.outputs.action == 'rebuild_dashboard'
+        env:
+          HEAD_REF: ${{ steps.parse.outputs.head_ref }}
+        run: |
+          node dashboards/operations/build.cjs
+          if git diff --quiet -- dashboards/operations/index.html; then
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+            echo "summary=Dashboard bundle already up to date" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- dashboards/operations/index.html
+          git commit -m "chore(dashboards): rebuild operations bundle via PR ChatOps"
+          git push origin "HEAD:${HEAD_REF}"
+          new_sha=$(git rev-parse --short HEAD)
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+          echo "sha=${new_sha}" >> "$GITHUB_OUTPUT"
+          echo "summary=Rebuilt & pushed dashboards/operations/index.html (${new_sha})" >> "$GITHUB_OUTPUT"
+
+      - name: Post dashboard rebuild reply
+        if: >-
+          steps.quick_reply.outputs.handled != 'true' &&
+          steps.parse.outputs.can_push == 'true' &&
+          steps.parse.outputs.action == 'rebuild_dashboard' &&
+          steps.parse.outputs.trigger_type == 'command'
+        env:
+          PUSHED: ${{ steps.rebuild_dash.outputs.pushed }}
+          SHA: ${{ steps.rebuild_dash.outputs.sha }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.issue.number;
+            const body = process.env.PUSHED === 'true'
+              ? `📊 Rebuilt and pushed \`dashboards/operations/index.html\` in commit \`${process.env.SHA}\`!`
+              : '📊 `dashboards/operations/index.html` is already up to date — no commit needed.';
+            await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
+
+      # --- FINALIZE: Uncheck Control Panel checkboxes, append Action Log, add 🚀/😕 reaction ---
+      - name: Reset Control Panel checkboxes & update reaction
+        if: always() && steps.parse.outputs.action != 'none'
+        env:
+          TRIGGER_TYPE: ${{ steps.parse.outputs.trigger_type }}
+          ACTION: ${{ steps.parse.outputs.action }}
+          COMMENT_ID: ${{ steps.parse.outputs.comment_id }}
+          JOB_STATUS: ${{ job.status }}
+          SUMMARY_DRAFT: ${{ steps.draft_toggle.outputs.summary }}
+          SUMMARY_LINT: ${{ steps.sqlfluff_cmd.outputs.summary }}
+          SUMMARY_SUGGEST: ${{ steps.suggest_cmd.outputs.summary }}
+          SUMMARY_DASH: ${{ steps.rebuild_dash.outputs.summary }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.issue.number;
+            const commentId = Number(process.env.COMMENT_ID);
+            const action = process.env.ACTION;
+            const ok = process.env.JOB_STATUS === 'success';
+
+            // Update reaction on triggering comment
+            try {
+              await github.rest.reactions.createForIssueComment({
+                owner,
+                repo,
+                comment_id: commentId,
+                content: ok ? 'rocket' : 'confused'
+              });
+            } catch (e) {
+              core.info(`Could not add completion reaction: ${e.message}`);
+            }
+
+            // Reset checkboxes and record entry in the sticky Mission Control Card
+            const marker = '<!-- monorail-pr-lifecycle-card -->';
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100
+            });
+            const card = comments.find(c => (c.body || '').includes(marker));
+            if (!card) return;
+
+            let updatedBody = card.body.replace(
+              /- \[[xX]\] (\*\*(?:🛠️ Auto-Fix SQLX|💡 Post Inline Advisory|📊 Rebuild & Commit Dashboard|🔄 Refresh Lineage|🚦 Toggle Draft))/g,
+              '- [ ] $1'
+            );
+
+            const summaryText =
+              process.env.SUMMARY_DRAFT ||
+              process.env.SUMMARY_LINT ||
+              process.env.SUMMARY_SUGGEST ||
+              process.env.SUMMARY_DASH ||
+              `Completed \`${action}\``;
+
+            const stamp = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
+            const entry = `- ${ok ? '🚀' : '❌'} \`${stamp}\` · @${context.actor} · **\`${action}\`** — ${summaryText}`;
+
+            const logRe = /(<!-- monorail-action-log-start -->)([\s\S]*?)(<!-- monorail-action-log-end -->)/;
+            if (logRe.test(updatedBody)) {
+              updatedBody = updatedBody.replace(logRe, (_, start, inner, end) => {
+                const prev = inner
+                  .trim()
+                  .split('\n')
+                  .filter(l => l.startsWith('- '))
+                  .slice(0, 7);
+                return `${start}\n${[entry, ...prev].join('\n')}\n${end}`;
+              });
+            }
+
+            if (updatedBody !== card.body) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: card.id,
+                body: updatedBody
+              });
+            }

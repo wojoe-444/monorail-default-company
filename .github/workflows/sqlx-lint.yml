@@ -86,6 +86,7 @@ jobs:
             --files-from "$RUNNER_TEMP/changed-sqlx.txt" \
             --fix \
             --report-json "$RUNNER_TEMP/sqlx-lint-report.json" \
+            --suggestions-json "$RUNNER_TEMP/sqlx-suggestions.json" \
             --annotations
 
       - name: Commit and push SQLX auto-lint fixes to PR branch

@@ -12,6 +12,7 @@ exact 1-based ``.sqlx`` line numbers.
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import os
 import re
@@ -24,6 +25,8 @@ from typing import Any
 from sqlfluff.core import FluffConfig, Linter
 
 COMMENT_MARKER = "<!-- monorail-sqlfluff-lint -->"
+
+DEFAULT_SUGGEST_ADVISORY_RULES = ["AM03", "AM05", "ST09"]
 
 DEFAULT_ADVISORY_RULES = [
     "AL04",
@@ -843,6 +846,171 @@ def lint_sqlx_file(
     )
 
 
+def _format_suggestion_fence(lines_to_suggest: list[str]) -> str:
+    body = "\n".join(lines_to_suggest)
+    fence = "````" if "```" in body else "```"
+    if body:
+        return f"{fence}suggestion\n{body}\n{fence}"
+    return f"{fence}suggestion\n{fence}"
+
+
+def build_github_suggestions(
+    file_path: Path,
+    repo_root: Path,
+    suggest_linter: Linter,
+    rule_meta: dict[str, dict[str, Any]],
+    *,
+    kind_label: str = "Advisory",
+) -> list[dict[str, Any]]:
+    """Dry-run a fixable SQLFluff ruleset and return exact GitHub inline `suggestion` payloads."""
+    rel_path = file_path.relative_to(repo_root).as_posix()
+    try:
+        original_content = file_path.read_text(encoding="utf-8")
+    except Exception:
+        return []
+
+    normalized = original_content.replace("\r\n", "\n")
+    segments = split_sqlx(normalized)
+    sql_segments = [s for s in segments if s.kind in ("sql", "operation_sql")]
+    if not sql_segments:
+        return []
+
+    orig_lines = normalized.splitlines()
+    new_segment_texts: list[str] = []
+    line_to_rules: dict[int, set[str]] = {}
+
+    for idx, seg in enumerate(segments):
+        if seg.kind not in ("sql", "operation_sql"):
+            new_segment_texts.append(seg.text)
+            continue
+
+        leading_ws, core, trailing_ws = _extract_leading_and_trailing_ws(seg.text)
+        if not core:
+            new_segment_texts.append(seg.text)
+            continue
+
+        leading_newlines = leading_ws.count("\n")
+
+        if seg.kind == "operation_sql":
+            core_lines = core.splitlines()
+            non_empty = [ln for ln in core_lines if ln.strip()]
+            min_indent = min(
+                (len(ln) - len(ln.lstrip(" ")) for ln in non_empty), default=0
+            )
+            working_core = "\n".join(
+                ln[min_indent:] if len(ln) >= min_indent else ln for ln in core_lines
+            )
+        else:
+            working_core = core
+
+        masked_sql, placeholder_map, line_map = _mask_sqlx_expressions(
+            working_core, when_as_comment=True
+        )
+        masked_input = masked_sql + "\n"
+
+        pre_res = suggest_linter.lint_string(masked_input, fix=False)
+        for v in pre_res.get_violations():
+            code = v.rule_code()
+            if code in ("PRS", "TMP"):
+                continue
+            masked_line = max(1, int(v.line_no))
+            lm_idx = min(masked_line - 1, len(line_map) - 1)
+            orig_sql_line = line_map[lm_idx] if line_map else masked_line
+            abs_line = seg.start_line + leading_newlines + (orig_sql_line - 1)
+            line_to_rules.setdefault(abs_line, set()).add(code)
+
+        fix_res = suggest_linter.lint_string(masked_input, fix=True)
+        fixed_masked = fix_res.tree.raw.rstrip("\n")
+        restored_core, ok = _unmask_sqlx_expressions(fixed_masked, placeholder_map)
+        if not ok or restored_core == working_core:
+            new_segment_texts.append(seg.text)
+            continue
+
+        if seg.kind == "operation_sql":
+            # Keep original indentation style cleanly
+            indented = "\n".join(
+                ("    " + ln if ln.strip() else "") for ln in restored_core.splitlines()
+            )
+            new_segment_texts.append(f"{leading_ws}{indented}{trailing_ws}")
+        else:
+            new_segment_texts.append(f"{leading_ws}{restored_core}{trailing_ws}")
+
+    suggested_text = "".join(new_segment_texts)
+    if suggested_text == normalized:
+        return []
+
+    suggested_lines = suggested_text.splitlines()
+    matcher = difflib.SequenceMatcher(None, orig_lines, suggested_lines)
+    suggestions: list[dict[str, Any]] = []
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            continue
+
+        if tag == "insert":
+            # GitHub suggestions must replace at least one existing line.
+            if i1 > 0:
+                start_idx = i1 - 1
+                end_idx = i1
+                replacement = [orig_lines[start_idx], *suggested_lines[j1:j2]]
+            elif orig_lines:
+                start_idx = 0
+                end_idx = 1
+                replacement = [*suggested_lines[j1:j2], orig_lines[0]]
+            else:
+                continue
+        else:
+            start_idx = i1
+            end_idx = i2
+            replacement = suggested_lines[j1:j2]
+
+        start_line = start_idx + 1
+        end_line = end_idx  # inclusive 1-based line number
+
+        matched_rules: set[str] = set()
+        for ln in range(start_line, end_line + 1):
+            matched_rules.update(line_to_rules.get(ln, set()))
+        rule_codes = sorted(matched_rules)
+
+        if rule_codes:
+            rule_header = ", ".join(f"`{c}`" for c in rule_codes)
+            guidance_bullets = []
+            for code in rule_codes:
+                info = RULE_GUIDANCE.get(code)
+                if info:
+                    guidance_bullets.append(f"- **`{code}` (`{info['name']}`):** {info['guidance']}")
+                else:
+                    rname = rule_meta.get(code, {}).get("name", code)
+                    guidance_bullets.append(f"- **`{code}` (`{rname}`):** Auto-generated SQLFluff fix.")
+            guidance_md = "\n".join(guidance_bullets)
+        else:
+            rule_header = f"{kind_label} formatting"
+            guidance_md = "- Suggested SQLFluff formatting adjustment."
+
+        body = "\n".join(
+            [
+                f"💡 **SQLFluff {kind_label} Suggestion** ({rule_header})",
+                "",
+                guidance_md,
+                "",
+                _format_suggestion_fence(replacement),
+            ]
+        )
+
+        suggestions.append(
+            {
+                "path": rel_path,
+                "start_line": start_line,
+                "line": end_line,
+                "rule_codes": rule_codes,
+                "kind": kind_label.lower(),
+                "body": body,
+            }
+        )
+
+    return suggestions
+
+
 def _escape_md_cell(text: str, max_len: int = 180) -> str:
     cleaned = " ".join(text.replace("|", "\\|").split())
     if len(cleaned) > max_len:
@@ -869,6 +1037,7 @@ def render_pr_comment(
     head_sha: str = "",
     lint_commit_sha: str = "",
     fork_pr: bool = False,
+    suggestion_count: int = 0,
 ) -> str:
     """Render a detailed, structured GitHub PR Markdown comment."""
     files: list[dict[str, Any]] = report.get("files", [])
@@ -895,21 +1064,53 @@ def render_pr_comment(
             return f"[`{path}`]({blob_base}/{path})"
         return f"`{path}`"
 
-    # Headline status
+    # Quality meter across checked SQLX files
+    penalty = total_unfixable * 20 + total_errors * 35 + total_advisory * 4
+    health_score = max(0, 100 - min(100, penalty)) if checked_files else 100
+    filled_blocks = round(health_score / 20)
+    block_emoji = "🟩" if health_score >= 85 else "🟨" if health_score >= 60 else "🟥"
+    health_bar = (block_emoji * filled_blocks) + ("⬜" * (5 - filled_blocks))
+
+    # Headline status + GitHub Alert callout
     if total_unfixable > 0 or total_errors > 0:
-        headline_badge = "Action Required — Unfixable Standard Violations"
+        headline_badge = "🚨 Action Required — Unfixable Standard Violations"
+        alert_kind = "CAUTION"
+        alert_text = (
+            f"Found **{total_unfixable}** unfixable standard violation(s) and **{total_errors}** "
+            f"file error(s) that block CI. Review the exact line links below."
+        )
     elif total_advisory > 0 and fixed_files:
-        headline_badge = "Auto-Linted with Advisory Warnings"
+        headline_badge = "🛠️ Auto-Linted with Advisory Warnings"
+        alert_kind = "TIP"
+        alert_text = (
+            f"Auto-fixed **{total_fixed_violations}** standard formatting issue(s) across "
+            f"**{len(fixed_files)}** file(s). **{total_advisory}** non-blocking advisory warning(s) remain for review."
+        )
     elif total_advisory > 0:
-        headline_badge = "Standard Checks Passed — Advisory Warnings Found"
+        headline_badge = "⚠️ Standard Checks Passed — Advisory Warnings Found"
+        alert_kind = "NOTE"
+        alert_text = (
+            f"All enforced `.sqlfluff` rules passed! **{total_advisory}** advisory warning(s) "
+            f"are surfaced below for optional cleanup."
+        )
     elif fixed_files:
-        headline_badge = "Auto-Linted & Clean"
+        headline_badge = "✨ Auto-Linted & Clean"
+        alert_kind = "TIP"
+        alert_text = (
+            f"Auto-fixed **{total_fixed_violations}** standard formatting issue(s) across "
+            f"**{len(fixed_files)}** file(s). Zero remaining violations!"
+        )
     else:
-        headline_badge = "All Checks Clean"
+        headline_badge = "✨ All Checks Clean"
+        alert_kind = "TIP"
+        alert_text = "Every changed `.sqlx` file passed all standard and advisory SQLFluff checks."
 
     lines: list[str] = [
         COMMENT_MARKER,
-        f"### SQLFluff SQLX Lint Report — {headline_badge}",
+        f"### 🧹 SQLFluff SQLX Lint Report — {headline_badge}",
+        "",
+        f"> [!{alert_kind}]",
+        f"> {alert_text}",
         "",
     ]
 
@@ -922,15 +1123,17 @@ def render_pr_comment(
             else f"`{short_sha}`"
         )
         lines.append(
-            f"> Committed auto-lint fixes for **{len(fixed_files)}** `.sqlx` file(s) "
+            f"> [!NOTE]\n"
+            f"> 🤖 Committed auto-lint fixes for **{len(fixed_files)}** `.sqlx` file(s) "
             f"({total_fixed_violations} standard rule fix(es)) to this PR branch in {commit_ref}."
         )
         lines.append("")
     elif fork_pr and fixed_files:
         lines.append(
+            f"> [!WARNING]\n"
             f"> **Fork PR detected:** Found **{total_fixed_violations}** auto-fixable standard "
             f"issue(s) across **{len(fixed_files)}** file(s), but GitHub Actions cannot push "
-            f"commits to a fork branch. Run locally to apply fixes:\n"
+            f"commits to a fork branch. One-click inline `suggestion` comments have been posted on your diff where possible, or run locally:\n"
             f"> ```sh\n"
             f"> uv run --with sqlfluff==4.5.0 python scripts/lint-sqlx.py --fix {' '.join(f['path'] for f in fixed_files)}\n"
             f"> ```"
@@ -940,12 +1143,13 @@ def render_pr_comment(
     # Summary table
     lines.extend(
         [
-            "| Metric | Count | Details |",
+            "| Metric | Result | Details |",
             "| :--- | :---: | :--- |",
-            f"| **SQLX Files Checked** | **{len(checked_files)}** | {len(skipped_files)} skipped (declarations / no SQL body) |",
-            f"| **Auto-Fixed Files** | **{len(fixed_files)}** | {total_fixed_violations} standard violation(s) fixed automatically |",
-            f"| **Unfixable Standard Violations** | **{total_unfixable}** | Standard `.sqlfluff` rules or parse errors SQLFluff could not auto-fix |",
-            f"| **Advisory Lint Warnings** | **{total_advisory}** | Non-blocking `.sqlfluff` advisory rules for manual review |",
+            f"| **SQLX Health Score** | {health_bar} **{health_score}%** | Based on post-fix violations across changed models |",
+            f"| **📄 SQLX Files Checked** | **{len(checked_files)}** | {len(skipped_files)} skipped (declarations / no SQL body) |",
+            f"| **🛠️ Auto-Fixed Files** | **{len(fixed_files)}** | {total_fixed_violations} standard violation(s) fixed automatically |",
+            f"| **🚨 Unfixable Standard** | **{total_unfixable}** | Blocking `.sqlfluff` standard rules or parse errors |",
+            f"| **⚠️ Advisory Warnings** | **{total_advisory}** | Non-blocking `.sqlfluff` advisory rules for review{f' · 💡 **{suggestion_count}** one-click suggestion(s) available via `/suggest`' if suggestion_count > 0 else ''} |",
             "",
         ]
     )
@@ -954,7 +1158,7 @@ def render_pr_comment(
     if fixed_files:
         lines.extend(
             [
-                "#### Auto-Fixed Standard Rules",
+                "#### 🛠️ Auto-Fixed Standard Rules",
                 "",
                 "| File | Fixed Rules |",
                 "| :--- | :--- |",
@@ -975,7 +1179,7 @@ def render_pr_comment(
     if unfixable_files:
         lines.extend(
             [
-                "#### Unfixable Standard Violations & Parse Errors (Action Required)",
+                "#### 🚨 Unfixable Standard Violations & Parse Errors (Action Required)",
                 "",
                 "These items are part of the enforced `.sqlfluff` standard ruleset (or SQL parse errors) and **could not be changed automatically** by `sqlfluff fix`.",
                 "",
@@ -1009,9 +1213,9 @@ def render_pr_comment(
 
         lines.extend(
             [
-                "#### Advisory Lint Warnings (Not Auto-Modified)",
+                "#### ⚠️ Advisory Lint Warnings (Not Auto-Modified)",
                 "",
-                "These warnings come from the `.sqlfluff` advisory ruleset (`AL04, AM01, AM03, AM04, AM05, AM06, RF02, RF04, ST03, ST05, ST09, ST11`). SQLFluff flags them for manual review rather than changing them automatically because they can affect query semantics, schema contracts, or readability.",
+                "These warnings come from the `.sqlfluff` advisory ruleset (`AL04, AM01, AM03, AM04, AM05, AM06, RF02, RF04, ST03, ST05, ST09, ST11`). SQLFluff flags them for manual review rather than auto-committing them. Comment `/suggest` (or tick the suggestion checkbox on the PR Mission Control card) to post one-click GitHub `suggestion` buttons for fixable advisory rules (`AM03`, `AM05`, `ST09`)!",
                 "",
                 "| Rule | Name | Count | Why Manual / Recommended Fix |",
                 "| :--- | :--- | :---: | :--- |",
@@ -1094,15 +1298,16 @@ def render_pr_comment(
     adv_rules = ", ".join(report.get("advisory_rules", []))
     lines.extend(
         [
-            "<details><summary>Active <code>.sqlfluff</code> policy</summary>",
+            "<details><summary>⚙️ Active <code>.sqlfluff</code> policy &amp; interactive commands</summary>",
             "",
             f"- **SQLFluff version:** `{sqlfluff_ver}` · **Dialect:** `bigquery` · **Indent:** `4 spaces` · **Commas:** `trailing`",
             f"- **Auto-fix standard rules:** `{std_rules}`",
             f"- **Advisory warning rules:** `{adv_rules}`",
+            "- **Interactive PR commands:** `/suggest` (post one-click GitHub suggestions) · `/lint --fix` (re-run & commit) · `/compile <model>` (inspect compiled BigQuery SQL)",
             "",
             "</details>",
             "",
-            "<sub>Maintained automatically by `sqlx-lint.yml` using `.sqlfluff`</sub>",
+            "<sub>🧹 Maintained automatically by `sqlx-lint.yml` using `.sqlfluff`</sub>",
         ]
     )
 
@@ -1201,6 +1406,27 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Exit non-zero if any unfixable standard violations or parse errors remain.",
     )
+    parser.add_argument(
+        "--suggestions-json",
+        type=Path,
+        help="Write GitHub inline PR `suggestion` review comment payloads to this JSON file.",
+    )
+    parser.add_argument(
+        "--suggest-rules",
+        default=",".join(DEFAULT_SUGGEST_ADVISORY_RULES),
+        help="Comma-separated fixable advisory rules to include in --suggestions-json (default: AM03,AM05,ST09).",
+    )
+    parser.add_argument(
+        "--suggest-standard",
+        action="store_true",
+        help="Also generate inline GitHub `suggestion` payloads for standard rules (useful on fork PRs or --no-fix runs).",
+    )
+    parser.add_argument(
+        "--suggestion-count",
+        type=int,
+        default=0,
+        help="Optional count of available one-click suggestions to highlight in --render-comment mode.",
+    )
     args = parser.parse_args(argv)
 
     # Render-only mode (used after git commit & push so comment includes commit SHA).
@@ -1212,6 +1438,7 @@ def main(argv: list[str] | None = None) -> int:
             head_sha=args.head_sha,
             lint_commit_sha=args.lint_commit_sha,
             fork_pr=args.fork_pr,
+            suggestion_count=args.suggestion_count or report.get("summary", {}).get("suggestion_count", 0),
         )
         if args.comment_md:
             args.comment_md.write_text(md, encoding="utf-8")
@@ -1284,6 +1511,43 @@ def main(argv: list[str] | None = None) -> int:
         )
         results.append(res)
 
+    suggestions: list[dict[str, Any]] = []
+    if args.suggestions_json:
+        suggest_rules = [
+            r.strip().upper() for r in args.suggest_rules.split(",") if r.strip()
+        ]
+        if args.suggest_standard:
+            for path in target_paths:
+                suggestions.extend(
+                    build_github_suggestions(
+                        path,
+                        repo_root,
+                        std_linter,
+                        std_meta,
+                        kind_label="Standard",
+                    )
+                )
+        if suggest_rules:
+            sug_cfg = FluffConfig.from_path(
+                str(repo_root), overrides={"rules": ",".join(suggest_rules)}
+            )
+            sug_linter = Linter(config=sug_cfg)
+            sug_meta = _build_rule_metadata(sug_linter)
+            for path in target_paths:
+                suggestions.extend(
+                    build_github_suggestions(
+                        path,
+                        repo_root,
+                        sug_linter,
+                        sug_meta,
+                        kind_label="Advisory",
+                    )
+                )
+        args.suggestions_json.parent.mkdir(parents=True, exist_ok=True)
+        args.suggestions_json.write_text(
+            json.dumps(suggestions, indent=2), encoding="utf-8"
+        )
+
     report = {
         "sqlfluff_version": getattr(sqlfluff, "__version__", "unknown"),
         "standard_rules": sorted(std_meta.keys()),
@@ -1296,6 +1560,7 @@ def main(argv: list[str] | None = None) -> int:
             "unfixable_standard_count": sum(len(r.unfixable_standard) for r in results),
             "advisory_warning_count": sum(len(r.advisory_warnings) for r in results),
             "error_files": sum(1 for r in results if r.status == "error"),
+            "suggestion_count": len(suggestions),
         },
         "files": [asdict(r) for r in results],
     }
@@ -1311,6 +1576,7 @@ def main(argv: list[str] | None = None) -> int:
             head_sha=args.head_sha,
             lint_commit_sha=args.lint_commit_sha,
             fork_pr=args.fork_pr,
+            suggestion_count=len(suggestions),
         )
         args.comment_md.parent.mkdir(parents=True, exist_ok=True)
         args.comment_md.write_text(md, encoding="utf-8")

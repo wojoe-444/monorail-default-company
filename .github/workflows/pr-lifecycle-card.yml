@@ -1,36 +1,130 @@
-name: PR Lifecycle Dashboard Card
+name: PR Lifecycle Mission Control
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, edited]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft, edited]
 
 permissions:
   contents: read
   pull-requests: write
   issues: write
 
+concurrency:
+  group: pr-lifecycle-card-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
-  pr-summary-card:
+  pr-mission-control:
     if: github.event.sender.type != 'Bot'
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect PR Scope & Update Sticky Lifecycle Card
+      - name: Checkout PR head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Collect PR file scope
+        id: scope
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
+            const path = require('path');
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner,
+              repo,
+              pull_number: pr.number,
+              per_page: 100
+            });
+
+            const filenames = files.map(f => f.filename).sort();
+            fs.writeFileSync(
+              path.join(process.env.RUNNER_TEMP, 'changed-files.txt'),
+              filenames.join('\n') + (filenames.length ? '\n' : ''),
+              'utf8'
+            );
+            fs.writeFileSync(
+              path.join(process.env.RUNNER_TEMP, 'pr-files.json'),
+              JSON.stringify(files),
+              'utf8'
+            );
+
+            const touchesWarehouse = filenames.some(
+              f => f.endsWith('.sqlx') || f.endsWith('.malloy') || f === 'workflow_settings.yaml'
+            );
+            const canWrite =
+              Boolean(pr.head?.repo?.full_name) &&
+              pr.head.repo.full_name === `${owner}/${repo}`;
+
+            core.setOutput('touches_warehouse', touchesWarehouse ? 'true' : 'false');
+            core.setOutput('can_write', canWrite ? 'true' : 'false');
+
+      - name: Set up Node.js for Dataform lineage analysis
+        if: steps.scope.outputs.touches_warehouse == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Compile Dataform head & base graphs and compute blast radius
+        if: steps.scope.outputs.touches_warehouse == 'true'
+        id: lineage
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set +e
+          npx --yes --package @dataform/cli@3.1.6 -- dataform compile --json > "$RUNNER_TEMP/head-compiled.json" 2> "$RUNNER_TEMP/head-compile.err"
+          head_rc=$?
+          set -e
+
+          if [ "$head_rc" -ne 0 ]; then
+            echo "compile_ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "compile_ok=true" >> "$GITHUB_OUTPUT"
+
+          # Best-effort base branch compile for schema & contract diff
+          base_arg=()
+          if git rev-parse --verify "origin/${BASE_REF}" >/dev/null 2>&1; then
+            if git worktree add --detach "$RUNNER_TEMP/base-tree" "origin/${BASE_REF}" >/dev/null 2>&1; then
+              if (cd "$RUNNER_TEMP/base-tree" && npx --yes --package @dataform/cli@3.1.6 -- dataform compile --json > "$RUNNER_TEMP/base-compiled.json" 2>/dev/null); then
+                base_arg=(--base "$RUNNER_TEMP/base-compiled.json")
+              fi
+              git worktree remove --force "$RUNNER_TEMP/base-tree" >/dev/null 2>&1 || true
+            fi
+          fi
+
+          node scripts/pr-blast-radius.cjs \
+            --head "$RUNNER_TEMP/head-compiled.json" \
+            "${base_arg[@]}" \
+            --changed-files "$RUNNER_TEMP/changed-files.txt" \
+            --repo "${{ github.repository }}" \
+            --sha "$HEAD_SHA" \
+            --md-out "$RUNNER_TEMP/blast-radius.md" \
+            --json-out "$RUNNER_TEMP/blast-radius.json"
+
+      - name: Render & Update Sticky PR Mission Control Card
+        uses: actions/github-script@v7
+        env:
+          TOUCHES_WAREHOUSE: ${{ steps.scope.outputs.touches_warehouse }}
+          COMPILE_OK: ${{ steps.lineage.outputs.compile_ok }}
+          CAN_WRITE: ${{ steps.scope.outputs.can_write }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
             const { owner, repo } = context.repo;
             const pr = context.payload.pull_request;
             const prNumber = pr.number;
             const marker = '<!-- monorail-pr-lifecycle-card -->';
 
-            const files = await github.paginate(github.rest.pulls.listFiles, {
-              owner,
-              repo,
-              pull_number: prNumber,
-              per_page: 100
-            });
-
+            const files = JSON.parse(
+              fs.readFileSync(path.join(process.env.RUNNER_TEMP, 'pr-files.json'), 'utf8')
+            );
             const filenames = files.map(f => f.filename);
             const totalAdditions = files.reduce((s, f) => s + f.additions, 0);
             const totalDeletions = files.reduce((s, f) => s + f.deletions, 0);
@@ -43,52 +137,162 @@ jobs:
             if (filenames.some(f => f.startsWith('definitions/ops_reporting/'))) areaLabels.add('area:ops-reporting');
             if (filenames.some(f => f.startsWith('definitions/org_reporting/'))) areaLabels.add('area:org-reporting');
             if (filenames.some(f => f.startsWith('definitions/external_sources/'))) areaLabels.add('area:external-sources');
+            if (filenames.some(f => f.startsWith('definitions/cta_'))) areaLabels.add('area:cta-analytics');
             if (filenames.some(f => f.startsWith('dashboards/'))) areaLabels.add('area:dashboards');
             if (filenames.some(f => f.startsWith('models/malloy/'))) areaLabels.add('area:malloy');
 
-            if (areaLabels.size > 0) {
-              await github.rest.issues.addLabels({
-                owner,
-                repo,
-                issue_number: prNumber,
-                labels: [...areaLabels]
-              });
+            if (areaLabels.size > 0 && process.env.CAN_WRITE === 'true') {
+              try {
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  labels: [...areaLabels]
+                });
+              } catch (err) {
+                core.info(`Skipping label sync: ${err.message}`);
+              }
             }
 
-            // Check lifecycle hygiene
+            // Lifecycle hygiene checks
             const body = pr.body || '';
             const linkedIssueMatch = body.match(/(?:closes|fixes|resolves)\s+#(\d+)/i);
             const hasLinkedIssue = Boolean(linkedIssueMatch);
-            const touchedDashSource = filenames.some(f => f.startsWith('dashboards/operations/') && f !== 'dashboards/operations/index.html');
+            const touchedDashSource = filenames.some(
+              f => f.startsWith('dashboards/operations/') && f !== 'dashboards/operations/index.html'
+            );
             const rebuiltBundle = filenames.includes('dashboards/operations/index.html');
-            const sizeStatus = totalChanged <= 300 ? 'Optimal (<= 300 LOC)' : totalChanged <= 600 ? 'Medium (301–600 LOC)' : 'Large (> 600 LOC — consider splitting)';
+            const touchedSqlx = filenames.some(f => f.endsWith('.sqlx'));
+            const estMinutes = Math.max(2, Math.round(totalChanged / 35) + files.length);
+            const sizeBadge =
+              totalChanged <= 120 ? '🟢 XS/S' :
+              totalChanged <= 300 ? '🟢 Optimal' :
+              totalChanged <= 600 ? '🟡 Medium' : '🟠 Large';
 
-            const cardBody = [
-              marker,
-              `### MonoRail PR Lifecycle Readiness`,
-              ``,
-              `| Check | Status | Details |`,
-              `| :--- | :--- | :--- |`,
-              `| **Linked Issue** | ${hasLinkedIssue ? 'PASS' : 'RECOMMENDED'} | ${hasLinkedIssue ? `Linked via \`${linkedIssueMatch[0]}\`` : 'Add `Closes #<issue>` to auto-close the tracking issue on merge'} |`,
-              `| **PR Size** | ${totalChanged <= 300 ? 'PASS' : 'INFO'} | **+${totalAdditions} / -${totalDeletions}** across ${files.length} file(s) — ${sizeStatus} |`,
-              `| **PR State** | ${pr.draft ? 'DRAFT' : 'READY'} | ${pr.draft ? 'Draft PR — early feedback mode' : 'Ready for peer review & CI gates'} |`,
-              `| **Impacted Areas** | INFO | ${areaLabels.size ? [...areaLabels].map(a => `\`${a}\``).join(', ') : '`general / repo config`'} |`,
-              touchedDashSource ? `| **Dashboard Bundle** | ${rebuiltBundle ? 'PASS' : 'CHECK'} | ${rebuiltBundle ? '`dashboards/operations/index.html` updated' : 'Dashboard source changed — ensure `node dashboards/operations/build.cjs` was run'} |` : null,
-              ``,
-              `<sub>Maintained automatically by \`pr-lifecycle-card.yml\`</sub>`
-            ].filter(Boolean).join('\n');
+            // Load blast-radius results if computed
+            let blastMd = '';
+            let blastSummary = null;
+            const blastMdPath = path.join(process.env.RUNNER_TEMP, 'blast-radius.md');
+            const blastJsonPath = path.join(process.env.RUNNER_TEMP, 'blast-radius.json');
+            if (fs.existsSync(blastMdPath)) {
+              blastMd = fs.readFileSync(blastMdPath, 'utf8').trim();
+            }
+            if (fs.existsSync(blastJsonPath)) {
+              blastSummary = JSON.parse(fs.readFileSync(blastJsonPath, 'utf8'));
+            }
 
-            const { data: comments } = await github.rest.issues.listComments({
+            // Preserve interactive action log from existing card if present
+            const comments = await github.paginate(github.rest.issues.listComments, {
               owner,
               repo,
               issue_number: prNumber,
               per_page: 100
             });
             const existing = comments.find(c => (c.body || '').includes(marker));
-            if (existing) {
-              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body: cardBody });
+            let actionLogContent = '_No interactive actions run yet. Tick a checkbox above or comment `/help` to test drive!_';
+            if (existing?.body) {
+              const logMatch = existing.body.match(
+                /<!-- monorail-action-log-start -->([\s\S]*?)<!-- monorail-action-log-end -->/
+              );
+              if (logMatch && logMatch[1].trim()) {
+                actionLogContent = logMatch[1].trim();
+              }
+            }
+
+            // Top banner callout
+            let bannerLines;
+            if (process.env.TOUCHES_WAREHOUSE === 'true' && process.env.COMPILE_OK === 'false') {
+              const errText = fs.existsSync(path.join(process.env.RUNNER_TEMP, 'head-compile.err'))
+                ? fs.readFileSync(path.join(process.env.RUNNER_TEMP, 'head-compile.err'), 'utf8').trim().slice(0, 600)
+                : 'Dataform failed to compile.';
+              bannerLines = [
+                '> [!CAUTION]',
+                '> **Dataform Compilation Failed on PR Head!** Fix SQLX/config errors before merging:',
+                '> ```text',
+                ...errText.split('\n').map(l => `> ${l}`),
+                '> ```'
+              ];
+            } else if (touchedDashSource && !rebuiltBundle) {
+              bannerLines = [
+                '> [!WARNING]',
+                '> Dashboard source files changed without updating `dashboards/operations/index.html`. Tick **Rebuild & Commit Dashboard Bundle** below (or comment `/rebuild-dashboard`) to fix this in one click!'
+              ];
+            } else if (blastSummary?.breakingSchemaChange) {
+              bannerLines = [
+                '> [!CAUTION]',
+                '> Breaking Dataform schema or materialization change detected — inspect the **Schema & Config Contract Diff** below.'
+              ];
             } else {
-              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body: cardBody });
+              bannerLines = [
+                '> [!TIP]',
+                '> Interactive PR Mission Control is active! Click any checkbox below or drop a `/slash` command in a comment to run live actions on this PR.'
+              ];
+            }
+
+            const riskRow = blastSummary
+              ? `| **🌊 Blast-Radius Risk** | ${blastSummary.risk.emoji} **${blastSummary.risk.level}** | \`${blastSummary.risk.bar}\` **${blastSummary.risk.score}/100** · ${blastSummary.downstreamModelCount} model(s), ${blastSummary.downstreamMalloyCount} Malloy, ${blastSummary.downstreamAssertionCount} assertion(s) |`
+              : null;
+
+            const cardBody = [
+              marker,
+              `## 🚝 MonoRail PR Mission Control`,
+              ``,
+              ...bannerLines,
+              ``,
+              `| Check | Status | Details |`,
+              `| :--- | :---: | :--- |`,
+              `| **🔗 Linked Issue** | ${hasLinkedIssue ? '✅ PASS' : '💡 OPTIONAL'} | ${hasLinkedIssue ? `Linked via \`${linkedIssueMatch[0]}\`` : 'Add `Closes #<issue>` to auto-close the tracking issue on merge'} |`,
+              `| **📏 PR Size & Review** | ${sizeBadge} | **+${totalAdditions} / -${totalDeletions}** across ${files.length} file(s) · ~${estMinutes} min review |`,
+              `| **🚦 PR State** | ${pr.draft ? '🚧 DRAFT' : '🚀 READY'} | ${pr.draft ? 'Draft PR — early feedback mode' : 'Ready for peer review & CI gates'} |`,
+              riskRow,
+              `| **🏷️ Impacted Areas** | ℹ️ INFO | ${areaLabels.size ? [...areaLabels].map(a => `\`${a}\``).join(', ') : '`general / repo config`'} |`,
+              touchedDashSource
+                ? `| **📊 Dashboard Bundle** | ${rebuiltBundle ? '✅ PASS' : '⚠️ STALE'} | ${rebuiltBundle ? '`dashboards/operations/index.html` updated' : 'Bundle needs rebuild (`node dashboards/operations/build.cjs`)'} |`
+                : null,
+              ``,
+              blastMd || null,
+              `---`,
+              ``,
+              `### 🎛️ Interactive Control Panel`,
+              `<sub>Click any checkbox below to trigger a live GitHub Action on this PR (auto-resets when finished):</sub>`,
+              ``,
+              `- [ ] **🛠️ Auto-Fix SQLX (\`sqlfluff fix\`)** — apply \`.sqlfluff\` standard fixes & commit to PR branch${touchedSqlx ? '' : ' *(no `.sqlx` files changed yet)*'}`,
+              `- [ ] **💡 Post Inline Advisory \`suggestion\` Comments** — add one-click **Commit suggestion** buttons in *Files changed* (\`AM03\`, \`AM05\`, \`ST09\`)`,
+              `- [ ] **📊 Rebuild & Commit Dashboard Bundle** — run \`node dashboards/operations/build.cjs\` & commit \`index.html\``,
+              `- [ ] **🔄 Refresh Lineage & Schema Diff** — recompile base & head Dataform graphs and refresh this card`,
+              `- [ ] **🚦 Toggle Draft / Ready for Review** — flip PR draft state right from this comment`,
+              ``,
+              `<details><summary>⌨️ Interactive PR Slash Commands (comment any of these below)</summary>`,
+              ``,
+              `| Command | What it does |`,
+              `| :--- | :--- |`,
+              `| \`/help\` | Show all interactive PR commands |`,
+              `| \`/blast-radius\` or \`/lineage [model]\` | Render a live Mermaid lineage DAG + Malloy & assertion impact |`,
+              `| \`/compile <model>\` | Compile Dataform & reply with resolved BigQuery SQL + schema contract |`,
+              `| \`/lint\` or \`/lint --fix\` | Run SQLFluff on changed \`.sqlx\` files (and commit fixes with \`--fix\`) |`,
+              `| \`/suggest\` | Post clickable inline \`\`\`suggestion\`\`\` review comments on the PR diff |`,
+              `| \`/rebuild-dashboard\` | Rebuild & commit \`dashboards/operations/index.html\` to the PR branch |`,
+              `| \`/draft\` · \`/ready\` · \`/toggle-draft\` | Switch PR between Draft and Ready for Review |`,
+              ``,
+              `</details>`,
+              ``,
+              `<details><summary>📜 Interactive Action Log</summary>`,
+              ``,
+              `<!-- monorail-action-log-start -->`,
+              actionLogContent,
+              `<!-- monorail-action-log-end -->`,
+              ``,
+              `</details>`,
+              ``,
+              `<sub>Maintained automatically by \`pr-lifecycle-card.yml\` &amp; \`pr-chatops.yml\`</sub>`
+            ].filter(Boolean).join('\n');
+
+            if (process.env.CAN_WRITE === 'true') {
+              if (existing) {
+                await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body: cardBody });
+              } else {
+                await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body: cardBody });
+              }
             }
 
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, cardBody + '\n');
