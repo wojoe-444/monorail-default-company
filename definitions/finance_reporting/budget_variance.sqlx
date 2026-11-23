@@ -17,6 +17,7 @@ config {
     "total_actual_cost_usd": "Modeled labor plus approved invoices plus approved expenses. November is partial-period; pending invoices are excluded.",
     "observed_workdays": "Distinct staff time-entry dates loaded for this department and month; not all dates in the month.",
     "remaining_budget_usd": "Full monthly synthetic budget minus loaded partial-period actual cost; negative indicates the seeded over-budget scenario.",
+    "over_budget_usd": "Positive dollar amount by which actual cost exceeds the monthly synthetic budget (0 when within budget).",
     "budget_utilization_ratio": "Loaded actual cost divided by the full monthly budget, as a 0-to-1 fraction that can exceed 1.",
     "budget_status": "OverBudget or WithinBudget based on the loaded synthetic actuals.",
     "period_status": "PartialPeriodActuals when time entries exist; BudgetOnly otherwise."
@@ -24,18 +25,19 @@ config {
 }
 
 SELECT
-  *,
-  budget_usd-total_actual_cost_usd AS remaining_budget_usd,
-  SAFE_DIVIDE(total_actual_cost_usd, budget_usd) AS budget_utilization_ratio,
-  IF(
-    total_actual_cost_usd > budget_usd,
-    'OverBudget',
-    'WithinBudget'
-  ) AS budget_status,
-  IF(
-    observed_workdays = 0,
-    'BudgetOnly',
-    'PartialPeriodActuals'
-  ) AS period_status
+    *,
+    budget_usd - total_actual_cost_usd AS remaining_budget_usd,
+    GREATEST(0, total_actual_cost_usd - budget_usd) AS over_budget_usd,
+    SAFE_DIVIDE(total_actual_cost_usd, budget_usd) AS budget_utilization_ratio,
+    IF(
+        total_actual_cost_usd > budget_usd,
+        'OverBudget',
+        'WithinBudget'
+    ) AS budget_status,
+    IF(
+        observed_workdays = 0,
+        'BudgetOnly',
+        'PartialPeriodActuals'
+    ) AS period_status
 FROM
-  ${ref("finance_reporting", "department_cost_monthly")}
+    ${ref("finance_reporting", "department_cost_monthly")}
